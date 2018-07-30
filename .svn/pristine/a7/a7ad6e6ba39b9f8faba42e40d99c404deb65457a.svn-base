@@ -1,0 +1,404 @@
+<!-- saved from url=(0014)about:internet -->
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title></title>
+<script src="AC_OETags.js" language="javascript"></script>
+<style>
+body { margin: 0px; overflow:hidden }
+</style>
+<script language="JavaScript" type="text/javascript">
+<!--
+// -----------------------------------------------------------------------------
+// Globals
+// Major version of Flash required
+var requiredMajorVersion = 9;
+// Minor version of Flash required
+var requiredMinorVersion = 0;
+// Minor version of Flash required
+var requiredRevision = 0;
+// -----------------------------------------------------------------------------
+// -->
+</script>
+</head>
+
+<SCRIPT LANGUAGE="JavaScript">
+    // Â©Flexcapacitor, #Version 0.0.1
+    // global array of html elements
+    htmlControls = new Array();
+    
+    // change document title
+    function changeDocumentTitle(a) {
+        window.document.title = a;
+        return 1;
+    }
+
+	// add HTML element to the page
+    function addChild(o) {
+    	if (o.type=="division") {
+    		addChildDivision(o);
+    	}
+    	else if (o.type=="iframe") {
+    		addChildIFrame(o);
+    	}
+    }
+    
+    // add iframe to the page
+    function addChildIFrame(o) {
+    	if (getElement(o.id)) return;
+		var newElement = document.createElement("iframe");
+		newElement.id = o.id;
+		newElement.name = o.name;
+		newElement.movieId = o.movieId;
+		newElement.width = o.width;
+		newElement.height = o.height;		
+		newElement.frameBorder = o.frameborder;
+		newElement.style.position = o.position;
+		setSize(newElement,o.width,o.height);
+		moveElementTo(newElement,o.x,o.y);
+		//newElement.style.backgroundColor = "transparent";
+		// always 0px - do not add a border to the iframe itself
+		// add a child div and add a border to that or add border in mxml
+		newElement.style.border = o.border;
+		newElement.src = o.source;
+		
+		//  use innerHTML or DOM element creation methods to put content into body
+		document.body.appendChild(newElement);
+		
+		newElement.onload = new function() {
+			// what i'd like to do here is set a flag so the application knows the page is loaded
+			//reportHeight(newElement.id);
+		}
+    }
+    
+    // add division to the page
+    function addChildDivision(o) {
+		var newElement = document.createElement("div");
+		newElement.id = o.id;
+		newElement.name = o.name;
+		newElement.movieId = o.movieId;
+		
+		newElement.style.position = o.position;
+		setSize(newElement,o.width,o.height);
+		moveElementTo(newElement,o.x,o.y);
+		newElement.style.backgroundColor = "#" + o.backgroundColor;
+		setScrollPolicy(newElement,o.htmlScrollPolicy);
+		newElement.style.padding = "0px";
+		newElement.style.margin = "0px";
+		// always 0px - do not add a border to the division itself
+		// add a child div and add a border to that or add border in mxml
+		newElement.style.border = o.border;
+		newElement.innerHTML = o.htmlText;
+		
+		document.body.appendChild(newElement);
+    }
+	
+	// cannot get height of pages loaded from different domains
+	// ie, page is hosted at www.yoursite.com and you load www.google.com will fail with return value of -1
+	// works in ff and ie. not tested in mac browsers - send me a mac book :)
+	function getElementHeight(elId){
+		var el = getElement(elId);
+		moz = (document.getElementById && !document.all);
+		
+		//if (el && !window.opera){
+		if (el){
+		
+			// check the height value
+			try {
+			
+				/*** return div height ***/
+				if (el.nodeName.toLowerCase()=="div") {
+					var scrollHeight = el.scrollHeight;
+					var divHeight = el.style.height;
+					divHeight = (scrollHeight > parseInt(divHeight)) ? scrollHeight : divHeight;
+					return divHeight;
+				}
+				
+				/*** return iframe height ***/
+				//moz
+				if (moz) {
+					return el.contentDocument.body.scrollHeight;
+				}
+				else if (el.Document) {
+					return el.Document.body.scrollHeight;
+				}
+			}
+			catch(e)
+			{
+				//An error is raised if the IFrame domain != its container's domain
+				//alert('Error: ' + e.number + '; ' + e.description+'\nPossibly - Cannot access because page domain does not equal container domain');
+				return -1;
+			}
+		}
+	}
+
+    // get property value
+	function getElementValue(elId, elProperty){
+		
+		// if periods are in the name assume absolute path 
+		// otherwise assume element id
+		if (elId.indexOf('.')!=-1) {
+			var newArr = elId.split('.');
+			var elValue = "";
+			
+			try {
+				el = window;
+				for (var i=0;i<newArr.length;i++) {
+					el = el[newArr[i]];
+				}
+				return el;
+			}
+			catch (e) {
+				//alert("Whoooops!! Cant find " + elId);
+				// should return null or undefined here
+				return -1;
+			}
+		}
+		else {
+			// try and get property value
+			try {
+				var el = getElement(elId);
+				var elValue = el[elProperty];
+				return elValue;
+			}
+			catch(e) {
+				//alert("Error: Can't find " + elId + "." + elProperty);
+				// should return null or undefined here
+				return -1;
+			}
+		}
+	}
+	
+	// set iframe location
+    function setSource(elName,source){
+		var el = getElement(elName);
+		el.src = source;
+	}
+	
+	// set division HTML content
+	function setHTML(elName, htmlText) {
+		var el = getElement(elName);
+		if (el!=null) {
+			//el.innerHTML = unescape(htmlText);
+			el.innerHTML = htmlText;
+		}
+	}
+	
+	// set size
+	function setSize(el,w,h) {
+		// WIDTH
+		if (w != undefined) {
+			// if width is a percentage pass in the string as is
+			if (String(w).indexOf("%")!=-1) {
+				el.style.width = w;
+			}
+			else {
+				el.style.width = parseInt(w) + "px";
+			}
+		}
+		
+		// HEIGHT
+		if (h!=undefined) {
+			if (String(h).indexOf("%")!=-1) {
+				el.style.height = h;
+			}
+			else {
+				el.style.height = parseInt(h) + "px"; 
+			}
+		}
+	}
+	
+	// set size called through external interface
+	function setSizeByValue(elName,w,h) {
+		var el = getElement(elName);
+		// WIDTH
+		if (w != undefined) {
+			// if width is a percentage pass in the string as is
+			if (String(w).indexOf("%")!=-1) {
+				el.style.width = w;
+			}
+			else {
+				el.style.width = parseInt(w) + "px";
+			}
+		}
+		
+		// HEIGHT
+		if (h!=undefined) {
+			if (String(h).indexOf("%")!=-1) {
+				el.style.height = h;
+			}
+			else {
+				el.style.height = parseInt(h) + "px"; 
+			}
+		}
+	}
+	
+	var callVolume = 0;
+	
+	// set position
+	function setPosition(elName,x,y) {
+		var el = getElement(elName);
+		//alert(el);
+		//alert(x)
+		// LEFT
+		callVolume++;
+		if (x != undefined) {
+			el.style.left = x + "px";
+		}
+		// TOP
+		if (y != undefined) {
+			//alert(y)
+			el.style.top = y + "px";
+		}
+	}
+	
+	// move element to new location
+	function moveElementTo(el,x,y) {
+		el.style.left = parseInt(x) + "px";
+		el.style.top = parseInt(y) + "px";
+	}
+	
+	// show element by name - hides content offscreen option
+	// flash context menu appears in random location if option is not used
+	function show(elName, hideOffscreen, contentLeft) {
+		var el = getElement(elName);
+		el.style.visibility = "visible";
+		if (hideOffscreen) {
+			el.style.left = contentLeft;
+		}
+	}
+	
+	// hide element by name - see note on show method
+	function hide(elName, hideOffscreen, offscreenOffset) {
+		var el = getElement(elName);
+		el.style.visibility = "hidden";
+		if (hideOffscreen) {
+			el.style.left = offscreenOffset;
+		}
+	}
+	
+	// set scroll policy of element
+	function setScrollPolicy(el, overflow) {
+		var el = (el.id) ? el : getElement(el);
+		if (overflow != "resize") {
+			el.style.overflow = overflow;
+		}
+		else {
+			// getFlashMovie().setElementHeight(elementId,el.style.contentHeight);
+		}
+	}
+	
+	// forces redraw
+	function refresh(elName) {
+		var el = getElement(elName);
+		el.style.cssText = el.style.cssText;
+	}
+
+	// get reference to the flash movie	
+	function getMovieById(movieName) {
+		if (navigator.appName.indexOf ("Microsoft") !=-1) {
+			return window[movieName]
+		} else {
+			return window.document[movieName]
+		}
+	}
+	
+	// add to associative array
+	function addToGlobalArray(el) {
+		htmlControls[el.id].element = el;
+	}
+	
+	// gets the element by name
+	// this could be put into an associative array to speed up access to known elements
+	function getElement(strID) {
+		if (htmlControls[strID]) {
+			return htmlControls[strID].element;
+		}
+		return document.getElementById(strID)
+	}
+	
+</SCRIPT>
+<body scroll="no" id="myBody">
+
+<script language="JavaScript" type="text/javascript">
+<!--
+// Version check for the Flash Player that has the ability to start Player Product Install (6.0r65)
+var hasProductInstall = DetectFlashVer(6, 0, 65);
+
+// Version check based upon the values defined in globals
+var hasRequestedVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
+
+
+// Check to see if a player with Flash Product Install is available and the version does not meet the requirements for playback
+if ( hasProductInstall && !hasRequestedVersion ) {
+	// MMdoctitle is the stored document.title value used by the installation process to close the window that started the process
+	// This is necessary in order to close browser windows that are still utilizing the older version of the player after installation has completed
+	// DO NOT MODIFY THE FOLLOWING FOUR LINES
+	// Location visited after installation is complete if installation is required
+	var MMPlayerType = (isIE == true) ? "ActiveX" : "PlugIn";
+	var MMredirectURL = window.location;
+    document.title = document.title.slice(0, 47) + " - Flash Player Installation";
+    var MMdoctitle = document.title;
+
+	AC_FL_RunContent(
+		"src", "playerProductInstall",
+		"FlashVars", "MMredirectURL="+MMredirectURL+'&MMplayerType='+MMPlayerType+'&MMdoctitle='+MMdoctitle+"",
+		"width", "100%",
+		"height", "100%",
+		"align", "middle",
+		"id", "CPREntry",
+		"quality", "high",
+		"bgcolor", "#869ca7",
+		"name", "CPREntry",
+		"allowScriptAccess","sameDomain",
+		"type", "application/x-shockwave-flash",
+		"pluginspage", "http://www.adobe.com/go/getflashplayer"
+	);
+} else if (hasRequestedVersion) {
+	// if we've detected an acceptable version
+	// embed the Flash Content SWF when all tests are passed
+	AC_FL_RunContent(
+			"src", "CPREntry",
+			"width", "100%",
+			"height", "100%",
+			"align", "middle",
+			"id", "CPREntry",
+			"quality", "high",
+			"bgcolor", "#869ca7",
+			"name", "CPREntry",
+			"wmode", "opaque",
+			"flashvars",'historyUrl=history.htm%3F&lconid=' +  '',
+			"allowScriptAccess","sameDomain",
+			"type", "application/x-shockwave-flash",
+			"pluginspage", "http://www.adobe.com/go/getflashplayer"
+	);
+  } else {  // flash is too old or we can't detect the plugin
+    var alternateContent = 'Alternate HTML content should be placed here. '
+  	+ 'This content requires the Adobe Flash Player. '
+   	+ '<a href=http://www.adobe.com/go/getflash/>Get Flash</a>';
+    document.write(alternateContent);  // insert non-flash content
+  }
+// -->
+</script>
+<noscript>
+  	<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+			id="CPREntry" width="100%" height="100%"
+			codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+			<param name="movie" value="CPREntry.swf" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#869ca7" />
+			<param name="allowScriptAccess" value="sameDomain" />
+			<embed src="CPREntry.swf" quality="high" bgcolor="#869ca7"
+				width="100%" height="100%" name="CPREntry" align="middle"
+				play="true"
+				loop="false"
+				quality="high"
+				allowScriptAccess="sameDomain"
+				type="application/x-shockwave-flash"
+				pluginspage="http://www.adobe.com/go/getflashplayer">
+			</embed>
+	</object>
+</noscript>
+
+</body>
+</html>

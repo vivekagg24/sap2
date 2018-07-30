@@ -1,0 +1,102 @@
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	LookUPGLCode.mxml
+		
+		Show the list of GL codes for the current publication/ item category
+		
+-->
+
+<mx:TitleWindow x="239" y="156" width="560" height="427" layout="absolute"
+		 close="btnCancel.dispatchEvent(new MouseEvent(MouseEvent.CLICK))"
+		 creationComplete="doInit()"
+		 showCloseButton="true"
+		 title="GL Account Selection"
+		 backgroundAlpha="1"
+		 xmlns:mx="http://www.adobe.com/2006/mxml"
+		 mouseDown="mouseDownHandlerForDrag(event)">
+		 <mx:Style source="../../ECS.css"/>
+	<mx:Script>
+    <![CDATA[
+    	import mx.managers.FocusManager;
+    	import mx.managers.IFocusManagerComponent;
+    	
+        import mx.managers.PopUpManager;
+        //Selected GL account
+       	public var glAccount:String;
+       	//Selected Item category
+       	public var itemCategory:String;       
+       	// Where to put focus after?
+       	public var toFocus:IFocusManagerComponent;
+       	
+       	// Since popups are always parented by SystemManager, we can't rely on this.parentApplication like we can 
+		// with normal components (i.e. those which aren't popups)
+		// Therefore we need a reference to the application which we are running in.
+		public var trueParentApp:Object; 
+       	
+       	//Data provider for grid
+       	[Bindable]
+		public var glAccounts:XMLList;
+
+		private function doInit():void{
+			PopUpManager.centerPopUp(this);
+			//GL accounts for current publication and item category (list is populated when the application loads)
+			
+			glAccounts = trueParentApp.initXml.CH_T_GL_ACCOUNT.item.(PUBID==trueParentApp.getPublicationId()).(ITEM_CAT==itemCategory);
+			if (glAccounts.length()>0){
+				//Select the first item in the grid
+				dgGLAccounts.selectedIndex=0;
+				dgGLAccounts.setFocus();
+				
+			}
+		}
+		
+		public function cleanClose():void
+		{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			systemManager.removeFocusManager(this);
+			
+			if (toFocus)
+				toFocus.setFocus();	
+		}
+		
+		//Set return values and close the window
+		private function returnValue():void{
+  			if (dgGLAccounts.selectedIndex>-1){ 	
+  				glAccount = glAccounts[dgGLAccounts.selectedIndex].GL_ACCT.toString();
+  				itemCategory = glAccounts[dgGLAccounts.selectedIndex].ITEM_CAT.toString();
+  			}
+
+  			cleanClose();
+  		}
+		
+		// Allow the user to drag the popup
+		include "includeDragForPopUp.as";
+		  		
+	    ]]>
+	</mx:Script>
+
+	<mx:Panel x="10" y="10" width="516" height="361" layout="absolute"
+		defaultButton="{btnOK}">
+		<mx:DataGrid x="0" y="0" width="486" height="288" id="dgGLAccounts"
+			dataProvider="{glAccounts}"
+			styleName="dataGrid"
+			doubleClickEnabled="true"
+			doubleClick="returnValue()">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Item Category" dataField="ITEM_CAT_DESCRIPTION"/>
+				<mx:DataGridColumn headerText="GL Account" dataField="GL_ACCT"/>
+				<mx:DataGridColumn headerText="Text" dataField="LABEL"/>
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:Button x="159" y="289" 
+			id="btnCancel"
+			 styleName="button" label="Cancel" click="cleanClose();" icon="@Embed('../../images/cancel.gif')" width="70"/>
+		<mx:Button x="241" y="289" 
+			styleName="button" id="btnOK" label="OK" click="returnValue()" icon="@Embed('../../images/OK.gif')" width="70"/>
+	</mx:Panel>
+</mx:TitleWindow>
+

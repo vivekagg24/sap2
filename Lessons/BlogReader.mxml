@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="feedRequest.send( )" >
+
+<mx:HTTPService  id="feedRequest" url="http://weblogs.macromedia.com/mchotin/index.xml" useProxy="false"/> 
+
+
+	<mx:Panel x="10" y="10" width="475" height="400" layout="absolute" title="{feedRequest.lastResult.rss.channel.title}" >
+
+		<mx:DataGrid x="20" y="20" id="dgPosts" width="400" dataProvider="{feedRequest.lastResult.rss.channel.item}">
+
+			<mx:columns>
+				<mx:DataGridColumn headerText="Posts" dataField="title"/>
+				<mx:DataGridColumn headerText="Date" dataField="pubDate" width="150" />
+			</mx:columns>
+
+		</mx:DataGrid>
+		
+		<mx:LinkButton x="20" y="225" label="Read Full Post" click="navigateToURL(new URLRequest(dgPosts.selectedItem.link));" />
+
+		<mx:TextArea x="20" y="175" width="400" htmlText="{dgPosts.selectedItem.description}" />
+				
+	</mx:Panel>
+	
+</mx:Application>

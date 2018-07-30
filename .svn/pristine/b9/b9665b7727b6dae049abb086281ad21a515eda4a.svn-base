@@ -1,0 +1,245 @@
+sap.ui.controller("nuk.sap.driverportal.view.Detail", {
+    onInit: function(oEvent) {
+        sap.ui.getCore().getEventBus().subscribe("dropSelected", this.onDropSelected, this);
+        sap.ui.getCore().getEventBus().subscribe("routeLoaded", this.onRouteLoaded, this);
+        sap.ui.getCore().getEventBus().subscribe("routeSelected", this.onRouteSelected, this);
+        this.oPage = this.byId("PageMap");
+        this.oMap = this.byId("MapDrops");
+        this.showDirections = false;
+        this.showPolyline = false;
+        this.showPolygon = false;
+
+        /*
+        this.oMap.event.addDomListener(window, "resize", function() {
+            var center = this.oMap.getCenter();
+            this.oMap.event.trigger(this.oMap, "resize");
+            this.oMap.setCenter(center);
+        });
+        */
+
+        jQuery.sap.require("sap.ui.commons.MessageBox");
+    },
+
+    onMapReady: function(oEvent) {
+        if (this.selectedLocation === undefined) {
+
+            var drop = this.getView().getModel().getData().drop;
+            this.selectedLocation = drop[0];  // select the first one
+            this.setupPolylines();
+            this.setupPolygons();
+            this.setupDirections();
+            this.centreLocation();
+        }
+        //this.setLocation();
+   },
+
+    centreLocation: function() {
+        this.oMap.setLat(this.selectedLocation.geo_lat);
+        this.oMap.setLng(this.selectedLocation.geo_long);
+    },
+
+    setLocation: function(bPublish) {
+        this.markerWindowOpen(this.selectedLocation);
+        sap.ui.getCore().getEventBus().publish("placeSelected", {
+            location: this.selectedLocation
+        });
+    },
+
+    markerWindowOpen: function(oData) {
+        var that = this;
+        this.oMap.getMarkers().forEach(function(oMarker) {
+            if (oMarker.getLat() == oData.geo_lat && oMarker.getLng() == oData.geo_long) {
+                //that.oPage.setTitle(oMarker.getInfo());
+                oMarker.setAnimation(openui5.googlemaps.Animation.BOUNCE);
+                (function(marker) {
+                  // Seems a single full bounce takes ~700ms
+                  // http://stackoverflow.com/questions/7339200/bounce-a-pin-in-google-maps-once
+                  window.setTimeout(function() {
+                    marker.setAnimation(0);
+                    marker.infoWindowOpen();
+                  }, 700);
+                })(oMarker);
+            } else {
+                if (oMarker.infoWindow)
+                    oMarker.infoWindowClose();
+            }
+        });
+    },
+
+    setChartData: function(aData) {
+       // this.oChart.setVisible(true);
+      //  this.oChart.setColumns(aData);
+    },
+
+    /**
+     * Drop has been selected
+     */
+    onDropSelected: function(sChannelId, sEventId, oData) {
+        this.selectedLocation = oData.context.getObject();
+        this.setLocation();
+        this.centreLocation();
+    },
+
+    /**
+     * Route has been loaded succesfully
+     */
+    onRouteLoaded: function() {
+        this.clearPolylines();
+        var drop = this.getView().getModel().getData().drop;
+        this.selectedLocation = drop[0];  // select the first one
+        this.setupPolylines();
+        this.setupPolygons();
+        this.setupDirections();
+        this.setLocation();
+        this.centreLocation();
+    },
+
+    /**
+     * A route has been selected, so we need to re-add all of the markers, etc
+     */
+    onRouteSelected: function() {
+        this.clearPolylines();
+        var drop = this.getView().getModel().getData().drop;
+        this.selectedLocation = drop[0];  // select the first one
+        this.setupPolylines();
+        this.setupPolygons();
+        this.setupDirections();
+        //this.setLocation();
+        this.centreLocation();
+    },
+
+    onMarkerClick: function(oEvent) {
+        this.selectedLocation = oEvent.getParameter('context').getObject();
+        this.setLocation();
+    },
+
+    getPaths: function() {
+        var aPaths = [];
+        this.getView().getModel().getData().drop.forEach(function(obj) {
+            aPaths.push({
+                lat: obj.geo_lat,
+                lng: obj.geo_long
+            });
+        });
+
+        return aPaths;
+    },
+
+    setupDirections: function() {
+      if (this.oMap.getDirections() && this.oMap.getDirections().length > 0) {
+        return;
+      }
+      var paths = this.getPaths();
+      var directions = new openui5.googlemaps.Directions({
+          startAddress: paths[0].lat + ',' + paths[0].lng,
+          endAddress: paths[paths.length - 1].lat + ',' + paths[paths.length - 1].lng,
+          travelMode: openui5.googlemaps.TravelMode.driving
+      });
+
+    },
+
+    clearPolylines: function() {
+        var oPolylines = this.oMap.getPolylines();
+        for (var i = 0; i < oPolylines.length; i++)
+            oPolylines[i].reset();
+    },
+
+    setupPolylines: function() {
+        if (this.oMap.getPolylines().length > 0) {
+          return;
+        }
+
+        var lineSymbol = {
+            path: 'M 0,-1 0,1',
+            strokeOpacity: 0.5,
+            scale: 4
+        };
+
+        var arrowSymbol = {
+            path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
+            scale: 2
+        };
+
+        this.oMap.addPolyline(new openui5.googlemaps.Polyline({
+            path: this.getPaths(),
+            strokeColor: "#6981BD", // News UK logo text colour
+            strokeOpacity: 1.0,
+            strokeWeight: 2,
+            visible: this.showPolyline,
+            draggable: false,
+            icons: [{
+                icon: arrowSymbol,
+                offset: '0',
+                repeat: '125px'
+            }]
+        }));
+
+    },
+
+    setupPolygons: function() {
+        if (this.oMap.getPolygons().length > 0) {
+            return;
+        }
+
+        var center = {
+            lat: this.oMap.getLat(),
+            lng: this.oMap.getLng()
+        };
+        this.oMap.addPolygon(new openui5.googlemaps.Polygon({
+            paths: jQuery.merge([center], this.getPaths()),
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
+            visible: this.showPolygon,
+        }));
+    },
+
+    onShowPolyline: function(oEvent) {
+        this.showPolyline = !this.showPolyline;
+        var that = this;
+        if (this.oMap.getPolylines()) {
+            this.oMap.getPolylines().forEach(function(oControl) {
+                oControl.setVisible(that.showPolyline);
+            });
+        }
+    },
+
+    onShowPolygon: function(oEvent) {
+        this.showPolygon = !this.showPolygon;
+        var that = this;
+        if (this.oMap.getPolygons()) {
+            this.oMap.getPolygons().forEach(function(oControl) {
+                oControl.setVisible(that.showPolygon);
+            });
+        }
+    },
+
+    /**
+      Logout
+      If data has been changed, prompt the user before logging out
+    */
+    onLogout: function(oEvent) {
+      var oConfig = this.getView().getModel('config');
+      var bIsDataChanged = oConfig.getProperty('/isDataChanged');
+
+      if (bIsDataChanged) {
+        var sTitle = this.getView().getModel("i18n").getResourceBundle().getText('DetailPromptLogoutTitle');
+        var sContent = this.getView().getModel("i18n").getResourceBundle().getText('DetailPromptLogoutContent');
+        sap.ui.commons.MessageBox.confirm(sContent,
+            function(bConfirmed) {
+              if (bConfirmed) {
+                nuk.sap.driverportal.util.api.logout(function() {
+                  nuk.sap.driverportal.util.api.toLogin();
+                });
+              }
+            },
+            sTitle);
+      } else {
+        nuk.sap.driverportal.util.api.logout(function() {
+          nuk.sap.driverportal.util.api.toLogin();
+        });
+      }
+    }
+});

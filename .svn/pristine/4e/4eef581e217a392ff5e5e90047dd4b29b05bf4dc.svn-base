@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:ns1="*" >
+	            <mx:Array id = "contribs_data">
+                	<mx:Object>               	
+                 	   <!-- These Object tags replace the String tags. -->
+                	    <mx:lifnr>12345</mx:lifnr>
+                	    <mx:first_name>joe</mx:first_name>
+					</mx:Object>
+					                	<mx:Object>               	
+                 	   <!-- These Object tags replace the String tags. -->
+                	    <mx:lifnr>111111</mx:lifnr>
+                	    <mx:first_name>bob</mx:first_name>
+					</mx:Object>
+                </mx:Array>
+
+
+	<ns1:ConSearch x="38" y="49" id="conSearch" contribList="{contribs_data}" contributorChosen="handleContributorChosen(event)" close="closeSearch(event)">
+	</ns1:ConSearch>
+
+<mx:Script>
+	<![CDATA[
+	    import mx.events.CloseEvent;
+	    import mx.controls.Alert;
+		public function closeSearch(closeEvent:CloseEvent):void {
+			conSearch.visible = false;
+		}
+		public function handleContributorChosen(closeEvent:CloseEvent):void {
+			var lifnr:int = closeEvent.detail;
+			conSearch.visible = false;
+			var alert_string:String = new String (lifnr);
+			alert_string = "chosen contributor number " + alert_string;
+			Alert.show(alert_string);	
+		}
+		// Just a comment, but as far as version control is concerned, it is a changed
+	]]>
+</mx:Script>
+	
+
+                
+
+</mx:Application>

@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <title>Timesheet Approved</title>
+  <meta charset=utf-8>
+  <style type="text/css">
+    * {
+      font-family: Helvetica, Arial;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="header">
+<h1>Timesheet Approved</h1>
+</div>
+
+<strong>$system_warning$</strong>
+
+<div id="body">
+<p>
+The timesheet you created for the week of $start_date$ to $end_date$ was approved
+by $approver_name$ on $approval_date$ at $approval_time$. You can view your approved
+timesheet in the <a href="$url_overview$" title="Timesheet System">Timesheet System</a>.
+
+<p>
+Should you have any queries regarding this timesheet, please
+contact <a href="mailto:servicedesk@news.co.uk?subject=Timesheet $timesheet_id$" title="Email Service Desk">Service Desk</a>.
+The timesheet reference is <strong>$timesheet_id$</strong>.
+
+<div id="footer">
+</div>
+
+</body>
+</html>

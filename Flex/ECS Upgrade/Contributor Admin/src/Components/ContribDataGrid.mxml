@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:DataGrid xmlns:mx           = "http://www.adobe.com/2006/mxml"
+	         doubleClickEnabled = "true"
+	         resizableColumns   = "true" 
+	         showHeaders        = "true" 
+	         sortableColumns    = "false" 
+	         dragMoveEnabled    = "true" 
+	         draggableColumns   = "true" 
+	         editable           = "false" 
+	         enabled            = "true"
+         	 width              = "926"
+	         x                  = "8"
+	         y                  = "8">
+
+	<mx:columns>
+		<mx:DataGridColumn width="80"  headerText="ID"             dataField = "LIFNR" />
+		<mx:DataGridColumn width="38"  headerText="Type"           dataField = "CONTRIB_TYPE" />
+		<mx:DataGridColumn width="119" headerText="Name1"          dataField = "NAME1" />
+		<mx:DataGridColumn width="119" headerText="Name2"          dataField = "NAME2" />
+		<mx:DataGridColumn width="83"  headerText="House/Flat"     dataField = "NAME3" />	
+		<mx:DataGridColumn width="80"  headerText="Town"           dataField = "NAME4" />
+		<mx:DataGridColumn width="80"  headerText="City"           dataField = "ORT01" />
+		<mx:DataGridColumn width="83"  headerText="Post Code"      dataField = "PSTLZ" />
+		<mx:DataGridColumn width="57"  headerText="Country"        dataField = "LAND1" />
+		<mx:DataGridColumn width="48"  headerText="Post block"     dataField = "SPERR"  headerWordWrap="TRUE" />
+        <mx:DataGridColumn width="58"  headerText="Deletion Flag"  dataField = "LOEVM"  headerWordWrap="TRUE" />		
+		<mx:DataGridColumn width="100" headerText="Active account" dataField = "ALTKN" />
+		<mx:DataGridColumn width="100" headerText="Bank account"   dataField = "BANKN" />
+		<mx:DataGridColumn width="100" headerText="VAT Number"     dataField = "STCEG" />
+	</mx:columns>
+			
+</mx:DataGrid>

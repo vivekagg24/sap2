@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="doInit()" borderThickness="0" backgroundColor="#A3C1E3" >
+
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.TextArea;
+			import mx.core.UIComponent;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import flash.external.*;
+		
+		[Bindable]
+		public var TDID:String;
+		
+		[Bindable]
+		public var TDOBJECT:String;
+		
+		[Bindable]
+		public var TDNAME:String;
+		
+		[Bindable]
+		public var MODE:String;
+		
+		public var SAVED:String;
+		
+		public var do_close_after_save:Boolean;
+				
+		public var original_text:String;
+		
+				public function doInit():void {
+					// On initialisation, get the data from the server
+					retrieveParameters();
+					//retrieveText();
+					ws_getText.ZECS_RTF_GET_RICH_TEXT.send();
+						
+					// Set up display	
+					richTextEditor.linkTextInput.visible = false;
+
+					do_close_after_save = false;
+					
+				}
+				public function doSaveClose():void {
+					do_close_after_save = true;
+					doSave();
+				}
+				
+				
+					public function doSave():void {
+					ws_saveText.ZECS_RTF_SAVE_RICH_TEXT.send();
+				}
+				
+				public function doClose():void {
+					
+					ExternalInterface.call("closeWindow");
+				}
+
+				
+		// This function retrieves data when this application is started		
+				private function retrieveParameters():void {
+					var param_list:Object = Application.application.parameters;
+					TDID = param_list.IM_TDID;
+					TDOBJECT = param_list.IM_TDOBJECT;
+					TDNAME = param_list.IM_TDNAME;
+					MODE = param_list.IM_MODE;
+					
+					if ( MODE == 'X' ) {
+						richTextEditor.enabled = true;
+						richTextEditor.textArea.setStyle("backgroundColor","White"); 
+					}
+					else
+					{
+						var s:uint;
+						var obj:UIComponent 
+						for (s = 0; s < richTextEditor.toolbar.numChildren; s++)
+						{
+							obj = richTextEditor.toolbar.getChildAt(s) as UIComponent;
+							// Disable everything apart from the textarea
+							if (obj) obj.enabled = false;
+						}
+						
+						for (s = 0; s < richTextEditor.toolBar2.numChildren; s++)
+						{
+							obj = richTextEditor.toolbar.getChildAt(s) as UIComponent;
+							// Disable everything apart from the textarea
+							if (obj) obj.enabled = false;
+						}
+						
+						var ta:TextArea = richTextEditor.textArea;
+						ta.editable = false;
+						// Make it look disabled, but let the scrollbar work								
+						ta.setStyle("backgroundColor", 0xDDDDDD );
+						
+					}
+				}
+
+				private function serverResponse(event:ResultEvent):void {
+					SAVED = 'Yes';
+					if ( do_close_after_save == true ) { doClose(); }
+					
+				}
+				public function serverRequest(ID:String):void{
+					
+				
+				}
+				public function webServiceFault(e:FaultEvent,Title:String):void {
+
+					Alert.show(e.fault.faultString,Title);
+				}
+				
+				public function dataRetrieved(event:Event):void {
+					var result:XML =  new XML ( ws_getText.ZECS_RTF_GET_RICH_TEXT.lastResult );
+					if ( result.EX_RICH_TEXT_HTML )
+					{
+						richTextEditor.htmlText = result.EX_RICH_TEXT_HTML;
+						original_text = result.EX_RICH_TEXT_HTML;
+		
+					}
+				}
+  	
+				
+			
+		]]>
+	</mx:Script>
+		<mx:RichTextEditor id="richTextEditor" bottom="40" borderSides="0" borderStyle="none" borderThicknessTop="0" enabled="true" left="0" right="0" top="0" backgroundColor="#A3C1E3" >
+		</mx:RichTextEditor>
+		<mx:Button id="GreenTick" bottom="10" left="10" click="doSaveClose()" icon="@Embed('ECS//SAP_tick.JPG')" width="28.2" enabled="true" borderColor="#A3C1E3"/>
+		<mx:Button id="RedCross" bottom="10" left="42" click="doClose()" icon="@Embed('ECS//SAP_cross.JPG')" width="28.2" enabled="true" borderColor="#A3C1E3"/>
+
+
+	
+	<mx:WebService id="ws_getText"
+		wsdl="/zni/bc/soap/wsdl11?services=ZECS_RTF_GET_RICH_TEXT&amp;sap-client=007;"  
+    	useProxy="false"
+    	result="dataRetrieved(event)"
+  		fault="webServiceFault(event,'ws_getText')"    	
+       	showBusyCursor="true">   
+	    <mx:operation name="ZECS_RTF_GET_RICH_TEXT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>			
+				<IM_TDOBJECT>{TDOBJECT}</IM_TDOBJECT>
+				<IM_TDID>{TDID}</IM_TDID>
+				<IM_TDNAME>{TDNAME}</IM_TDNAME>
+			</mx:request>
+		</mx:operation>
+		
+	</mx:WebService>
+	<!-- 	wsdl="http://saponi.ni.ad.newsint:8080/sap/bc/soap/wsdl11?services=ZECS_RTF_SAVE_RICH_TEXT&amp;sap-client=007;"  -->
+	<mx:WebService id="ws_saveText"
+		wsdl="/zni/bc/soap/wsdl11?services=ZECS_RTF_SAVE_RICH_TEXT&amp;sap-client=007;"
+    	useProxy="false"
+    	result="serverResponse(event)"
+  		fault="webServiceFault(event,'ws_saveText')"    	
+       	showBusyCursor="true">   
+	    <mx:operation name="ZECS_RTF_SAVE_RICH_TEXT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>			
+				<IM_TDOBJECT>{TDOBJECT}</IM_TDOBJECT>
+				<IM_TDID>{TDID}</IM_TDID>
+				<IM_TDNAME>{TDNAME}</IM_TDNAME>
+				<IM_RICH_TEXT_HTML>{richTextEditor.htmlText}</IM_RICH_TEXT_HTML>
+				<IM_FORCE_COMMIT>X</IM_FORCE_COMMIT>
+			</mx:request>
+		</mx:operation>
+	</mx:WebService>
+	
+
+
+</mx:Application>

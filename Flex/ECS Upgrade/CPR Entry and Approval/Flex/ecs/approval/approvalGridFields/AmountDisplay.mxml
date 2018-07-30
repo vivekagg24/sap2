@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	horizontalScrollPolicy="off"
+	verticalScrollPolicy="off"
+	implements="mx.controls.listClasses.IDropInListItemRenderer">
+
+	<mx:Script>
+		<![CDATA[
+			import mx.effects.easing.Back;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			
+			include "../../scripts/dropInImplementor.as";
+			
+			override public function set data(value:Object):void {
+			if (value != null) {
+            	super.data = value;
+            	
+                // the parent DataGridColumn is passed as value before the real data arrives
+                if (!(value is DataGridColumn)) {
+                	if (value.costCentreLine)
+                	{
+                		//setStyle("backgroundColor", "#C0D9F2");
+                		setStyle("backgroundColor", "undefined"); 
+                	}   
+	        		else if (value.batchLine)
+	        		{
+	        			//setStyle("backgroundColor", "#ffff80"); 
+	        			setStyle("backgroundColor", "undefined"); 
+	        		}  
+	        		//If amount is above threshold then style to give a colour change and highlight the fact
+                	else if (value.highlightRow)
+                	{
+                		setStyle("backgroundColor", "#ff0000");                		
+                	} 
+                	else
+                	{
+                		// setStyle("backgroundColor", "0xFFFFFF"); 
+                		setStyle("backgroundColor", "undefined"); 
+                	}  
+                }
+                txtAtmount.text=value.amount;
+       		  }
+  			}		
+  			 
+		
+		]]>
+	</mx:Script>	
+	
+
+	<mx:Text id="txtAtmount" textAlign="right" right="0" />
+		
+	
+</mx:Canvas>
+

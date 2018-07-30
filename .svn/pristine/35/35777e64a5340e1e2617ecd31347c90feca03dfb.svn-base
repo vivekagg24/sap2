@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TextArea xmlns:mx="http://www.adobe.com/2006/mxml"
+	         borderThickness="0" backgroundAlpha="0" editable="false" wordWrap="true"
+	         toolTip="{this.text}">
+	
+</mx:TextArea>

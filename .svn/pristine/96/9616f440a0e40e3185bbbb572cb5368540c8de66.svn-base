@@ -1,0 +1,74 @@
+<Bar xmlns="sap.m">
+  <contentLeft>
+    <Button icon="sap-icon://nav-back" visible="{config>showBack}" press="onNavBack" />
+  </contentLeft>
+  <contentMiddle>
+
+    <SegmentedButton
+      id="navButtons"
+      selectedKey="{config>/mode}"
+      items="{user>/header_nav}">
+
+      <items>
+        <SegmentedButtonItem
+          icon="{user>icon}"
+          text="{user>text}"
+          key="{user>key}"
+          press="onHeaderNavButtonPress" />
+        </items>
+
+    </SegmentedButton>
+
+        <!--
+        <SegmentedButtonItem
+          id="navButtonLaunchpad"
+          icon="sap-icon://home"
+          key="launchpad"
+          press="toLaunchpad" />
+        <SegmentedButtonItem
+          id="navButtonTimesheets"
+          text="{i18n>header-button-timesheets}"
+          key="timesheets"
+          press="toTimesheetList"
+        />
+        <SegmentedButtonItem
+          id="navButtonApproval"
+          text="{i18n>header-button-approval}"
+          key="approval"
+          press="toApproval" />
+        <SegmentedButtonItem
+          id="navButtonProjects"
+          text="{i18n>header-button-projects}"
+          key="projects"
+          press="toProjects"/>
+      -->
+
+    <!--
+    <IconTabBar xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"
+      id="itbNavigation"
+      class="sapUiResponsiveContentPadding">
+ <items>
+      <IconTabFilter
+        text="Info">
+        <Text text="Info content goes here ..." />
+      </IconTabFilter>
+      <IconTabFilter
+        text="Attachments">
+        <Text text="Attachments go here ..." />
+      </IconTabFilter>
+      <IconTabFilter
+        text="Notes">
+        <Text text="Notes go here ..." />
+      </IconTabFilter>
+      <IconTabFilter
+        text="People">
+        <Text text="People content goes here ..." />
+      </IconTabFilter>
+    </items>
+
+    </IconTabBar>
+  -->
+
+  </contentMiddle>
+</Bar>
+

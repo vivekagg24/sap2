@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center">
+	<mx:Script>
+		<![CDATA[
+			private function doReceiptLine(receiptLine:Object):void
+			{
+				this.setFocus();
+				var x:XML = new XML(receiptLine);
+				parentApplication.onReceiptLine(x);
+			}		
+			]]>
+		</mx:Script> 
+	<mx:Image source="@Embed('../images/tickplus.gif')" toolTip="Accept line" click="doReceiptLine(this.data)"/>
+</mx:HBox>

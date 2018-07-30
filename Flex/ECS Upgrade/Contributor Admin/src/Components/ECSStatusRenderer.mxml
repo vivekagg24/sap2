@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+Item renderer for the status field on the recent payments 
+-->
+<mx:HBox xmlns:mx               = "http://www.adobe.com/2006/mxml" 
+         width                  = "100%" 
+         horizontalAlign        = "center"
+         horizontalScrollPolicy = "off" 
+         verticalScrollPolicy   = "off" >
+         
+    <mx:Script>
+        <![CDATA[
+        import mx.controls.dataGridClasses.DataGridColumn;
+
+        [Embed(source="../images/yellowlight.gif")]
+		[Bindable]
+		private var yellowLight:Class;
+		[Embed(source="../images/redlight.gif")]
+		[Bindable]
+		private var redLight:Class;
+        [Embed(source="../images/greenlight.gif")]
+		[Bindable]
+		private var greenLight:Class;
+        
+        [Bindable] public var status:String="";
+		[Bindable] private var source:String="";
+		
+		public function initComponent():void{}
+		override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null && value != "")
+                {
+                    super.data = value;	
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	status=value.STATUS;
+                    	switch (status){
+                    		case "1":
+                    			imgStatus.toolTip="Status: Created";
+                    			imgStatus.source=redLight;
+                    			break;
+                    		case "2":
+                    			imgStatus.toolTip="Status: Validated";
+                    			imgStatus.source=yellowLight;
+                    			break;
+                    		case "3":
+                    			imgStatus.toolTip="Status: Desk Head Approved";
+                    			imgStatus.source=yellowLight;
+                    			break;
+                    		case "4":
+                    			imgStatus.toolTip="Status: Batched";
+                    			imgStatus.source=yellowLight;
+                    			break;
+                    		case "5": 
+                    			imgStatus.toolTip="Status: Posted";
+                    			imgStatus.source=greenLight;
+                    			break;
+                    		case "7": 
+                    			imgStatus.toolTip="Status: Special Payment - Created";
+                    			imgStatus.source=redLight;
+                    			break;
+                    		case "8": 
+                    			imgStatus.toolTip="Status: Special Payment - Validated";
+                    			imgStatus.source=yellowLight;
+                    			break;
+                    		case "9":
+                    			imgStatus.toolTip="Status: Special Payment Posted";
+                    			imgStatus.source=greenLight;
+                    			break;
+                    		default:
+                    			imgStatus.source=yellowLight;
+                    		
+                    	}
+                    	
+                    	
+                    }
+        		}
+        }
+         ]]>
+    </mx:Script>
+     
+   <mx:Image id="imgStatus"
+   		>
+   	
+   </mx:Image>
+   
+               
+   
+</mx:HBox>
+

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="18" height="42">
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			heldIcon.data = value;
+	 			heldIcon.enabled = false;
+			
+				if (value && value.RESUB != ""){
+					heldIcon.enabled = true;
+					heldIcon.visible = true;
+					heldIcon.toolTip = "Item on hold until: " + value.RESUB;
+				}
+				else {
+		 			heldIcon.enabled = false;
+					heldIcon.visible = false;
+				}
+	 		}
+		]]>
+	</mx:Script>
+		
+	<mx:Image id="heldIcon" source="HR/images/held.gif"
+		 click="onHoldClick()" resize="false" useHandCursor="true" buttonMode="true" mouseChildren="false"> 
+		<mx:Script>
+			<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+  		 	import mx.managers.PopUpManager;    		 	
+			
+			private function onHoldClick():void
+			{
+  				var message:onHold =  PopUpManager.createPopUp(this, onHold) as onHold;
+  				message.data = this.data;
+			}
+			]]>
+		</mx:Script> 
+	</mx:Image>
+</mx:Canvas>

@@ -1,0 +1,3 @@
+<mvc:View controllerName="nuk.sap.timesheet.controller.App" displayBlock="true" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+  <App id="idAppTimesheet"/>
+</mvc:View>

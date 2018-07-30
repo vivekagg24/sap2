@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center">
+	<mx:Script>
+		<![CDATA[
+			private function doReverseLine(reverseLine:Object):void
+			{
+				var x:XML = new XML(reverseLine);
+				parentApplication.onDeleteLine(x);
+			}
+			]]>
+		</mx:Script> 
+	<mx:Image source="@Embed('../images/delete.gif')" toolTip="Reverse line" click="doReverseLine(this.data)"/>
+</mx:HBox>

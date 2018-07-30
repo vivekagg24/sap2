@@ -1,0 +1,157 @@
+{
+	"auth": {
+  	"submitter_email": "first.last@news.co.uk",
+  	"token": "123456890"
+	},
+	"username": "PJONES2",
+	"user_email" : "first.last@news.co.uk",
+	"full_name": "Fred Submitter",
+	"roles": {
+		"is_submitter": "true",
+		"is_approver": "true",
+		"is_billable_manager": "true"
+	},
+	"assigned_projects": {
+		"1T55": {
+			"id": "1T55",
+			"name": "Cost centre 1T55",
+			"is_billable": "true"
+		},
+		"proj1": {
+			"id": "proj1",
+			"name": "Project 1",
+			"is_billable": "true"
+		},
+		"proj2": {
+			"id": "proj2",
+			"name": "Project 2",
+			"is_billable": "true"
+		},
+		"proj3": {
+			"id": "proj3",
+			"name": "Project 3",
+			"is_billable": "true"
+		},
+		"other": {
+			"id": "other",
+			"name": "Other, not listed project",
+			"is_billable": "true"
+		},
+		"nonwork": {
+			"id": "nonwork",
+			"name": "Non-working day"
+		}
+	},
+	"timesheets" : [{
+			"index": "0",
+			"selected": false,
+			"id" : "8765",
+			"date_from" : "2015-04-04",
+			"date_to" : "2015-04-10",
+			"time_worked": [
+			{
+				"item": "1",
+				"project_id": "1T55",
+				"time": [0, 0, 8, 8, 8, 0, 4]
+			}, {
+				"item": "2",
+				"project_id": "proj1",
+				"time": [0, 0, 0, 0, 0, 0, 4]
+			}, {
+				"item": "3",
+				"project_id": "nonwork",
+				"time": [0, 0, 0, 0, 0, 8, 0]
+			}
+			],
+			"submitted_at" : "2015-04-21T14:22:00+0100",
+			"status" : "awaitapp",
+			"status_text" : "Awaiting approval",
+			"info" : "Next approver - John Smith",
+			"submitter": "615092",
+			"submitter_username": "PJONES2",
+			"submitter_username": "A. Submitter",
+			"submitter_email": "first.last@news.co.uk",
+			"approver": "JSMITH",
+			"approver_username": "A. N. Approver",
+			"approver_email": "john.smith@news.co.uk",
+			"submitter_comment": "As discussed",
+			"approver_comment": "Please submit on time in future",
+			"hours_billable": 32,
+			"hours_nonbillable": 8,
+			"hours_total": 40,
+			"hours_required": 40,
+			"assigned_projects": [{
+				"id": "1T55",
+				"name": "Cost centre 1T55"
+				}, {
+				"id": "proj1",
+				"name": "Project 1"
+			}
+			]
+		},
+		{
+			"index": "1",
+			"selected": false,
+			"id" : "8790",
+			"date_from" : "2015-04-11",
+			"date_to" : "2015-04-17",
+			"time_worked": [
+			{
+				"item": "1",
+				"project_id": "proj1",
+				"time": [0, 0, 8, 8, 4, 8, 8]
+			}, {
+				"item": "2",
+				"project_id": "nonwork",
+				"time": [0, 0, 0, 0, 4, 0, 0]
+			}
+			],
+			"submitted_at" : "2015-04-20T14:22:00+0100",
+			"status" : "awaitapp",
+			"status_text" : "Awaiting approval",
+			"info" : "Next approver - John Smith",
+			"submitter": "615092",
+			"submitter_username": "PJONES2",
+			"submitter_username": "A. Submitter",
+			"submitter_email": "first.last@news.co.uk",
+			"approver": "JSMITH",
+			"approver_username": "A. N. Approver",
+			"approver_email": "john.smith@news.co.uk",
+			"submitter_comment": "As discussed",
+			"approver_comment": "No comment",
+			"hours_billable": 36,
+			"hours_nonbillable": 4,
+			"hours_total": 40,
+			"hours_required": 40,
+			"assigned_projects": [{
+				"id": "1T55",
+				"name": "Cost centre 1T55"
+				}, {
+				"id": "proj1",
+				"name": "Project 1"
+			}
+			]
+		},
+		{
+			"index": "2",
+			"selected": false,
+			"id" : "9999-9999-9999-0001",
+			"date_from" : "2015-04-25",
+			"date_to" : "2015-05-02",
+			"status" : "open",
+			"status_text" : "Open",
+			"hours_billable": 0,
+			"hours_nonbillable": 0,
+			"hours_total": 0,
+			"hours_required": 40,
+			"assigned_projects": [{
+				"id": "1T55",
+				"name": "Cost centre 1T55"
+			}, {
+				"id": "proj1",
+				"name": "Project 1"
+			}
+			]
+		}
+	]
+}

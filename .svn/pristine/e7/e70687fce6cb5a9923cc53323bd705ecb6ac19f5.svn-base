@@ -1,0 +1,151 @@
+ABAP Source code for generating the org structure as XML
+Place in the OnCreate event handler of a BSP
+
+* event handler for data retrieval
+* this handler is called once the page is first created (stateful mode)
+* it performs a once-off data initialization or object creation
+
+CONSTANTS: c_wegid TYPE wegid VALUE 'ORGEH'.
+DATA:      l_plvar TYPE plvar,
+           lt_root_objs TYPE STANDARD TABLE OF HRROOTOB,
+           lt_struc TYPE STANDARD TABLE OF STRUC,
+           lt_objec TYPE STANDARD TABLE OF OBJEC,
+
+           l_last_level TYPE SLEVEL_D,
+           l_work_level TYPE SLEVEL_D.
+
+
+FIELD-SYMBOLS: <fs_struc> TYPE struc,
+               <fs_objec> TYPE objec.
+
+CALL FUNCTION 'RH_GET_ACTIVE_WF_PLVAR'
+  IMPORTING
+    ACT_PLVAR       = l_plvar
+  EXCEPTIONS
+    NO_ACTIVE_PLVAR = 1
+    OTHERS          = 2.
+IF SY-SUBRC <> 0.
+  MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+          WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  EXIT.
+ENDIF.
+
+
+CALL FUNCTION 'RH_STRUC_HELP_ROOTS_GET'
+  EXPORTING
+    SEARCH_PLVAR           = l_plvar
+    SEARCH_OTYPE           = 'O'
+    SEARCH_WEGID           = c_wegid
+*   SEARCH_WEGID_INT       =
+*   SEARCH_SVECT           =
+*   SEARCH_BEGDA           =
+*   SEARCH_ENDDA           =
+*   SEARCH_ROLETYPE        =
+*   SEARCH_AGRTYPE         =
+*   UPDATE_INDEX           =
+* IMPORTING
+*   ACT_WEGID              =
+*   ACT_INT_WEGID          =
+*   ACT_SVECT              =
+*   ACT_BEGDA              =
+*   ACT_ENDDA              =
+*   ACT_TASK_CATA          =
+ TABLES
+   ROOTS                  = lt_root_objs
+*   NREL_ROOTS             =
+ EXCEPTIONS
+   NO_STRU_SEARK          = 1
+   OTHERS                 = 2
+          .
+IF SY-SUBRC <> 0.
+  MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+          WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  EXIT.
+ENDIF.
+
+CALL FUNCTION 'RH_STRUC_GET_MULTIPLE_ROOTS'
+  EXPORTING
+    ACT_WEGID                  = c_wegid
+*   ACT_INT_FLAG               =
+    ACT_PLVAR                  = l_plvar
+*   ACT_SVECT                  = '1'
+*   ACT_BEGDA                  = SY-DATUM
+*   ACT_ENDDA                  = SY-DATUM
+*   ACT_TDEPTH                 = 0
+*   ACT_TFLAG                  = 'X'
+*   ACT_VFLAG                  = 'X'
+*   ACT_SFLAG                  = 'X'
+*   ACT_RECURS                 = 'X'
+*   ACT_TEXT_BUFFER_FILL       = 'X'
+*   AUTHORITY_CHECK            = 'X'
+*   BUFFER_MODE                = ' '
+*   KEEP_ORDER                 =
+* IMPORTING
+*   ACT_PLVAR                  =
+*   ROOT_COPY                  =
+  TABLES
+    ROOT_OBJECTS               = lt_root_objs
+    RESULT_OBJEC               = lt_objec
+    RESULT_STRUC               = lt_struc
+ EXCEPTIONS
+   NO_PLVAR_FOUND             = 1
+   NO_ENTRY_FOUND             = 2
+   PATH_NOT_FOUND             = 3
+   ROOT_NOT_FOUND             = 4
+   OTHERS                     = 5
+          .
+IF SY-SUBRC <> 0.
+  MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+          WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  EXIT.
+ENDIF.
+
+out_xml = '<org_structure>'.
+LOOP AT lt_struc ASSIGNING <fs_struc>.
+  READ TABLE lt_objec INDEX sy-tabix ASSIGNING <fs_objec>.
+
+  l_work_level = 1 + l_last_level - <fs_struc>-level.  " How far up or down have we gone?
+  IF l_work_level < 0.
+    EXIT.
+  ENDIF.
+  WHILE l_work_level > 0.
+    CONCATENATE out_xml
+                '</org>'
+                INTO out_xml.
+    l_work_level = l_work_level - 1.
+  ENDWHILE.
+
+* Escape the text
+  DATA s TYPE String.
+  s = <fs_objec>-stext.
+  CALL METHOD CL_HTTP_UTILITY=>IF_HTTP_UTILITY~ESCAPE_HTML
+    EXPORTING
+      UNESCAPED         = s
+*      KEEP_NUM_CHAR_REF = ABAP_UNDEFINED
+    RECEIVING
+      ESCAPED           = s.
+      
+
+* Create the new tag
+  CONCATENATE out_xml
+              '<org name="'
+              s
+              '" id="'
+              <fs_objec>-objid
+              '" >'
+              INTO out_xml.
+
+  l_last_level = <fs_struc>-level.
+ENDLOOP.
+
+* Finally close all remaining tags
+  WHILE l_last_level > 0.
+    CONCATENATE out_xml
+                '</org>'
+                INTO out_xml.
+    l_last_level = l_last_level - 1.
+  ENDWHILE.
+
+CONCATENATE out_xml
+            '</org_structure>'
+            INTO out_xml.

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       xmlns:ns1="visualComponents.GridComponents.*"
+	       maxWidth="35" width="35" height="42" autoLayout="true">
+	<mx:Script>
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+	 	
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+/* 	 			subIcon.data = value;
+	 			subIcon.enabled = false; */
+	 			
+	 			// Are there items to exand?
+	 			if (value && value.hasItems == "true")
+	 			{
+	 				exp.visible = true;
+	 			}
+	 			else
+	 			{
+	 				exp.visible = false;
+	 			}
+
+	 			// Are there items to exand?
+	 			if (value && value.expand)
+	 			{		
+		 			if (value.expand == "true")
+		 			{
+		 				exp.isOpen = true;
+		 			}
+		 			else if (value.expand == "false")
+		 			{
+		 				exp.isOpen = false;
+		 			}	
+	 			} 			
+	 			
+			
+				// if substitute, make icon visible and set text to name
+/* 				if (value && value.SUBSTITNAM != ""){
+					subIcon.enabled = true;
+					subIcon.visible = true;
+					subIcon.toolTip = "Substituted item for " + value.SUBSTITNAM;
+				}
+				else {
+		 			subIcon.enabled = false;
+					subIcon.visible = false;
+				}  */			
+	 		}
+	 		
+/* 	 		public function set listData(value:BaseListData):void
+	 		{
+	 			subIcon.listData = value;
+	 		} */
+	 		
+/* 	 		public function get listData():BaseListData
+	 		{
+	 			return subIcon.listData;
+	 		} */
+			
+		]]>
+	</mx:Script>
+	<mx:HBox horizontalGap="0">
+		<ns1:ShowItems id="exp"/>
+<!--		<mx:Image id="subIcon" source="@Embed('../../HR/images/substituted.gif')" width="20" maxWidth="20"/> -->
+	</mx:HBox>
+</mx:Canvas>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	            xmlns:nihr="nihr.*"
+	label="Extend Claim"
+   	styleName="titlewindow" 
+	width="421" height="178"
+	close="Close()"
+	creationComplete="DoInit()"
+	backgroundColor="#dceefc" borderColor="#A7B6EB" 
+	layout="absolute" xmlns:CMS="CMS.Components.*">
+   
+	<mx:Script source="CMS/scripts/Common.as"></mx:Script>			   
+    <mx:Script>
+        <![CDATA[
+  
+		  	import mx.managers.PopUpManager;
+		  			  	
+		  	private function DoInit():void{
+		  		
+		  		tiUsername.setFocus();
+		  	}	
+		  		  	
+		  	private function SetExtendButton():void{
+		  		
+		  		if(tiUsername.text != "" && tiUsername.username != ""){
+		  			
+			  		btnExtend.enabled = true;			  		
+			  		btnExtend.setFocus();	  		
+		  			
+		  		}else{
+		  			
+			  		btnExtend.enabled = false;
+			  		tiUsername.setFocus();
+		  		}
+		  	}
+
+			private function ExtendCasual():void{
+
+				Application.application.ServerRequest(cExtend,'',0,null);				
+				
+			}
+
+			public function Close():void{
+				
+	  			PopUpManager.removePopUp(this);
+			
+			}
+
+          
+        ]]>
+
+ </mx:Script>
+
+	<mx:Label x="10" y="44" text="CMS User Name"/>
+	<!--<CMS:TextInput1 x="124" y="42" id="tiUsername" enter="ExtendCasual()" change="SetExtendButton()" maxChars="12"/>
+	 -->
+	
+	<CMS:Button1 id="btnExtend" enabled="false"
+		 label="Extend Claim Period" fontWeight="bold"
+		 x="10" y="93"
+		 click="ExtendCasual()"/>
+	<CMS:Button1 id="btnCancel" fontWeight="bold"
+		 label="Cancel"
+		 x="149" y="93"
+		 click="Close()"/>
+	<nihr:PersonSearch x="137" y="44" height="24" width="200" 		
+		 			  id="tiUsername"
+		 			  change="btnExtend.enabled = (tiUsername.text.length > 0);"
+		 			  maxChars="12" 
+		 			  wsdl_prefix="{parentApplication.wsdl_prefix}"
+		 			  personSearchChosen="SetExtendButton()"
+		 			  personSearchNotFound="btnExtend.enabled = false;"
+		 			  only_cms_users="true">
+	</nihr:PersonSearch>
+
+</mx:TitleWindow>
+

@@ -1,0 +1,491 @@
+sap.ui.define([
+  "nuk/sap/timesheet/controller/BaseController",
+  "nuk/sap/timesheet/util/TimesheetAPI",
+  "nuk/sap/timesheet/util/Message",
+  "sap/ui/model/Filter",
+  "sap/ui/model/Sorter"
+  ],
+  function (Controller, TimesheetAPI, Message, Filter, Sorter) {
+    "use strict";
+    return Controller.extend("nuk.sap.timesheet.controller.Approval", {
+      _oPopoverComment: null,
+      _oPopoverResource: null,
+      _oPopoverTimesheet: null,
+      _oSettingsDialog: null,
+      _oSelectProjectDialog: null,
+
+      /**
+       * onInit handler
+       */
+      onInit: function () {
+        var that = this;
+        var oView = this.getView();
+        this._setModels();
+        that.setValidationHandlers();
+
+        var oApprovalFilterModel = new sap.ui.model.json.JSONModel(that._getDefaultFilterDates());
+        oView.setModel(oApprovalFilterModel, "approvalFilter");
+
+        // So that we filter the table on initial display
+        oView.addEventDelegate({
+          onAfterRendering: function()  {
+            that._afterRendering();
+          },
+          onBeforeShow: function() {
+            that._beforeShow();
+          }
+        }, that);
+
+      },
+
+      /**
+       * onExit handler
+       */
+      onExit: function() {
+        if (this._oPopoverResource)
+          this._oPopoverResource.destroy();
+
+        if (this._oPopoverTimesheet)
+          this._oPopoverTimesheet.destroy();
+
+        if (this._oSettingsDialog)
+          this._oSettingsDialog.destroy();
+      },
+
+      /**
+       * onAfterRendering delegate
+       * @return {[type]} [description]
+       */
+      _afterRendering: function() {
+        this.applyFilter();
+      },
+
+      /**
+       * onBeforeShow delegate
+       * Refreshes the approval list
+       */
+      _beforeShow: function() {
+        this.loadApprovals();
+      },
+
+      onAdjustFromDate: function(oEvent) {
+        var oModel = this.getView().getModel("approvalFilter");
+        var sDate = oModel.getProperty("/date_from");
+        var sDateFrom = moment(sDate).subtract(1, 'months').startOf('week').subtract(1, 'day').format('YYYY-MM-DD');
+        oModel.setProperty("/date_from", sDateFrom);
+        this.loadApprovals();
+      },
+
+      onAdjustToDate: function(oEvent) {
+        var oModel = this.getView().getModel("approvalFilter");
+        var sDate = oModel.getProperty("/date_to");
+        var sDateTo = moment(sDate).add(1, 'months').endOf('week').subtract(1, 'day').format('YYYY-MM-DD');
+        oModel.setProperty("/date_to", sDateTo);
+        this.loadApprovals();
+      },
+
+      onListFilterChange: function(oEvent) {
+        this.loadApprovals();
+      },
+
+      onListFilterDateValidate: function(oEvent) {
+        var oView = this.getView();
+        var oModel = oView.getModel("approvalFilter");
+        var oFilter = oModel.getData();
+        if (moment(oFilter.date_from) > moment(oFilter.date_to)) {
+          oView.byId("dateFrom").setValueState(sap.ui.core.ValueState.Error);
+          oView.byId("dateTo").setValueState(sap.ui.core.ValueState.Error);
+        } else {
+          oView.byId("dateFrom").setValueState(sap.ui.core.ValueState.None);
+          oView.byId("dateTo").setValueState(sap.ui.core.ValueState.None);
+        }
+      },
+
+      onRefreshApprovalList: function(oEvent) {
+        this.loadApprovals();
+      },
+
+      onDisplaySettings: function(oEvent) {
+        if (!this._oSettingsDialog) {
+          this._oSettingsDialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.ApprovalDisplaySettings", this);
+        }
+        // toggle compact style
+        jQuery.sap.syncStyleClass("sapUiSizeCompact", this.getView(), this._oSettingsDialog);
+        this._oSettingsDialog.open();
+      },
+
+      onDisplaySettingsConfirm: function(oEvent) {
+        var oView = this.getView();
+        var oBinding = oView.byId("tblApproval").getBinding("items");
+        var mParams = oEvent.getParameters();
+
+        var aSorters = [];
+        var bDescending = mParams.sortDescending;
+        var aKeys = mParams.sortItem.getKey().split('|');
+        aKeys.forEach(function(sKey){
+          aSorters.push(new Sorter(sKey, bDescending));
+        });
+
+        oBinding.sort(aSorters);
+      },
+
+      /**
+       * Event handler for 'select' event of row checkbox
+       * @param  {Object} oEvent Event
+       */
+      onCheckSingle: function(oEvent) {
+        this.updateHeaderCheckbox();
+      },
+
+      /**
+       * Event handler for 'select' event of header checkbox
+       * @param  {Object} oEvent Event
+       */
+      onCheckAll: function(oEvent) {
+        var oView = this.getView();
+        var oModel = oView.getModel('approval');
+        var oTable = oView.byId('tblApproval');
+
+        oTable.getVisibleItems().forEach(function(oItem) {
+          var sPath = oItem.getBindingContextPath();
+          oModel.setProperty(sPath + '/selected', oEvent.getParameter('selected'));
+        });
+      },
+
+      /**
+       * Reassign a timesheet from "other" to a proper prokect
+       * @param  {Object} oEvent Event instance
+       */
+      onSelectProject: function(oEvent) {
+        var oView = this.getView();
+        var oPath = oEvent.getSource().getBindingContext("approval");
+        var oModel = oView.getModel("approval");
+
+        // Timesheet we've clicked on
+        var oTimesheet = oModel.getProperty(oPath);
+
+        if (! this._oSelectProjectDialog) {
+          this._oSelectProjectDialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.ProjectSelectDialog", this);
+          oView.addDependent(this._oSelectProjectDialog);
+        }
+
+        // get a list of the active projects
+        var oProjectList = {};
+        var oAssigned = oModel.getProperty("/assigned_projects");
+        for (var sId in oAssigned) {
+          if (oAssigned[sId].is_billable === "true" && oAssigned[sId].project_id != "other") {
+            oProjectList[sId] = oAssigned[sId];
+          }
+        }
+
+        var oProject = {
+          timesheet_id: oTimesheet.id,
+          new_project_id: "",
+          projects: oProjectList
+        };
+        var oProjectModel = new sap.ui.model.json.JSONModel(oProject);
+        this._oSelectProjectDialog.setModel(oProjectModel, "projectSelect");
+
+        var oControl = oEvent.getSource();
+        jQuery.sap.delayedCall(0, this, function() {
+          this._oSelectProjectDialog.open();
+        });
+
+      },
+
+      /**
+       * Update a timesheet with the new project ID
+       * @param  {Object} oEvent Event
+       */
+      onSelectProjectOk: function(oEvent) {
+        var oView = this.getView();
+        var oProjectModel = this._oSelectProjectDialog.getModel("projectSelect");
+
+        var oReassign = {};
+        oReassign.timesheet_id = oProjectModel.timesheet_id;
+        oReassign.project_id_from = 'other';
+        oReassign.project_id_to = oProjectModel.project_id;
+
+        Message.clearMessages(oView);
+
+        TimesheetAPI.reassignTimesheet(oReassign,
+          function(oResponse) {
+            bError = false;
+            for (var i = 0; i < oResponse.length; i++) {
+              if (oResponse[i].is_error === 'true') {
+                bError = true;
+                Message.addMessage(oView, oResponse[i].text, "Error");
+              }
+            }
+            if (!bError) {
+              sap.m.MessageToast.show(Message.getText(oView, 'approval-select-project-update-successfu'));
+              this._oSelectProjectDialog.close();
+            }
+          },
+          function(oXhr, sStatus, sErrorThrown) {
+            Message.addMessage(oView, sErrorThrown, "Error");
+          }
+        );
+
+      },
+
+      onSelectProjectCancel: function(oEvent) {
+        this._oSelectProjectDialog.close();
+      },
+
+      onDisplayComments: function(oEvent) {
+        var oView = this.getView();
+        var oPath = oEvent.getSource().getBindingContext("approval");
+        var oModel = oView.getModel("approval");
+
+        if (! this._oPopoverComment) {
+          this._oPopoverComment = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.TimesheetCommentPopover", this);
+          oView.addDependent(this._oPopoverComment);
+        }
+
+        var oComment = {
+          submitter_comment: oModel.getProperty(oPath.sPath + '/submitter_comment'),
+          approver_comment: oModel.getProperty(oPath.sPath + '/approver_comment')
+        };
+        var oCommentModel = new sap.ui.model.json.JSONModel(oComment);
+        this._oPopoverComment.setModel(oCommentModel, "timesheetComments");
+
+//        this._oPopoverComment.bindElement("approval>" + oPath.sPath);
+//        this._oPopoverComment.bindElement("approval>" + oPath.sPath);
+//        oView.getModel("approval").updateBindings();
+
+        var oControl = oEvent.getSource();
+        jQuery.sap.delayedCall(0, this, function() {
+          this._oPopoverComment.openBy(oControl);
+        });
+      },
+
+      onDisplayResource: function(oEvent) {
+        var oView = this.getView();
+        var oPath = oEvent.getSource().getBindingContext("approval");
+
+        if (! this._oPopoverResource) {
+          this._oPopoverResource = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.ResourceDisplayPopover", this);
+          oView.addDependent(this._oPopoverResource);
+        }
+        this._oPopoverResource.bindElement("approval>" + oPath.sPath);
+        oView.getModel("approval").updateBindings();
+
+        var oControl = oEvent.getSource();
+        jQuery.sap.delayedCall(0, this, function() {
+          this._oPopoverResource.openBy(oControl);
+        });
+      },
+
+      onDisplayTimesheet: function(oEvent) {
+        var oView = this.getView();
+        var oPath = oEvent.getSource().getBindingContext("approval");
+
+        if (! this._oPopoverTimesheet) {
+          this._oPopoverTimesheet = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.TimesheetDisplayPopover", this);
+          oView.addDependent(this._oPopoverTimesheet);
+        }
+
+        jQuery.sap.delayedCall(0, this, function() {
+          this._oPopoverTimesheet.bindElement("approval>" + oPath.sPath);
+          oView.getModel("approval").updateBindings();
+        });
+
+        var oControl = oEvent.getSource();
+        jQuery.sap.delayedCall(0, this, function() {
+          this._oPopoverTimesheet.openBy(oControl);
+        });
+
+     },
+
+      onAfterCloseDisplayTimesheet: function(oEvent) {
+        if (this._oPopoverTimesheet) {
+          this.getView().removeDependent(this._oPopoverTimesheet);
+          //this._oPopoverTimesheet.destroy();
+          //this._oPopoverTimesheet = undefined;
+        }
+      },
+
+      onApprove: function(oEvent) {
+        this._processTimesheets("approve");
+      },
+
+      onReject: function(oEvent) {
+        this._processTimesheets("reject");
+      },
+
+
+      /**
+       * Filter the approval table list. Uses values in the header (dates, status)
+       */
+      applyFilter: function() {
+        var i, sStatusFilter, sDateFrom, sDateTo, oFilter;
+
+        var oView = this.getView();
+        var oModel = oView.getModel("approval");
+        var oTable = oView.byId("tblApproval");
+        var oBinding = oTable.getBinding("items");
+        var aFilters = [];
+
+        // We can filter on dates and statuses so add them all
+        var oApprovalFilterModel = oView.getModel("approvalFilter");
+        sStatusFilter = oApprovalFilterModel.getProperty('/status');
+        if (sStatusFilter !== '*') {
+          oFilter = new Filter("status", "EQ", sStatusFilter);
+          aFilters.push(oFilter);
+        } else {
+          oFilter = new Filter("status", "NE", "open");   // we /never/ show open ones
+          aFilters.push(oFilter);
+        }
+        sDateFrom = oApprovalFilterModel.getProperty('/date_from');
+        sDateTo = oApprovalFilterModel.getProperty('/date_to');
+        oFilter = new Filter("date_from", "BT", sDateFrom, sDateTo);
+        aFilters.push(oFilter);
+
+        if (oBinding)
+          oBinding.filter(aFilters);
+
+        // Now update the status of the header checkbox
+        this.updateHeaderCheckbox();
+
+        // Now, we need to check if the Approve/Reject buttons are visible and
+        // only display them if we have at least one 'awaitapp' item
+        var bButtonsVisible = !oTable.getVisibleItems().every(function(oItem) {
+          var oTimesheet = oModel.getProperty(oItem.getBindingContextPath());
+          if (oTimesheet.status !== 'awaitapp') {
+            return false;             // we only need one non-'awaitapp' to hide
+          }
+        });
+
+        ["btnApprove", "btnReject"].forEach(function(sButton) {
+          oView.byId(sButton).setVisible(bButtonsVisible);
+        });
+      },
+
+      /**
+       * Adjust status of the header based on selected status of row checkboxes
+       */
+      updateHeaderCheckbox: function() {
+        var bAllChecked = false;
+        var oView = this.getView();
+        var oModel = oView.getModel('approval');
+        var oTable = oView.byId('tblApproval');
+        var aVisible = oTable.getVisibleItems();
+
+        if (aVisible.length > 0)  {
+          bAllChecked = aVisible.every(function(oItem) {
+            return oModel.getProperty(oItem.getBindingContextPath() + '/selected');
+          });
+        }
+
+        oView.byId('cbxSelectAll').setSelected(bAllChecked);
+      },
+
+      loadApprovals: function() {
+        var that = this;
+        var oView = this.getView();
+        var oFilter = oView.getModel("approvalFilter");
+
+        var oBusyDialog = new sap.m.BusyDialog({
+          text: Message.getText(oView, "approval-refresh-dialog-text")
+        });
+        oBusyDialog.open();
+
+        TimesheetAPI.getApproval({
+          date_from: oFilter.getProperty("/date_from"),
+          date_to: oFilter.getProperty("/date_to"),
+          status: oFilter.getProperty("/status")
+        }, function(oData) {
+          var oModel = new sap.ui.model.json.JSONModel(oData);
+          oView.setModel(oModel, "approval");
+          sap.ui.getCore().setModel(oModel, "approval");
+          that.applyFilter();
+          oBusyDialog.close();
+         }, function(oXhr, sStatus, sErrorThrown) {
+          oBusyDialog.close();
+         });
+      },
+
+      getSelected: function() {
+        var oView = this.getView();
+        var oModel = oView.getModel("approval");
+        var oTable = oView.byId("tblApproval");
+        var aSelected = [];
+        var oTimesheet;
+
+        oTable.getVisibleItems().forEach(function(oItem) {
+          oTimesheet = oModel.getProperty(oItem.getBindingContextPath());
+          if (oTimesheet.selected) {
+            var oEntry = {};
+            oEntry.id = oTimesheet.id;
+            oEntry.approver = oModel.getProperty("/personnel_no");
+            oEntry.approver_username = oModel.getProperty("/username");
+            oEntry.approver_comment = oTimesheet.approver_comment;
+            aSelected.push(oEntry);
+          }
+       });
+
+        return aSelected;
+      },
+
+      getSplitContObj: function() {
+        var result = this.byId("splitProjectList");
+        if (!result) {
+          jQuery.sap.log.error("SplitApp object can't be found");
+        }
+        return result;
+      },
+
+      _getDefaultFilterDates: function(oEvent) {
+        var oFilter = {
+          "date_from": moment(new Date()).subtract(3, 'months').startOf('week').subtract(1, 'day').format('YYYY-MM-DD'),
+          "date_to": moment(new Date()).add(1, 'week').endOf('week').subtract(1, 'day').format('YYYY-MM-DD'),
+          "status": "awaitapp"
+        };
+        return oFilter;
+      },
+
+      _processTimesheets: function(sAction) {
+        var that = this;
+        var bError = false;
+        var oTimesheet = {};
+        var oView = this.getView();
+        var aSelected = this.getSelected();
+
+        Message.clearMessages(oView);
+
+        if (!aSelected || aSelected.length === 0) {
+          sap.m.MessageToast.show(Message.getText(oView, 'approval-none-selected-' + sAction));
+          return;
+        }
+
+        aSelected.map(function(oTimesheet) {
+          oTimesheet.action = sAction;
+        });
+
+        // Build the payload
+        oTimesheet.timesheets = aSelected;
+
+        TimesheetAPI.approveRejectTimesheet(oTimesheet,
+          function(oResponse) {
+            bError = false;
+            for (var i = 0; i < oResponse.length; i++) {
+              if (oResponse[i].is_error=== 'true') {
+                bError = true;
+                Message.addMessage(oView, oResponse[i].text, "Error");
+              }
+            }
+            if (!bError) {
+              sap.m.MessageToast.show(Message.getText(oView, 'approval-' + sAction + '-successful'));
+              that.loadApprovals();
+            }
+          },
+          function(oXhr, sStatus, sErrorThrown) {
+            Message.addMessage(oView, sErrorThrown, "Error");
+          }
+        );
+      }
+
+    });
+
+});

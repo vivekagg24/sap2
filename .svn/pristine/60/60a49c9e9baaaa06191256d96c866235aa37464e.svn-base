@@ -1,0 +1,28 @@
+<mx:ComboBox xmlns:mx="http://www.adobe.com/2006/mxml" dataProvider="{grammageList1}" selectedItem="{data.GSM}" change="changeGSM()" fontSize="10">
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			public var grammageList1:Array;	
+				
+ 		    override public function set data(value:Object):void{
+	    		super.data = value;	
+				if (value != null) {
+					if (this.parentApplication.grammageList != null) {
+						grammageList1 = this.parentApplication.grammageList;
+						var n:uint = grammageList1.length				
+						for (var i:int=0; i < n; i++){
+							if ( grammageList1[i].data.toString() == value.GSM && grammageList1[i].data2.toString() == value.MATKL) {
+								this.selectedIndex = i;
+							}		
+						}
+					}
+				}
+		    }
+		    
+			public function changeGSM():void {			
+				data.GSM = grammageList1[this.selectedIndex].data.toString();	
+				data.MATKL = grammageList1[this.selectedIndex].data2.toString();
+			}
+		]]>
+	</mx:Script>
+</mx:ComboBox>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application-j2ee-engine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="application-j2ee-engine.xsd">
+      <reference 
+            reference-type="weak">
+            <reference-target 
+                  provider-name="sap.com" 
+                  target-type="library">com.sap.aii.af.sdk.lib</reference-target>
+      </reference>
+      <reference 
+            reference-type="weak">
+            <reference-target 
+                  provider-name="sap.com" 
+                  target-type="library">com.sap.xi.util.misc</reference-target>
+      </reference>
+      <reference 
+            reference-type="weak">
+            <reference-target 
+                  provider-name="sap.com" 
+                 target-type="library">com.sap.guid</reference-target>
+      </reference>
+      <reference 
+            reference-type="weak">
+            <reference-target 
+                  provider-name="sap.com" 
+                  target-type="service">com.sap.aii.proxy.svc</reference-target>
+      </reference>
+      <provider-name>newsint.co.uk</provider-name>
+</application-j2ee-engine>

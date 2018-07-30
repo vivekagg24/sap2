@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A popup with a close button to contain an SWF -->
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	 close="doClose(event)" showCloseButton="true" borderAlpha="0.6" scroll="onScroll()" >
+	 <mx:Label id="lbl" x="{(this.width - lbl.width) / 2}" text="Loading..."/>
+	<mx:SWFLoader id="swfloader" width="100%" height="100%" minHeight="750" minWidth="1000"
+		 showBusyCursor="false" />
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Container;
+			import mx.managers.*;
+		
+			// Don't actually close it, just hide it
+			public function doClose(event:Object = null):void
+			{
+				// Remove focus
+				if (this.focusManager)
+					this.focusManager.deactivate();			
+							
+				systemManager.removeFocusManager(this as IFocusManagerContainer);
+				
+				this.visible = false;
+				
+				if (event)
+					event.stopImmediatePropagation();
+			}
+			
+			
+			// Force Flash Player to redraw the application after scrolling	
+			public function onScroll():void
+			{
+				if (swfloader && swfloader.content)
+				{
+				var sm:SystemManager = SystemManager(swfloader.content);
+				if (sm.application && sm.application is Container)
+				{
+					(sm.application as Container).invalidateProperties();
+					(sm.application as Container).invalidateDisplayList();
+				}
+					
+				
+				}
+			}	
+			
+			
+		]]>
+	</mx:Script>
+	
+</mx:TitleWindow>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:DateField xmlns:mx="http://www.adobe.com/2006/mxml" change="UpdateSAPDateField()">
+
+<mx:Script>
+	<![CDATA[
+
+		[Bindable]
+		public var SAPDateField:String;
+		
+		public function UpdateSAPDateField():void{
+			if(this.selectedDate != null){
+				var iMonth:Number;
+				var sMonth:String;
+				var sYear:String;
+				var iDay:Number;
+				var sDay:String;		
+						
+				sYear  = this.selectedDate.fullYear.toString();
+				iMonth = this.selectedDate.month + 1;
+				iDay   = this.selectedDate.date;
+				
+				if(iMonth < 10){
+					sMonth = '0' + iMonth.toString()
+				}else{
+					sMonth = iMonth.toString()
+				}
+		
+				if(iDay < 10){
+					sDay = '0' + iDay.toString()
+				}else{
+					sDay = iDay.toString()
+				}				
+				SAPDateField =  sYear + sMonth + sDay;
+			}
+		}
+	]]>
+</mx:Script>
+</mx:DateField>

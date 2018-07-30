@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+		   width="28" maxWidth="28" height="30"
+		   implements="mx.controls.listClasses.IDropInListItemRenderer">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.listClasses.BaseListData;
+			import mx.events.DynamicEvent;
+			
+			private function selectAll():void{
+				var event:DynamicEvent = new DynamicEvent("selectAll", true);	
+				event.grid = _listData.owner;			
+				this.dispatchEvent(event);
+		    }
+    
+		   	private function deselectAll():void{
+				var event:DynamicEvent = new DynamicEvent("deselectAll", true);
+				event.grid = _listData.owner;
+				this.dispatchEvent(event);
+			}
+	
+			/** We need to have a reference to listData so we can tell the event which grid
+			   the event was triggered in */		
+			protected var _listData:BaseListData;
+			public function get listData():BaseListData
+			{
+				return _listData;
+			}
+			
+			public function set listData(value:BaseListData):void
+			{
+				_listData = value;
+				
+			}
+		]]>
+	</mx:Script>
+		
+	<mx:HBox horizontalGap="1">
+	<!-- select all -->
+	<mx:Image source="HR/images/sell_all.gif"
+	 resize="false" click="selectAll()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Select all leave requests"/> 
+	<!-- deslect all -->
+	<mx:Image source="HR/images/desel_all.gif"
+	 resize="false" click="deselectAll()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Deselect all leave requests"/> 	 
+	</mx:HBox>	 
+   	<mx:Metadata>
+       	[Event(name="selectAll", type="mx.events.DynamicEvent")]
+       	[Event(name="deselectAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>	
+</mx:Canvas>

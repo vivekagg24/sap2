@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- We use a tile-list rather than a DataGrid as the base of our class, since we want
+     to be able to drag and drop individual cells, rather than whole rows. Also, the TileList
+     has a "direction" property, so we can easily invert our grid     
+
+-->
+<mx:TileList xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	
+	
+</mx:TileList>

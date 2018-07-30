@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<SRMRequestOutput>
+		 		<headerFields>
+		 			<field width="35" dataField="" type="lineImage" columnTitle="" />
+					<field width="75" dataField="ACTION_DATE" type="dateLabel" columnTitle="Date" /> 
+					<!--<field width="59" dataField="ACTION_TIME" type="Label" columnTitle="Time" />-->
+					<field width="68" dataField="ACTION" type="Label" columnTitle="Action" />
+					<field width="145" dataField="CARTNAME" type="TextArea" columnTitle="Cart name" />
+					<field width="76" dataField="CARTNUM" type="Label" columnTitle="Cart no" /> 
+					<field width="110" dataField="REQUESTOR" type="TextArea" columnTitle="Requested by" />
+	 				<field width="110" dataField="CREATEDBY" type="TextArea" columnTitle="Created by" /> 
+					<field width="68" dataField="TOTALVALUE" type="RightLabel" columnTitle="Value" /> 
+					<field width="35" dataField="CURRENCY" type="Label" columnTitle="Curr" /> 
+					<field width="110" dataField="APPROVER" type="TextArea" columnTitle="Actioned by Substitute" />
+					<field width="110" dataField="SUBSTITUTE_FOR" type="TextArea" columnTitle="As a Substitute for" />
+					<!--<field width="22" dataField="APPNOTEEXISTS" type="NoteIcon" columnTitle="" />-->
+					<field width="130" dataField="STATUS" type="TextArea" columnTitle="Overall status" />
+					<!--<field width="50" dataField="Action" type="Action" columnTitle="Action" />-->	
+				</headerFields>
+				<detailFields>
+					<field width="160" dataField="SHORT_TEXT" type="TextArea" columnTitle="Description" />
+					<field width="72" dataField="MATERIAL" type="Label" columnTitle="Material" />
+					<field width="30" dataField="QUANTITY" type="Label" columnTitle="Qty" /> 
+					<!--<field width="40" dataField="UNIT" type="Label" columnTitle="Unit" />-->
+					<field width="68" dataField="PRICE" type="RightLabel" columnTitle="Price" /> 
+					<field width="68" dataField="TOTALPRICE" type="RightLabel" columnTitle="Total Price" />
+					<field width="35" dataField="CURRENCY" type="Label" columnTitle="Curr" /> 
+					<field width="160" dataField="ACCASSIGNDESC" type="TextArea" columnTitle="Cost assignment" /> 
+					<field width="160" dataField="GLACCDESC" type="TextArea" columnTitle="GL Account" /> 
+					<field width="160" dataField="VENDOR" type="TextArea" columnTitle="Vendor" />
+					<field width="22" dataField="NOTE" type="NoteIcon" columnTitle="" />
+				</detailFields>					
+	    	</SRMRequestOutput>
+    	</formatting>

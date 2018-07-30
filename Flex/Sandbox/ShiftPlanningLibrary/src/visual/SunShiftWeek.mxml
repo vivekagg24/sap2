@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:DataGrid xmlns:mx="http://www.adobe.com/2006/mxml"
+	         xmlns:shift="visual.*">
+	<mx:columns>
+		<mx:DataGridColumn headerText=""          dataField="name" />
+		<mx:DataGridColumn headerText="Sunday"    dataField="sunday"    itemRenderer="visual.SunShiftWeek" />
+		<mx:DataGridColumn headerText="Monday"    dataField="monday"    itemRenderer="visual.SunShiftWeek" />
+		<mx:DataGridColumn headerText="Tuesday"   dataField="tuesday"   itemRenderer="visual.SunShiftWeek" />
+		<mx:DataGridColumn headerText="Wednesday" dataField="wednesday" itemRenderer="visual.SunShiftWeek" />
+		<mx:DataGridColumn headerText="Thursday"  dataField="thursday"  itemRenderer="visual.SunShiftWeek" />
+		<mx:DataGridColumn headerText="Friday"    dataField="friday"    itemRenderer="visual.SunShiftWeek" />
+	</mx:columns>
+</mx:DataGrid>

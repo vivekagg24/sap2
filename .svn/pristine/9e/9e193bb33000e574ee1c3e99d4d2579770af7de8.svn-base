@@ -1,0 +1,19 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  <ViewSettingsDialog
+    confirm="onDisplaySettingsConfirm"
+    title="{i18n>approval-table-view-settings-dialog-text}"
+    >
+    <sortItems>
+      <ViewSettingsItem text="Submitter, Date" key="submitter_username|date_from" selected="true" />
+      <ViewSettingsItem text="Date, Submitter" key="date_from|submitter_username" />
+      <ViewSettingsItem text="Timesheet ID" key="id" />
+      <ViewSettingsItem text="Status" key="status|submitter_username|date_from" />
+    </sortItems>
+    <groupItems>
+      <ViewSettingsItem text="Name" key="submitter_username" selected="true"/>
+      <ViewSettingsItem text="Date" key="date_from"/>
+    </groupItems>
+ </ViewSettingsDialog>
+</core:FragmentDefinition>

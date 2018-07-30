@@ -1,0 +1,986 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"_",
+				"_oDialogRequestMove"
+			],
+			[
+				"_o",
+				"_oDialogRequestMove"
+			],
+			[
+				"oD",
+				"oDropList"
+			],
+			[
+				"add",
+				"addEventDelegate"
+			],
+			[
+				"scroll",
+				"scrollIntoView"
+			],
+			[
+				"clear",
+				"clearPolylines"
+			],
+			[
+				"setS",
+				"setSizeLimit"
+			],
+			[
+				"Mas",
+				"MasterRouteSaveError"
+			],
+			[
+				"dr",
+				"driverportal"
+			],
+			[
+				"aj",
+				"ajaxsend	$.ajaxSend()"
+			],
+			[
+				"ax",
+				"ajax〔function〕"
+			],
+			[
+				"con",
+				"contentMiddle"
+			],
+			[
+				"s",
+				"selectedLocation"
+			],
+			[
+				"selec",
+				"selectedLocation"
+			],
+			[
+				"onMa",
+				"onMarkerClick"
+			],
+			[
+				"on",
+				"onBehalfOf"
+			],
+			[
+				"oModel",
+				"oModelUser"
+			],
+			[
+				"Ho",
+				"HorizontalLayout"
+			],
+			[
+				"layou",
+				"layoutData"
+			],
+			[
+				"action",
+				"actionVerb  (variable)"
+			],
+			[
+				"text",
+				"textInput"
+			],
+			[
+				"lab",
+				"labelFor"
+			],
+			[
+				"business",
+				"business_case"
+			],
+			[
+				"total",
+				"total_value_last_12"
+			],
+			[
+				"ex",
+				"existing_business"
+			],
+			[
+				"rel",
+				"relationship"
+			],
+			[
+				"go",
+				"government_related"
+			],
+			[
+				"get",
+				"getJSON"
+			],
+			[
+				"ack",
+				"acknowledged_correct"
+			],
+			[
+				"error",
+				"errorThrown"
+			],
+			[
+				"auth",
+				"authorizeButton"
+			],
+			[
+				"form",
+				"formEditable"
+			],
+			[
+				"plac",
+				"placeAt"
+			],
+			[
+				"pla",
+				"placeAt"
+			],
+			[
+				"T",
+				"TextView"
+			],
+			[
+				"set",
+				"setVisible"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "html/Component.js",
+			"settings":
+			{
+				"buffer_size": 4668,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "html/i18n/messageBundle.properties",
+			"settings":
+			{
+				"buffer_size": 1597,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "html/fragment/EditDrop.fragment.xml",
+			"settings":
+			{
+				"buffer_size": 1438,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "html/view/Master.controller.js",
+			"settings":
+			{
+				"buffer_size": 12294,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "html/index.html",
+			"settings":
+			{
+				"buffer_size": 1280,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "html/view/Master.view.xml",
+			"settings":
+			{
+				"buffer_size": 2317,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "html/view/Detail.controller.js",
+			"settings":
+			{
+				"buffer_size": 7770,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "html/view/Detail.view.xml",
+			"settings":
+			{
+				"buffer_size": 2535,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "package",
+		"selected_items":
+		[
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"update",
+				"Package Control: Upgrade/Overwrite All Packages"
+			],
+			[
+				"package contr",
+				"Package Control: Install Package"
+			],
+			[
+				"packaa",
+				"Package Control: Install Package"
+			],
+			[
+				"paca",
+				"Package Control: Install Package"
+			],
+			[
+				"pacakge",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"pacak",
+				"Preferences: Browse Packages"
+			],
+			[
+				"json",
+				"Pretty JSON: Format (Pretty Print) JSON"
+			],
+			[
+				"git",
+				"Git: Status"
+			],
+			[
+				"pretty",
+				"Pretty JSON: Format (Pretty Print) JSON"
+			],
+			[
+				"spac",
+				"Indentation: Convert to Spaces"
+			],
+			[
+				"markdown",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"",
+				"About"
+			],
+			[
+				"packag",
+				"Package Control: Install Package"
+			],
+			[
+				"upgra",
+				"Package Control: Upgrade/Overwrite All Packages"
+			],
+			[
+				"pack",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"insall",
+				"Package Control: Install Package"
+			],
+			[
+				"upda",
+				"Package Control: Upgrade/Overwrite All Packages"
+			],
+			[
+				":w",
+				":w - Save"
+			],
+			[
+				"up",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"install pac",
+				"Package Control: Install Package"
+			],
+			[
+				"install p",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: inst",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 476.0
+	},
+	"console":
+	{
+		"height": 195.0,
+		"history":
+		[
+			"import urllib.request,os; pr='Preferences.sublime-settings'; ip='ignored_packages'; n='Package Control'; s=sublime.load_settings(pr); ig=s.get(ip); ig.append(n); s.set(ip,ig); sublime.save_settings('Preferences.sublime-settings'); pf=n+'.sublime-package'; urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler())); by=urllib.request.urlopen('https://packagecontrol.io/'+pf.replace(' ','%20')).read(); open(os.path.join(sublime.installed_packages_path(),pf),'wb').write(by); ig.remove(n); s.set(ip,ig); sublime.save_settings(pr); print('Package Control: 3.0.0 upgrade successful!')",
+			"  import urllib.request,os; pr='Preferences.sublime-settings'; ip='ignored_packages'; n='Package Control'; s=sublime.load_settings(pr); ig=s.get(ip); ig.append(n); s.set(ip,ig); sublime.save_settings('Preferences.sublime-settings'); pf=n+'.sublime-package'; urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler())); by=urllib.request.urlopen('https://packagecontrol.io/'+pf.replace(' ','%20')).read(); open(os.path.join(sublime.installed_packages_path(),pf),'wb').write(by); ig.remove(n); s.set(ip,ig); sublime.save_settings(pr); print('Package Control: 3.0.0 upgrade successful!')",
+			"import urllib.request,os; pr='Preferences.sublime-settings'; ip='ignored_packages'; n='Package Control'; s=sublime.load_settings(pr); ig=s.get(ip); ig.append(n); s.set(ip,ig); sublime.save_settings('Preferences.sublime-settings'); pf=n+'.sublime-package'; urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler())); by=urllib.request.urlopen('https://packagecontrol.io/'+pf.replace(' ','%20')).read(); open(os.path.join(sublime.installed_packages_path(),pf),'wb').write(by); ig.remove(n); s.set(ip,ig); sublime.save_settings(pr); print('Package Control: 3.0.0 upgrade successful!')",
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/css",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/fragment",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/i18n",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/model",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/util",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view"
+	],
+	"file_history":
+	[
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/i18n/messageBundle.properties",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/Master.view.xml",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/Detail.view.xml",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/json",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/Detail.controller.js",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/Master.controller.js",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/util/api.js",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/Component.js",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/fragment/RefreshingRouteDialog.fragment.xml",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/Login.view.xml",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/App.controller.js",
+		"/C/Users/mturner1/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/mturner1/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/App.view.xml",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/Help.view.xml",
+		"/C/Temp/pireq.txt",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/index.html",
+		"/C/Temp/src/openui5-googlemaps/samples/app2/view/Detail.controller.js",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/NOTES.md",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/model/mock.json",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/fragment/SavingDialog.fragment.xml",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/README.md",
+		"/R/workspace.eclipse/Forms/WebContent/forms/compliance.html",
+		"/C/Temp/src/jasper07-openui5-googlemaps-0.0.9-10-g6ddb74c/jasper07-openui5-googlemaps-6ddb74c/samples/app2/model/mock.json",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/ext/README.md",
+		"/C/Temp/src/openui5-googlemaps/samples/app2/index.html",
+		"/R/My Documents/MJT/Projects/Driver_Portal/02-Development/app/html/view/App.view.xml#",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/gifts_providing_form.html",
+		"/R/My Documents/MJT/Projects/HR_Work_Schedules/02-Development/Quinyx/FlexForceWebServices.wsdl",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/gifts_receiving_form.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/json/gifts_providing.json",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/common/created.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/submitted.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/gnh_receiving/awaiting_approval.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/gnh_providing/awaiting_approval.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/awaiting_approval.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/json/conflictofinterest.json",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/json/gifts_receiving.json",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/js/overview_auth.js",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/js/googleauth.js",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/overview.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/conflictofinterest.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/conflictofinterest_form.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/gifts_receiving.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/gifts_providing.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/process.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/js/util.js",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/gnh_receiving/approved.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/gnh_providing/approved.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/gnh_providing/rejected.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/common/approved.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/common/approver_invalid.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/common/approval_reminder.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/common/approver_approved.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/js/process_auth.js",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/gnh_receiving/rejected.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/1",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/common/withdrawn.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/common/approver_rejected.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/process_with_comments.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/json/gifts.json~RF29111b35.TMP",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/process_cancelled.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/conflectofinterest.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/index.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/approved.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/approver_rejected.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/rejected.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/approver_invalid.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/created.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/withdrawn.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/approver_approved.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/email_templates/coi/error.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/gifts_form.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/common/email_template.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/json/gifts.json",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/css/blah.txt",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/css/default.css",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/css/default.css",
+		"/C/Temp/install/reghack.c",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/default.css",
+		"/C/Users/mturner1/AppData/Roaming/Sublime Text 3/Packages/User/JSON.sublime-settings",
+		"/C/Users/mturner1/AppData/Roaming/Sublime Text 3/Packages/User/HTML.sublime-settings",
+		"/C/Users/mturner1/AppData/Roaming/Sublime Text 3/Packages/User/SideBarEnhancements/Open With/Side Bar.sublime-menu",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/forms/compliance.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/compliance.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/gifts_form.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/submitted.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/conflictofinterest.html",
+		"/C/Users/mturner1/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Forms/WebContent/googleauth.js",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Gifts_Form/WebContent/googleauth.js",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/SAP_Forms_PoC/WebContent/WEB-INF/lib/GnH_form.js",
+		"/C/Temp/Forms_PoC/index.html",
+		"//ni.ad.newsint/userdata/Central/UserM-P/Home/MTurner1/workspace.eclipse/Gifts_Form/WebContent/index2.html"
+	],
+	"find":
+	{
+		"height": 42.0
+	},
+	"find_in_files":
+	{
+		"height": 92.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"JSON",
+			"api/1/route",
+			"close",
+			"MarkerWindow",
+			"oData",
+			".lat",
+			"onMarker",
+			"icon",
+			"chart",
+			"wsdlMove",
+			"solid",
+			"/gifts_rec",
+			"{/gifts_rec",
+			"{/gifts/",
+			"vecb",
+			"n",
+			"oCurrency",
+			"{\n",
+			"case",
+			"\n            ",
+			"             ]"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"dashed",
+			"/gifts_prov",
+			"{/gifts_prov",
+			"{/gifts_rec/"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 3,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "html/Component.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4668,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2643,
+								2643
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true,
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": false,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_normal",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 16
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 874.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "html/i18n/messageBundle.properties",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1597,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1206,
+								1206
+							]
+						],
+						"settings":
+						{
+							"highlight_line": true,
+							"syntax": "Packages/Java/JavaProperties.tmLanguage",
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": true,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_insert",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 20
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "html/fragment/EditDrop.fragment.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1438,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								200,
+								200
+							]
+						],
+						"settings":
+						{
+							"highlight_line": true,
+							"syntax": "Packages/XML/XML.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true,
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": false,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_normal",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 131
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "html/view/Master.controller.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12294,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9034,
+								9034
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"highlight_line": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true,
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": false,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_normal",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 0
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 4560.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "html/index.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1280,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								846,
+								846
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true,
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": false,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_normal",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 34
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "html/view/Master.view.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2317,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								468,
+								468
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true,
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": false,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_normal",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 37
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "html/view/Detail.controller.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7770,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4628,
+								4628
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true,
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": false,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_normal",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 36
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 2090.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "html/view/Detail.view.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2535,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1502,
+								1502
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true,
+							"vintage":
+							{
+								"_vintageous_glue_until_normal_mode": false,
+								"action": null,
+								"action_count": "",
+								"mode": "mode_normal",
+								"motion": null,
+								"motion_count": "",
+								"must_capture_register_name": false,
+								"normal_insert_count": "1",
+								"partial_sequence": "",
+								"register": "\"",
+								"sequence": "",
+								"xpos": 40
+							}
+						},
+						"translation.x": 0.0,
+						"translation.y": 190.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 24.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 136.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "driver-portal.sublime-project",
+	"replace":
+	{
+		"height": 44.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+		"_vintageous_last_buffer_search": "Size",
+		"_vintageous_last_buffer_search_command": "vi_slash",
+		"_vintageous_last_char_search_command": "vi_f",
+		"_vintageous_last_character_search": "l",
+		"_vintageous_reset_during_init": true,
+		"vintage":
+		{
+			"_cmdline_cd": "R:\\My Documents\\MJT\\Projects\\Driver_Portal\\02-Development\\app\\html\\util"
+		}
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 266.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

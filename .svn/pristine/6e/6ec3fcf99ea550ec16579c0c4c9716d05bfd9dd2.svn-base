@@ -1,0 +1,86 @@
+sap.ui.define([
+   "sap/ui/core/UIComponent",
+   "sap/ui/Device",
+   "nuk/sap/timesheet/util/TimesheetAPI",
+   "nuk/sap/timesheet/util/Formatter"
+  ],
+  function (UIComponent, Device, TimesheetAPI) {
+    "use strict";
+
+    return UIComponent.extend("nuk.sap.timesheet.Component", {
+      metadata: {
+        "manifest": "json"
+      },
+      LOCALDATA: true,    // local data (ie no backend calls for data)
+      TESTING: true,      // running in test mode
+
+      init: function () {
+        // call the init function of the parent
+        UIComponent.prototype.init.apply(this, arguments);
+
+        // set device model
+        var oDeviceModel = new sap.ui.model.json.JSONModel(Device);
+        oDeviceModel.setDefaultBindingMode("OneWay");
+        this.setModel(oDeviceModel, "device");
+
+        this.login();
+      },
+
+      /**
+       * [login description]
+       * More info - https://developers.google.com/identity/sign-in/web
+       * @return {[type]} [description]
+       */
+      login: function() {
+        var that = this;
+        var email = "mj.turner@news.co.uk";
+        var token = "abcde-token-12345";
+
+        // Check if authenticated to Google already
+
+        // Need to send token too
+        this.authSuccessful();
+       },
+
+        updateOverview: function() {
+          TimesheetAPI.getOverview("blah",
+            function (oData) {
+
+            },
+            function() {
+
+            });
+        },
+
+        authSuccessful: function() {
+          this.getRouter().initialize();
+        },
+
+      /**
+      createContent: function() {
+        UIComponent.prototype.createContent.apply(this, arguments);
+//        var oView = this.getView();
+//
+        // configuration model
+        var oConfigModel = new sap.ui.model.json.JSONModel({
+          isDataChanged: false
+        });
+        sap.ui.getCore().setModel(oConfigModel, "config");
+
+      }
+      **/
+
+      getContentDensityClass : function() {
+        if (!this._sContentDensityClass) {
+          if (!sap.ui.Device.support.touch) {
+            this._sContentDensityClass = "sapUiSizeCompact";
+          } else {
+            this._sContentDensityClass = "sapUiSizeCozy";
+          }
+        }
+        return this._sContentDensityClass;
+      }
+
+    });
+  }
+);

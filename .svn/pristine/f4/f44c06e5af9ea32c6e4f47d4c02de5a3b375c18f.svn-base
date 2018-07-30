@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="18" height="22">
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			notesLine.data = value;
+	 			notesLine.enabled = false;
+			
+				if (value && value.NOTES == "X"){
+					notesLine.enabled = true;
+					notesLine.visible = true;
+					notesLine.toolTip = "Additonal information available for line item";
+				}
+				else {
+		 			notesLine.enabled = false;
+					notesLine.visible = false;
+				}
+	 		}
+	 		
+	 		public function set listData(value:BaseListData):void
+	 		{
+	 			notesLine.listData = value;
+	 		}
+	 		
+	 		public function get listData():BaseListData
+	 		{
+	 			return notesLine.listData;
+	 		}				
+		]]>
+	</mx:Script>
+		
+	<mx:Image id="notesLine" source="@Embed('../../HR/images/Notes.gif')"
+		 click="onClick()" resize="false" useHandCursor="true" buttonMode="true" toolTip="Notes exist on claim line"> 
+		<mx:Script>
+			<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+  		 	import mx.managers.PopUpManager;  
+  		 	//import mx.controls.listClasses.BaseListData;  		 	
+			
+			private function onClick():void
+			{
+/*   			var messagePopup:Notes =  PopUpManager.createPopUp(this, Notes) as Notes;
+  				messagePopup.notesTab = parentApplication.getNotes(this.data.PARENT_WIID); */
+   				var notesPopup:Notes =  PopUpManager.createPopUp(this, Notes) as Notes;
+  				notesPopup.notesTab = parentApplication.getLineNotes(this.data.WIID, this.data.RECEIPTNO);  				 
+			}		
+			]]>
+		</mx:Script> 
+	</mx:Image>
+
+    <mx:Metadata>
+        [Event(name="displayNotes", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+</mx:Canvas>

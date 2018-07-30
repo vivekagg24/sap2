@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<ExpenseOutput>
+		 		<headerFields>
+					<field width="72" dataField="ACTION_DATE" type="dateLabel" columnTitle="Date" /> 
+					<field width="57" dataField="ACTION_TIME" type="Label" columnTitle="Time" />
+					<field width="62" dataField="ACTION" type="Label" columnTitle="Action" />
+					<field width="75" dataField="CLAIM_NO" type="Label" columnTitle="Claim no." />					
+					<field width="100" dataField="CLAIMANT" type="TextArea" columnTitle="Claimant" /> 
+					<field width="175" dataField="DESCRIPTION" type="TextArea" columnTitle="Description" />				
+					<field width="50" dataField="KOSTL" type="Label" columnTitle="Cost centre" />
+					<field width="80" dataField="AMOUNT" type="RightLabel" columnTitle="Value" />
+					<field width="38" dataField="CURRENCY" type="Label" columnTitle="Curr." /> 
+					<field width="145" dataField="APPROVER" type="TextArea" columnTitle="Actioned by Substitute" />
+					<field width="145" dataField="SUBSTITUTE_FOR" type="TextArea" columnTitle="As a Substitute for" />
+					<!--<field width="22" dataField="NOTES" type="NoteIcon" columnTitle="" />-->
+					<field width="90" dataField="STATUS" type="TextArea" columnTitle="Overall status" />
+					<field width="46" dataField="Action" type="Action" columnTitle="Action" />										
+				</headerFields>
+	    	</ExpenseOutput>
+    	</formatting>

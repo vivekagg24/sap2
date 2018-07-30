@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         horizontalScrollPolicy="off"
+         width="100%" 
+         horizontalAlign="center">
+         
+<mx:Script source="../scripts/Common.as"></mx:Script>
+         
+    <mx:Script>
+        <![CDATA[
+        import mx.controls.dataGridClasses.DataGridColumn;
+      
+
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+		public var projcode:String="";
+        private var retData:Object;
+
+		private var RowID:int;
+        private var DataChanged:Boolean;
+        
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	projcode=String(value.ZZAUFNR);
+						txtProjcode.text=projcode;
+						
+						RowID = value.ROW_NUMBER;
+
+						if(value.ZZAPPROVAL == cRejectStatus || value.ZZAPPROVAL == cApproved){
+
+							txtProjcode.enabled = false;					
+						}else{
+							txtProjcode.enabled = true;												
+							
+						}
+						
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+			return retData;
+		}
+		
+		public function CallMainApp():void{
+
+			if(DataChanged == true){
+			
+				parentDocument.ServerRequest(cProjcode, txtProjcode.text, RowID, txtProjcode);
+				
+				DataChanged = false;
+			}
+		}
+
+		private function HandleChange():void{
+			
+			DataChanged = true;
+			
+			parentDocument.EnableButtons(false);			
+		}
+		
+         ]]>
+         
+    </mx:Script>
+     
+   <mx:TextInput
+   	 id="txtProjcode"
+   	 width="60"
+   	 enabled="true"
+	 styleName="inputECS" 
+	 focusOut="CallMainApp()"
+	 change="HandleChange()"
+   	 maxChars="12">
+   	</mx:TextInput>
+
+</mx:HBox>

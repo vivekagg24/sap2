@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	MessageDisplay.mxml
+		
+		Display messages from SAP (approval) in data grid
+		
+-->
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	top="100" backgroundGradientAlphas="[0, 0]"
+	 backgroundAlpha="0">
+
+<mx:Style source="../../ECS.css"/>
+	<mx:TitleWindow x="239" y="156" width="681" height="427" layout="absolute"
+		 close="PopUpManager.removePopUp(this)"
+		 creationComplete="doInit()"
+		 showCloseButton="true"
+		 title="Approval messages"
+		 backgroundAlpha="1">
+	<mx:Script>
+    <![CDATA[
+
+        import mx.managers.PopUpManager;
+       
+       	[Bindable]
+       	private var gridMessages:XMLList;
+		
+		private function doInit():void{
+			PopUpManager.centerPopUp(this);
+			gridMessages=parentApplication.messages.item;
+			dg.setFocus();
+		}
+		  		
+	    ]]>
+	</mx:Script>
+
+	<mx:Panel x="10" y="10" width="632" height="361" layout="absolute" backgroundAlpha="1.0"
+		defaultButton="{btnContinue}">
+		<mx:title>The following messages were returned from SAP:</mx:title>
+		<mx:DataGrid 
+			id="dg"
+			x="0" y="0" width="586" height="288" 
+			dataProvider="{gridMessages}"
+			styleName="dataGrid"
+			horizontalScrollPolicy="on">
+			<mx:columns>
+				<mx:DataGridColumn dataField="ERROR" width="40" headerText="" >
+					<mx:itemRenderer>
+						<mx:Component>
+							<mx:Image>
+							<mx:Script>
+								
+								<![CDATA[
+									import mx.controls.dataGridClasses.DataGridColumn;
+									import mx.core.BitmapAsset;
+									[Embed(source="../../images/redlight.gif")]
+									[Bindable]
+									private var redLight:Class;
+									[Embed(source="../../images/yellowlight.gif")]
+									[Bindable]
+									private var yellowLight:Class;
+									[Embed(source="../../images/greenlight.gif")]
+									[Bindable]
+									private var greenLight:Class;
+									
+									
+									override public function set data(value:Object):void {
+							            super.data = value;
+							   
+							
+										if (value != null) {
+											super.data = value;
+											
+											// the parent DataGridColumn is passed as value before the real data arrives
+							                if (!(value is DataGridColumn)) {
+							                	if ( value.ERROR=="X"){
+							                		source = new redLight() as BitmapAsset;
+							                	} 
+							                	else if (value.WARNING=="X") {
+							                    	source = new yellowLight() as BitmapAsset;
+							                    } else {
+							                    	source = new greenLight() as BitmapAsset;
+							                    }
+							                }							      	
+							        	}
+							            super.invalidateProperties();
+							      }
+								]]>
+							</mx:Script>
+						   </mx:Image>
+						</mx:Component>
+					</mx:itemRenderer>
+				</mx:DataGridColumn>
+				<mx:DataGridColumn headerText="CPR" dataField="CPR_NUMBER" width="80"/>
+				<mx:DataGridColumn headerText="Message" dataField="MESSAGE" width="400"  />
+			
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:Button x="273" y="289" 
+			styleName="button" id="btnContinue" label="Continue" click="PopUpManager.removePopUp(this);" icon="@Embed('../../images/OK.gif')" width="88"/>
+	</mx:Panel>
+	</mx:TitleWindow>
+</mx:Application>

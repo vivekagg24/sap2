@@ -1,0 +1,15 @@
+{
+  "auth_token": "",
+  "username": "USER1",
+  "full_name": "Fred Submitter",
+  "email" : "first.last@news.co.uk",
+  "department": "Technology",
+  "personnel_no": "700000001",
+  "is_contractor": "false",
+  "roles": {
+    "is_submitter": "true",
+    "is_approver": "true",
+    "is_project_manager": "true"
+  }
+}
+

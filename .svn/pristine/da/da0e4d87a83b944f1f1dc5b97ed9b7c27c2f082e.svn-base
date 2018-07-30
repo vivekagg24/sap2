@@ -1,0 +1,33 @@
+<mvc:View id="loginView" controllerName="nuk.sap.timesheet.controller.Login" displayBlock="true" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+
+  <Page id="loginPage" showHeader="false" showSubHeader="false" showFooter="false" height="100%" class="noBranding">
+    <content>
+      <VBox alignItems="Center" justifyContent="Center" height="100%">
+        <HBox alignItems="Center">
+          <items>
+            <Panel class="solidBorder">
+              <HBox height="90px" alignItems="Center" justifyContent="Center">
+                <Image src="images/230x60_NewsUK1.png"/>
+              </HBox>
+              <HBox height="6rem" alignItems="Center" justifyContent="Center">
+                <Text text="{i18n>login-title}" class="loginTitle"/>
+              </HBox>
+              <HBox>
+                <Text text="{i18n>login-prompt}" class="loginText"/>
+              </HBox>
+              <HBox>
+                <Text text="{i18n>login-help}" class="loginText"/>
+              </HBox>
+              <HBox height="90px" alignItems="Center" justifyContent="Center">
+                <HBox id="loginContainer"/>
+              </HBox>
+              <core:Fragment fragmentName="nuk.sap.timesheet.fragment.MessageArea" type="XML" />
+            </Panel>
+          </items>
+        </HBox>
+      </VBox>
+    </content>
+  </Page>
+
+</mvc:View>
+

@@ -1,0 +1,79 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>ComboBox1.mxml</title>
+<link rel="stylesheet" type="text/css" href="../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:ComboBox</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot; <span class="mxmlComponent">&gt;</span>
+
+    <span class="mxmlTag">&lt;mx:Script&gt;</span>
+        <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+            <span class="asReserved">import</span> mx.collections.ArrayCollection;
+            <span class="asReserved">import</span> mx.core.Application;
+            
+               <span class="asReserved">private</span> <span class="asVar">var</span> _oValue<span class="asOperator">:</span>Object;
+            <span class="asReserved">private</span> <span class="asVar">var</span> _oDataProvider<span class="asOperator">:</span>Object;
+            <span class="asReserved">private</span> <span class="asVar">var</span> _bCompareToKey<span class="asOperator">:</span>Boolean <span class="asOperator">=</span> <span class="asReserved">true</span>;
+
+            <span class="asReserved">private</span> <span class="asFunction">function</span> selectValue<span class="asBracket">(</span>oValue<span class="asOperator">:</span>Object, bCompareToText<span class="asOperator">:</span>Boolean <span class="asOperator">=</span> <span class="asReserved">false</span><span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span> <span class="asBracket">{</span>
+                <span class="asReserved">if</span> <span class="asBracket">((</span>oValue <span class="asOperator">!=</span> <span class="asReserved">null</span><span class="asBracket">)</span> <span class="asOperator">&amp;&amp;</span> <span class="asBracket">(</span>dataProvider <span class="asOperator">!=</span> <span class="asReserved">null</span><span class="asBracket">))</span> <span class="asBracket">{</span>
+                    <span class="asReserved">for</span> <span class="asBracket">(</span><span class="asVar">var</span> i <span class="asOperator">:</span> int <span class="asOperator">=</span> 0; i <span class="asOperator">&lt;</span> dataProvider.length; i<span class="asOperator">++</span><span class="asBracket">)</span> <span class="asBracket">{</span>
+                        <span class="asReserved">if</span> <span class="asBracket">(</span>bCompareToText <span class="asOperator">||</span> <span class="asOperator">!</span>_bCompareToKey<span class="asBracket">)</span> <span class="asBracket">{</span>
+                            <span class="asReserved">if</span> <span class="asBracket">(</span>oValue <span class="asOperator">==</span> dataProvider<span class="asBracket">[</span>i<span class="asBracket">]</span>.label<span class="asBracket">)</span> <span class="asBracket">{</span>
+                                selectedIndex <span class="asOperator">=</span> i;
+                                <span class="asReserved">return</span>;
+                            <span class="asBracket">}</span>
+                        <span class="asBracket">}</span> <span class="asReserved">else</span> <span class="asBracket">{</span>
+                            
+                            <span class="asReserved">if</span> <span class="asBracket">(</span>oValue <span class="asOperator">==</span> dataProvider<span class="asBracket">[</span>i<span class="asBracket">]</span>.data<span class="asBracket">)</span> <span class="asBracket">{</span>
+                                selectedIndex <span class="asOperator">=</span> i;
+                                <span class="asReserved">return</span>;
+                            <span class="asBracket">}</span>
+                        <span class="asBracket">}</span>                        
+                    <span class="asBracket">}</span>    
+                <span class="asBracket">}</span>
+                selectedIndex <span class="asOperator">=</span> <span class="asOperator">-</span>1;
+            <span class="asBracket">}</span>    
+
+            <span class="asBracket">[</span><span class="asMetadata">Bindable</span><span class="asBracket">(</span><span class="asString">&quot;ComboBoxChange&quot;</span><span class="asBracket">)]</span>
+            <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">get</span> ChosenValue<span class="asBracket">()</span><span class="asOperator">:</span>Object <span class="asBracket">{</span>
+                
+                <span class="asVar">var</span> item<span class="asOperator">:</span>Object <span class="asOperator">=</span> selectedItem;
+                
+                <span class="asReserved">if</span> <span class="asBracket">(</span>item <span class="asOperator">==</span> <span class="asReserved">null</span> <span class="asOperator">||</span> <span class="asReserved">typeof</span><span class="asBracket">(</span>item<span class="asBracket">)</span> <span class="asOperator">!=</span> <span class="asString">&quot;object&quot;</span><span class="asBracket">)</span>
+                    <span class="asReserved">return</span> item;
+                
+                <span class="asReserved">return</span> <span class="asString">&quot;data&quot;</span> <span class="asReserved">in</span> item <span class="asOperator">?</span> item.data <span class="asOperator">:</span> item.label;
+            <span class="asBracket">}</span> 
+
+            <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> ChosenValue<span class="asBracket">(</span>oValue<span class="asOperator">:</span>Object<span class="asBracket">)</span>  <span class="asOperator">:</span> <span class="asReserved">void</span> <span class="asBracket">{</span>
+                _oValue <span class="asOperator">=</span> oValue;
+                selectValue<span class="asBracket">(</span>_oValue<span class="asBracket">)</span>
+        <span class="asComment">// Dispatch the event to trigger data binding. 
+</span>                Application.application.dispatchEvent<span class="asBracket">(</span><span class="asReserved">new</span> Event<span class="asBracket">(</span><span class="asString">&quot;ComboBoxChange&quot;</span><span class="asBracket">))</span>;
+                
+            <span class="asBracket">}</span>  
+            
+            <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> dataProviderFromSAP<span class="asBracket">(</span>oDataProvider<span class="asOperator">:</span>Object<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span> <span class="asBracket">{</span>
+                <span class="asVar">var</span> acDataProvider<span class="asOperator">:</span>ArrayCollection <span class="asOperator">=</span> <span class="asReserved">new</span> ArrayCollection<span class="asBracket">()</span>;
+                <span class="asReserved">for</span> <span class="asReserved">each</span><span class="asBracket">(</span><span class="asVar">var</span> item<span class="asOperator">:*</span> <span class="asReserved">in</span> oDataProvider<span class="asBracket">)</span> <span class="asBracket">{</span>
+
+                    acDataProvider.addItem<span class="asBracket">({</span>data<span class="asOperator">:</span>item.KEY, label<span class="asOperator">:</span>item.VALUE<span class="asBracket">})</span>;
+                <span class="asBracket">}</span>
+                <span class="asReserved">this</span>.dataProvider <span class="asOperator">=</span> acDataProvider;
+            <span class="asBracket">}</span>
+            
+
+            <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> compareToKey<span class="asBracket">(</span>bCompareToKey<span class="asOperator">:</span>Boolean<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span> <span class="asBracket">{</span>
+                _bCompareToKey <span class="asOperator">=</span> bCompareToKey;
+            <span class="asBracket">}</span>
+            
+                
+        <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+    <span class="mxmlTag">&lt;/mx:Script&gt;</span>
+<span class="mxmlComponent">&lt;/mx:ComboBox&gt;</span></pre></body>
+</html>

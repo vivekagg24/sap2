@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	NewContributorDetails.mxml
+		
+		Enter cut down details for a new contributor
+		
+-->
+<mx:Application xmlns:mx = "http://www.adobe.com/2006/mxml" 
+	              layout = "absolute"
+                  top    = "100" 
+                  left   = "200" 
+                  backgroundGradientAlphas = "[0, 0]"
+	              backgroundAlpha = "0">
+	              
+	<mx:Style source="../../ECS.css"/>
+
+	<mx:Script>
+    <![CDATA[
+    	import mx.controls.Alert;
+    	
+        import mx.managers.PopUpManager;
+        [Bindable]
+        private var countries:Array;			//Country code list for dropdown
+        
+		private function doInit():void{
+			//get the list of country codes
+			wsGetCountryCodes.Z_ECS_GET_COUNTRY_CODES.send();
+			
+			txtName1.text= parentApplication.CPRHeader.NEW_NAME1;		//Name
+			txtName2.text= parentApplication.CPRHeader.NEW_NAME2;		//C/O
+			txtName3.text= parentApplication.CPRHeader.NEW_NAME3;		//First line of address
+			txtName4.text= parentApplication.CPRHeader.NEW_NAME4;		//Town
+			txtStreet.text= parentApplication.CPRHeader.NEW_STRAS;		//Street
+			txtCity.text = parentApplication.CPRHeader.NEW_ORT01;		//City
+			txtPostCode.text = parentApplication.CPRHeader.NEW_PSTLZ;	//Post code
+			txtTelephone.text = parentApplication.CPRHeader.NEW_TELF1;	//Telephone
+			txtEmail.text = parentApplication.CPRHeader.NEW_EMAIL;		//Email address
+			txtVATCode.text = parentApplication.CPRHeader.NEW_STCEG;	//VAT code
+		}
+
+		//Set selected country code in the dropdown list
+		private function setCountryCode():void{
+			if (parentApplication.CPRHeader.NEW_LAND1=="") parentApplication.CPRHeader.NEW_LAND1="GB";
+			for (var i:int =0;i<countries.length;i++){
+				if (parentApplication.CPRHeader.NEW_LAND1==countries[i].data){
+					comboCountries.selectedIndex=i;
+					return;
+				}
+			}
+		}
+		
+		private function returnValues():void{
+
+			//Set the header fields for save
+			parentApplication.CPRHeader.NEW_NAME1 = txtName1.text;		//Name
+			parentApplication.CPRHeader.NEW_NAME2 = txtName2.text;		//C/O
+			parentApplication.CPRHeader.NEW_NAME3 = txtName3.text;		//First line of address
+			parentApplication.CPRHeader.NEW_NAME4 = txtName4.text;		//Town
+			parentApplication.CPRHeader.NEW_STRAS = txtStreet.text;		//Street
+			parentApplication.CPRHeader.NEW_ORT01 = txtCity.text;		//City
+			parentApplication.CPRHeader.NEW_PSTLZ = txtPostCode.text;	//Post code
+			parentApplication.CPRHeader.NEW_TELF1 = txtTelephone.text;	//Telephone
+			parentApplication.CPRHeader.NEW_EMAIL = txtEmail.text;		//Email
+			parentApplication.CPRHeader.NEW_LAND1 = comboCountries.selectedItem.data;	///Country
+			parentApplication.CPRHeader.NEW_STCEG = txtVATCode.text;	//VAT Code
+			
+			//Set display fields on the CPR Entry screen
+			parentApplication.newContributor = true;	
+			parentApplication.chkNewContributor.selected = true;		
+			parentApplication.contributorName = txtName1.text;
+			parentApplication.txtContributorName.text = txtName1.text;
+			parentApplication.contributorDetails.NAME2 = txtName2.text;
+			parentApplication.contributorDetails.NAME4 = txtName4.text;
+			parentApplication.contributorDetails.STRAS = txtStreet.text;
+			parentApplication.contributorDetails.ORT01 = txtCity.text;
+			parentApplication.contributorDetails.PSTLZ = txtPostCode.text;
+			parentApplication.contributorDetails.TELF1 = txtTelephone.text;
+			parentApplication.contributorDetails.EMAIL1 = txtEmail.text;			
+			
+			cleanClose();			
+			
+			parentApplication.txtStory.setFocus();
+			
+		}
+
+		private function getCountryCodesCallBack(result:Object):void{
+			countries=buildDropdownList(result[0].EX_T_COUNTRIES,false);
+			setCountryCode();
+		}
+		
+		public function cleanClose():void
+		{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			systemManager.removeFocusManager(this);
+			
+			if (parentApplication.txtContributorName)
+				parentApplication.txtContributorName.setFocus();		
+			
+		}
+		
+	    ]]>
+	</mx:Script> 
+	<mx:Script source="../scripts/Utilities.as"></mx:Script>
+	
+	<mx:WebService    id             = "wsGetCountryCodes" 
+                      wsdl           = "{parentApplication.wsdlRoot}Z_ECS_GET_COUNTRY_CODES"
+    	              useProxy       = "false"
+    	              result         = "getCountryCodesCallBack(event.result)"   	 
+     	              showBusyCursor = "true"
+     	              fault          = "Alert.show(event.fault.faultString)">
+	    <mx:operation name           = "Z_ECS_GET_COUNTRY_CODES"  
+	     	          concurrency    = "single"
+	    	          resultFormat   = "e4x" >
+	    	<mx:request></mx:request>
+		</mx:operation>
+	</mx:WebService>
+	
+	<mx:TitleWindow x="59" y="69" width="698" height="448" layout="absolute"
+		 close            = "cleanClose();"
+		 creationComplete = "doInit()"
+		 showCloseButton  = "true"
+		 title            = "New Contributor Details">
+	
+	<mx:Panel x="10" y="10" width="658" height="388" layout="absolute"
+		defaultButton="{btnOK}">
+		<mx:Button x="306" y="316" 
+			styleName="button" 
+			id="btnOK" 
+			label="OK" click="returnValues()" icon="@Embed('../../images/OK.gif')" width="70" tabIndex="12"/>
+		<mx:TextInput x="234" y="19" width="212" id="txtName1" tabIndex="1" editable="{parentApplication.applicationEditable}"/>
+		<mx:TextInput x="234" y="45" width="212" id="txtName2" tabIndex="2" editable="{parentApplication.applicationEditable}"/>
+		<mx:TextInput x="234" y="71" width="212" id="txtName3" tabIndex="3" editable="{parentApplication.applicationEditable}"/>
+		<mx:TextInput x="234" y="97" width="212" id="txtStreet" tabIndex="4" editable="{parentApplication.applicationEditable}"/>
+		<mx:TextInput x="234" y="123" width="212" id="txtName4" tabIndex="5" editable="{parentApplication.applicationEditable}"/>
+		<mx:TextInput x="234" y="149" width="212" id="txtCity" tabIndex="6" editable="{parentApplication.applicationEditable}"/>
+		<mx:TextInput x="234" y="256" width="318" id="txtEmail" tabIndex="10" editable="{parentApplication.applicationEditable}"/>
+		<mx:Label x="85" y="21" text="Name"/>
+		<mx:Label x="85" y="47" text="C/O"/>
+		<mx:Label x="85" y="73" text="House / Flat"/>
+		<mx:Label x="85" y="99" text="Street"/>
+		<mx:Text x="85" y="125" text="Town"/>
+		<mx:Text x="85" y="151" text="City"/>
+		<mx:Text x="85" y="178" text="Post Code"/>
+		<mx:Text x="85" y="204" text="Country"/>
+		<mx:Text x="85" y="230" text="Telephone Number"/>
+		<mx:Text x="85" y="258" text="Email Address"/>
+		<mx:TextInput x="234" y="176" width="212" id="txtPostCode" tabIndex="7" editable="{parentApplication.applicationEditable}"/>
+		<mx:TextInput x="234" y="228" width="212" id="txtTelephone" tabIndex="9" editable="{parentApplication.applicationEditable}"/>
+		<mx:ComboBox dataProvider = "{countries}"
+			         labelField   = "label"
+			         id           = "comboCountries"
+			         enabled      = "{parentApplication.applicationEditable}"
+			         x            = "234" 
+			         y            = "202" 
+			         width        = "212" 
+			         tabIndex     = "8">
+		</mx:ComboBox>
+		<mx:Label x="85" y="284" text="VAT Code"/>
+		<mx:TextInput x="234" y="282" width="212" id="txtVATCode" tabIndex="11" editable="{parentApplication.applicationEditable}"/>
+	</mx:Panel>
+	</mx:TitleWindow>
+</mx:Application>

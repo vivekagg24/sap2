@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+	<mx:states>
+		<mx:State name="Advanced">
+			<mx:AddChild relativeTo="{panel1}" position="lastChild">
+				<mx:VBox x="20" y="160" width="160" height="80" id="myVBox" >
+					<mx:CheckBox label="Regular expression"/>
+					<mx:CheckBox label="Case sensitive"/>
+					<mx:CheckBox label="Exact Phrase"/>
+				</mx:VBox>
+			</mx:AddChild>
+			<mx:SetEventHandler target="{linkbutton1}" name="click" handler="currentState=''"/>
+		</mx:State>
+	</mx:states>
+	<mx:transitions>
+		<mx:Transition id="myTransition" fromState="*" toState="Advanced">
+          <mx:Parallel target="{myVBox}">
+            <mx:WipeDown duration="2000"/>
+            <mx:Dissolve alphaFrom="0.0" alphaTo="1.0" duration="2000"/>
+          </mx:Parallel>
+		</mx:Transition>
+	</mx:transitions>
+
+	<mx:Panel x="5" y="5" width="300" height="400" layout="absolute" id="panel1">
+
+		<mx:Label x="20" y="70" text="Search"/>
+
+		<mx:TextInput x="20" y="90"/>
+
+		<mx:Button x="185" y="90" label="Go"/>
+
+		<mx:LinkButton x="20" y="120" label="Advanced options" id="linkbutton1" click="currentState='Advanced'"/>
+
+	</mx:Panel>
+	
+</mx:Application>

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	GLAccountInput.mxml
+		Item renderer for the GL Account field on the payment items data grid
+	
+	Includes:
+		validation on the entry  - sets error counter in parent  
+		application
+		event handlers for focus events - e.g. save without entering any GL Code or highlighting an errored field
+		dispatches event to parent application when the GL code is changed in order to trigger hide/display logic 
+		for the page field and change the item category
+		
+	The renderer uses the TextInputPlus component to display a listbox with the user's recent entries
+	There is also a button that launches the popup screen containing all the GL accounts for the current item category
+		
+-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         width="100%" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         verticalScrollPolicy="off" 
+         horizontalGap="0"
+         creationComplete="initComponent();" 
+         xmlns:validators="ecs.validators.*" 
+         xmlns:ecs="ecs.components.*"
+         xmlns:ni="ni.components.*">
+    
+    <mx:Script>
+        <![CDATA[
+        	import mx.events.DynamicEvent;
+        	import ecs.generalClasses.CPRItem;
+        
+        	import mx.core.Application;        
+            import mx.controls.listClasses.ListData;
+            import mx.controls.dataGridClasses.DataGridListData;
+            import mx.controls.listClasses.BaseListData;
+            import mx.controls.DataGrid;
+            import mx.events.FlexEvent;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			import mx.controls.dataGridClasses.DataGridColumn;			
+			import ecs.popups.LookUpGLCode;
+			import ecs.validators.GLAccountValiditor;
+			
+			//CSS style for the input - e.g. disabled
+			[Bindable]
+            private var cssStyle:String="";
+            [Bindable]
+            private var isEditable:Boolean=true;
+			private var win:LookUpGLCode;						//Lookup for the GL code
+			//This is the property returned to the data provider after editing
+			[Bindable]
+            public var glAccount:String = new String();  
+            //Row data returned  by get data to data grid (stops rows being jumbled when reused by the DG)  
+            private var retData:Object;
+            private var isValid:Boolean=true;					//Valid value
+            private var previousValidState:Boolean=true;		//Previous valid state
+            
+            private function initComponent():void
+            {
+            	//Event listener - receive focus if the entry is not valid
+            	parentApplication.addEventListener("GLErrorFocus",setErrorFocus, false, 0, true);
+            	//Event listener - receive focus into the first amount field
+            	parentApplication.addEventListener("GLFocus",setRequiredFocus, false, 0, true);
+            }
+            
+            //Receive focus if no entry was made and the user is saving/validating a line with an amount
+        	//Parent applicaiton raises the GLFocus event
+            private function setRequiredFocus(event:Event):void{
+            	if (retData.index==parentApplication.currentItemIndex){
+            		txtGLAccount.setFocus();
+            		event.stopPropagation();	
+            	} 
+            }
+            
+            //Receive focus if the user is trying to save and there is an error in the GL account field - parent 
+        	//application raises the GLErrorFocus event
+            private function setErrorFocus(event:Event):void{
+            	if (!isValid){
+            		txtGLAccount.setFocus();
+            		event.stopPropagation();	
+            	} 
+            }
+            
+            override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	glAccount=String(value.GLAccount); //Grid gets this field to update the data provider
+						txtGLAccount.text=glAccount;
+						//The DG jumbles the rows !!! Unless we store the row and return in get data
+						retData=value;
+						//Stylename and editable can depend on whether field is disabled or "held" or "set"
+						cssStyle=value.GLAccountStyleName;
+						isEditable=value.GLAccountEditable;
+						txtGLAccount.tabEnabled = this.isEditable; //If you can't edit it, you can't tab into it
+                    	// Validate the field, which also sets the border correclty if using hold data
+						valGLAccount.validate();
+						// Register the renderer for validation
+						(value as CPRItem).GLRenderer = this;
+						
+                    }
+        		}
+	        }
+			//Return the row to stop the jumbling - occurs because the grid reuses the conponents when scrolling
+			override public function get data():Object{
+				return retData;
+			}
+            
+            //Launch the popup
+            public function launchLookUp():void{
+            	
+            	if (!parentApplication.applicationEditable) return;
+            	
+        		win = LookUpGLCode(PopUpManager.createPopUp(this,LookUpGLCode,true));
+        		win.glAccount = glAccount;
+        		win.trueParentApp = parentApplication;
+        		//Default item category is lineage
+        		if (data.itemCategory==null || data.itemCategory=="") 
+					data.itemCategory="1";
+        		
+        		win.itemCategory = data.itemCategory;
+        		//Add event listeners to the popup - to retrieve the GL code when the popup closes
+        		win["btnOK"].addEventListener("click",getValueFromPopup);
+        		win["btnCancel"].addEventListener("click",setFocusOnInput);
+        		win["dgGLAccounts"].addEventListener("doubleClick",getValueFromPopup);
+        		win["toFocus"] = this.txtGLAccount;
+
+            }
+            
+            private function setFocusOnInput(event:Event):void{
+            	focusManager.setFocus(txtGLAccount);
+            }
+            
+            //When the popup is closing  - get the GL account selected
+			private function getValueFromPopup(event:Event):void{
+				this.txtGLAccount.text=win.glAccount;	
+				handleChange();			
+				data.itemCategory = win.itemCategory;
+				//Default item category is lineage
+				if (data.itemCategory==null || data.itemCategory=="") 
+					data.itemCategory="1";
+				//Raise change event to parent	
+			    parentApplication.raiseGLAccountChanged();
+			    valGLAccount.validate();
+			    focusManager.setFocus(txtGLAccount);
+			    
+			}
+			
+			//Change handler for text field : update the GL account property and return data structure 
+			private function handleChange():void{
+				this.txtGLAccount.text = this.txtGLAccount.text.toUpperCase();  // Force upper case
+				this.txtGLAccount.text = this.txtGLAccount.text.replace(/ /, ''); // Remove any spaces
+				glAccount = this.txtGLAccount.text;
+				if (retData!=null) retData.GLAccount = glAccount;
+				parentApplication.setDataChanged(true);
+			}
+			
+			//Set the item cetegor for the row if the GL accunt has changed
+			public function setItemCategory():String{
+				var i:int=0;
+				
+				for (i=0;i<parentApplication.glAccounts.children().length();i++){
+					try{
+						if (parentApplication.glAccounts[i].GL_ACCT.toString()==glAccount){
+							data.itemCategory = parentApplication.glAccounts[i].ITEM_CAT.toString();
+							parentApplication.raiseGLAccountChanged();
+							return data.itemCategory;
+							break;
+						}
+					}
+					catch(err:Error){  }
+				}
+				return "";
+			}
+			
+
+
+			private function handleKeyUp(event:KeyboardEvent):void{
+				if (event.keyCode == Keyboard.F4) launchLookUp();
+			}
+			
+			private function handleAddToLast20(event:Event):void
+			{
+				// Find the text for the GL code
+				var e:Object = event as Object;
+				
+   	 			var code:String = e.newItem.data;
+   	 			for each (var item:Object in parentApplication.glAccounts)
+   	 			{
+   	 				if (item..GL_ACCT == code)
+   	 				{
+   	 					e.newItem.label += " " + item..LABEL;
+   	 					break;
+   	 				}   	 						
+   	 			}				
+			}	
+			
+        ]]>
+    </mx:Script>
+   <validators:GLAccountValiditor	 
+   	 id="valGLAccount"
+   	  source="{txtGLAccount}"
+   	  property="text" 
+   	  valid="isValid=true;"
+   	  invalid="isValid=false;"
+   	  listGLAccounts="{parentApplication.glAccounts}"
+   	  enabled="{parentApplication.applicationEditable}"
+   	  required="false"
+   	  >
+   </validators:GLAccountValiditor>
+      	
+   	<ni:TextInputPlus
+   	 id="txtGLAccount"
+   	 width="70"
+   	 listWidth="150"
+   	 listHeight="250"
+   	 recentEntries="{parentApplication.recentGLAccounts}"
+   	 change="handleChange()"   	 
+   	 styleName="{cssStyle}"
+     editable="{isEditable}"
+     keyUp="handleKeyUp(event)"
+   	 maxChars="10"
+     objectAddedToLast20="handleAddToLast20(event);"
+     focusOut="setItemCategory();">
+   	</ni:TextInputPlus>
+   	  	               
+    <mx:Button
+    	icon="@Embed('../../images/helpF4.gif')"
+    	useHandCursor="TRUE"
+    	buttonMode="TRUE"
+    	enabled="{isEditable}"
+    	click="launchLookUp()"
+    	tabEnabled="false"
+    	width="20"/>
+   
+</mx:HBox>
+

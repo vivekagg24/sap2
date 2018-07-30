@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx         = "http://www.adobe.com/2006/mxml"
+	            layout           = "absolute"
+	            initialize       = "init();">
+
+<mx:Script>
+
+	<![CDATA[
+	
+	import mx.rpc.events.ResultEvent;	
+		
+    public const c_dev_server:String = "http://saponi.ni.ad.newsint:8080";
+    public const c_sap_client:String = "sap-client=007&";
+    public const c_wsdl_sicf_prefix:String = "/sap/bc/soap/wsdl11?"; 
+    
+    [Bindable]
+    public var wsdl_prefix:String;
+    
+  
+  public function init():void {
+  // Called at the "init" event of the application
+  // We need to tell the web services where to get their WSDls from.
+        
+    if (Security.sandboxType == Security.REMOTE)    // Remote remotely in a BSP
+
+        wsdl_prefix = c_wsdl_sicf_prefix
+                      + "services=";
+    else                                            // Running locally
+
+        wsdl_prefix = c_dev_server                  // Which SAP server should we connect to?
+                      + c_wsdl_sicf_prefix
+                      + c_sap_client                 // Which SAP client should we connect to?
+                      + "services=" ;    
+      }
+
+	public function	serverResponse(event:ResultEvent):void {
+	  tiField.text = event.result[0].EX_PERNR;
+	}   
+
+    public function GetInformation ():void {
+	  wsTEST.ZHR_VC_TESTER3.send()
+    }
+		
+	]]>
+</mx:Script>
+
+	<mx:WebService  id       = "wsTEST"    
+                    wsdl     = "{wsdl_prefix + 'ZHR_VC_TESTER3'}"
+                	useProxy = "false"
+    	            result   = "serverResponse(event)">
+    	
+	    <mx:operation name         = "ZHR_VC_TESTER3"     	
+                 	  resultFormat = "e4x"
+         	          concurrency  = "last">
+        
+          <mx:request>			
+ 		    <IM_USER>
+ 		      {tiUser.text}
+ 		    </IM_USER>
+          </mx:request>	         	          
+		
+		</mx:operation>
+		
+	</mx:WebService>
+
+	<mx:Panel x="10" y="10" width="475" height="400" layout="absolute" title="User Check">
+
+        <mx:TextInput x="198" y="148" id="tiField"/>
+        <mx:TextInput x="17"    y="46"  id="tiUser" />
+        
+        <mx:Button x="198" y="46" 
+        	       label="Execute User Check" 
+        	       id="btnExecuteUserCheck" 
+        		   click="GetInformation()"/> 
+			       
+        <mx:Text x="17"    y="20"  text="Enter User name here (IN CAPITAL LETTERS)"/>
+        <mx:Text x="10" y="150" text="Personnel number"/>
+        <mx:Text x="10" y="107" text="User CMSUSER should give 901851 from D11 007"/>
+
+    </mx:Panel>
+	
+</mx:Application>
+
+
+

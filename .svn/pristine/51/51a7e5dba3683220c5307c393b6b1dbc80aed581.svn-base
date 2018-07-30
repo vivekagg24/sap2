@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>	
+<mx:Application    xmlns:mx="http://www.adobe.com/2006/mxml" 
+					backgroundColor="#D4D4D4"
+					layout="vertical" paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0"
+			    	initialize="init();"
+					creationComplete="creationComplete();"
+					xmlns:ns1="*"
+					creationPolicy="all"
+					xmlns:HR="HR.Components.*" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
+					xmlns:VDG="VDG.*" xmlns:containers="com.arc90.flexlib.containers.*" xmlns:ns2="visualComponents.*">  
+	<mx:Style source="ECS.css"/>
+	<mx:SetStyle name="backgroundColor" value="#D4D4D4"/>
+
+	<mx:Script source="scripts/Processing.as"/> 
+	<mx:Script source="scripts/TabHandling.as"/>
+	<mx:Script source="scripts/Utilities.as"/>
+	
+    <mx:XML id="fieldFormatting" source="/output_xml/fieldFormatting.xml"/> 
+
+	<mx:Script>
+        <![CDATA[
+        	import mx.controls.ToolTip;
+        	import mx.controls.TextInput;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import mx.rpc.events.ResultEvent;
+            import flash.events.MouseEvent;
+            import mx.events.CloseEvent;
+            import flash.external.ExternalInterface;
+            import flash.system.Security;
+            import mx.collections.ICollectionView;
+            import mx.events.DynamicEvent;
+            import com.arc90.flexlib.containers.CollapsiblePanel;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import HR.generalClasses.*;
+
+		    public const c_test_server:String = "http://sapr3t.ni.ad.newsint:8001";
+			public const c_dev_server:String = "http://sapd11.ni.ad.newsint:8000";
+			public const c_sap_client:String = "sap-client=007&";
+			public const c_wsdl_sicf_prefix:String = "/sap/bc/soap/wsdl11?"; 
+		
+			[Bindable]
+			public var wsdl_prefix:String;
+            			
+            // Table of Misc payment
+            [Bindable]
+            public var tableReturned:XMLList;
+            [Bindable]
+            public var table:XMLList;
+                                 		
+			[Bindable]
+			public var bEnableButtons:Boolean = true;			
+						
+			[Bindable]
+			public var xmlalldata: XML;
+
+			// value for PORTAL url
+			[Bindable]
+			public var portalURL:String;
+						
+			// Array of result messages
+			private var resultMessages:Array;
+			private var errorMessages:Array;
+
+			// messages
+			[Bindable]
+			public var xmlmessages: XML;
+
+			// cost centre combox box
+			[Bindable]
+			private var costCentre:Array;
+			
+			// action combox box
+			[Bindable]
+			private var action:Array;	
+
+			[Bindable]
+			public var SelectedCostCentre:String;
+			public var passedCostCentre:String;
+
+			[Bindable]
+			public var SelectedAction:String;
+			public var passedAction:String;	
+				
+			public function init():void {
+				// Called at the "init" event of the application
+				// We need to tell the web services where to get their WSDls from.			
+				if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    			wsdl_prefix = c_wsdl_sicf_prefix + "services=";
+				else  // Running locally
+			 	   wsdl_prefix = c_dev_server       // Which SAP server should we connect to?
+			              	    + c_wsdl_sicf_prefix
+			             	    + c_sap_client       // Which SAP client should we connect to?
+			            	    + "services=" ;  			
+	    	}
+
+			public function setCombo1():void {
+				comboCostCentre.setFocus();
+		
+				if(comboCostCentre.selectedItem != null){
+					SelectedCostCentre = comboCostCentre.selectedItem.data;						
+				}else{
+					SelectedCostCentre = passedCostCentre;			
+				}				
+			}
+			
+			public function setCombo2():void {
+				comboAction.setFocus();
+		
+				if(comboAction.selectedItem != null){
+					SelectedAction = comboAction.selectedItem.data;						
+				}else{
+					SelectedAction = passedAction;			
+				}				
+			}
+			
+			public function creationComplete():void {		
+				// Called at the "creationComplete" event of the application
+				// Set everything up visually and go get data.				
+				registerPortalFunctions();
+				defaultDates();
+				getMiscItems();
+			}
+			
+			public static const millisecondsPerDay:int = 1000 * 60 * 60 * 24;
+			public function defaultDates():void
+			{
+				var dateTo:Date = new Date();
+				var dateFrom:Date = new Date(dateTo.getTime() - (30 * millisecondsPerDay));
+				var iMonth:Number;
+				var sMonth:String;
+				var sYear:String;
+				var iDay:Number;
+				var sDay:String;
+					
+				dfTo.text = dateTo.date + "." + dateTo.month + "." + dateTo.fullYear;
+				dfFrom.text = dateFrom.date + "." + dateFrom.month + "." + dateFrom.fullYear;
+						
+				sYear  = dateTo.fullYear.toString();
+				iMonth = dateTo.month + 1;
+				iDay   = dateTo.date;
+				
+				if(iMonth < 10){
+					sMonth = '0' + iMonth.toString()
+				}else{
+					sMonth = iMonth.toString()
+				}
+		
+				if(iDay < 10){
+					sDay = '0' + iDay.toString()
+				}else{
+					sDay = iDay.toString()
+				}	
+				
+				dfTo.text = sDay + "." + sMonth + "." + sYear;
+
+				sYear  = dateFrom.fullYear.toString();
+				iMonth = dateFrom.month + 1;
+				iDay   = dateFrom.date;
+				
+				if(iMonth < 10){
+					sMonth = '0' + iMonth.toString()
+				}else{
+					sMonth = iMonth.toString()
+				}
+		
+				if(iDay < 10){
+					sDay = '0' + iDay.toString()
+				}else{
+					sDay = iDay.toString()
+				}	
+				
+				dfFrom.text = sDay + "." + sMonth + "." + sYear;
+			}
+			
+            public function getMiscItems():void {
+	            // Gets the Misc payment items that this user has approve
+    	        // This function is run when the application is first opened	
+            	wsGetItemsToReport.Z_CAS_MISC_PAY_REP.send();
+
+          
+	          	// clear the output messages
+    		   	resultMessages = new Array();
+             	errorMessages = new Array();
+            }
+            
+            private function registerPortalFunctions():void {
+				if (ExternalInterface.available) {
+					ExternalInterface.addCallback("Refresh", doRefresh);
+					Security.allowDomain("*");
+				}				
+			}
+			
+			public function doRefresh():void
+			{
+				// Clear data
+				table = new XMLList;
+				// Refresh display
+				currentState = '';
+				// Get HR items
+				getMiscItems();
+				// Rerfresh messages
+				resultMessages = new Array();
+                errorMessages = new Array();
+			}
+            					            
+            public function showResults(event:ResultEvent):void {
+            	// Show the items that a user can approve          	
+            	var result:XML = new XML(event.result[0]);
+            	var tablelength:int;
+            	
+				// set the panel title including number of items and set to panel to collapsed/expanded
+				set_pannel_title(XMLList(result.HEADERS.item), "One time vendor payments Report", cp1);
+				xmlalldata = new XML(wsGetItemsToReport.Z_CAS_MISC_PAY_REP.lastResult);
+
+				portalURL  = XML(result.PORTAL);
+				
+		        PopulateCostCentre();
+				SelectCostCentre();
+		        PopulateAction();
+				SelectAction();
+            }
+            
+			protected function set_pannel_title(tableReturned:XMLList, title:String, cpPanel:CollapsiblePanel):void {
+				// sets tilte and collapsed/expanded status of panel
+            	var tablelength:int;
+            	var item:String;
+            	
+				// get the number of items in the table
+				tablelength = tableReturned.length();
+				//if no items, set the title to say no items and collapse the panel
+             	if (tablelength == 0) {
+            		cpPanel.title = title + " - no items";
+            		cpPanel.collapsed = true;
+            	} 
+            	else
+            	{
+            		if (tablelength == 1) {
+            			item = " item";
+            		}
+            		else {
+            			item = " items";	
+            		}
+            		cpPanel.title = title + " - " + tablelength + item;
+            		cpPanel.collapsed = false;
+            	}
+			}
+			
+            public function webServiceFault(event:Event,service:String):void {
+            	var alert_text:String = 'Error with web service ' + service;
+            	Alert.show(alert_text);
+            }      
+            	
+			protected function doSort(event:DynamicEvent, dataProvider:Object):void
+			{
+				var f:ICollectionView;
+				var l_field:String = event.field; 
+								
+				if (dataProvider is ICollectionView)
+				{
+					var sort:Sort = new Sort();
+					var sortField:SortField = new SortField(l_field);
+					if (event.sortOrder == 1)
+					{
+						sortField.descending = false;
+					}
+					else
+					{
+						sortField.descending = true;
+					}
+					//sortField.descending = !(event.sortAscending);					
+					sort.fields = new Array();
+					sort.fields.push(sortField);
+					// Now sort by workflow id to make sure we have a definite sort order
+					sortField = new SortField("WIID");
+					sortField.descending = true;
+					sort.fields.push(sortField);
+					
+					(dataProvider as ICollectionView).sort = sort;
+					(dataProvider as ICollectionView).refresh();
+				}
+			}			
+        ]]>
+	</mx:Script>
+	
+	<mx:WebService id="wsGetItemsToReport"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_MISC_PAY_REP'}"
+     	useProxy="false" 
+    	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetItemsToReport')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_MISC_PAY_REP"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<UNAME></UNAME>
+				<ORG_REQUESTOR></ORG_REQUESTOR>
+				<ORG_ACTION>{SelectedAction}</ORG_ACTION>
+				<ORG_COSTCENTRE>{SelectedCostCentre}</ORG_COSTCENTRE>
+				<DATE_FROM>{DateToSAPFormat(dfFrom.text)}</DATE_FROM>
+				<DATE_TO>{DateToSAPFormat(dfTo.text)}</DATE_TO>
+				<PORTAL></PORTAL>
+				<HEADERS></HEADERS>
+				<REQUESTOR></REQUESTOR>
+				<HR_HISTORY></HR_HISTORY>
+				<COSTCENTRE></COSTCENTRE>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WipeRight id="textEffect" duration="150"/> 
+	<mx:Canvas id="outerCanvas">
+		<mx:TabNavigator x="0" y="0" width="1180" height="116" fillColors="[#D4D4D4, #D4D4D4]"
+			 id="tabSelection" creationPolicy="all" change="handleTabSelect()" enabled="true" includeInLayout="true">
+			<mx:Canvas label="One time vendor payments Report" width="1180" height="74" backgroundColor="#F2F2F2" id="tabStrip" focusEnabled="false">
+				<HR:DateField1 x="108" y="8" width="117" id="dfFrom" enabled="true" editable="true" formatString="DD.MM.YYYY"/>
+				<HR:DateField1 x="260" y="8" width="117" id="dfTo" enabled="true" editable="true" formatString="DD.MM.YYYY"/>				
+				<mx:Label x="8" y="10" 	text="Action Dates" 	fontWeight="bold" toolTip="This is the date the request was actioned" />
+				<mx:Label x="234.5" y="10" 	text="to" 			fontWeight="bold"/>
+
+				<mx:Label x="10" y="45" id="lblCC" text="Cost centre " fontWeight="bold"/> 
+				<mx:ComboBox x="108" y="42"
+					id           = "comboCostCentre"					
+				    labelField   = "label" 
+				    dataProvider="{costCentre}"
+					change       = "setCombo1()"
+					enabled      = "{bEnableButtons}">
+				</mx:ComboBox>
+				
+				<mx:Label x="310" y="45" id="lblAction" text="Action " fontWeight="bold"/> 
+				<mx:ComboBox x="408" y="42"
+					id           = "comboAction"					
+				    labelField   = "label" 
+				    dataProvider="{action}"
+					change       = "setCombo2()"
+					enabled      = "{bEnableButtons}">
+				</mx:ComboBox>	
+
+				<HR:Button1  y="10" right="145" label="Refresh" click="doRefresh();" id="buttonRefresh" enabled="true"/>
+
+				<mx:Image source="@Embed('HR/images/Logo_bgr.gif')" id="image1" y="0" right="0"/>
+			</mx:Canvas>
+		</mx:TabNavigator>
+
+		<mx:Canvas y="120" id="innerCanvas" minWidth="1200" width="1190" height="560">
+			<mx:VBox verticalAlign="top" x="0" y="30">
+			<containers:CollapsiblePanel id="cp1" minWidth="800" maxWidth="1185" title="One time vendor payments Report" x="0">
+					<mx:VBox verticalGap="0">
+						<mx:Repeater id="rpMiscPay" 
+							         dataProvider="{wsGetItemsToReport.Z_CAS_MISC_PAY_REP.lastResult.HEADERS.item}"
+							         recycleChildren="true">
+							<ns2:TableOutput ext_data="{rpMiscPay.currentItem}"
+								            ext_index="{rpMiscPay.currentIndex}"
+								            formatXML="{fieldFormatting.MiscPayOutput}"
+								            userSort="doSort(event, rpMiscPay.dataProvider);">
+							</ns2:TableOutput>
+						</mx:Repeater>
+					</mx:VBox>
+			</containers:CollapsiblePanel>
+			</mx:VBox>
+		</mx:Canvas>
+	</mx:Canvas>
+</mx:Application>

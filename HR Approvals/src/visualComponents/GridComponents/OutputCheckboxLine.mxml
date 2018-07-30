@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       xmlns:ns1="visualComponents.GridComponents.*"
+	       implements="mx.controls.listClasses.IDropInListItemRenderer">     
+	 <mx:Script>
+	 	<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+	 	
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			cb.data = value;
+	 		}
+	 		
+	 		public function set listData(value:BaseListData):void
+	 		{
+	 			cb.listData = value;
+	 		}
+
+	 		public function get listData():BaseListData
+	 		{
+	 			return cb.listData;
+	 		}	 			 		
+	 	]]>
+	 </mx:Script>
+	       
+	<ns1:OutputCheckbox x="9" y="1" height="10" width="10" id="cb">
+	</ns1:OutputCheckbox>
+</mx:Canvas>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actionScriptProperties version="1" mainApplicationPath="Contributor.mxml">
+  <compiler additionalCompilerArguments="-locale en_US" copyDependentFiles="true" generateAccessible="false" strict="true" warn="true" htmlGenerate="true" htmlPlayerVersionCheck="true" htmlPlayerVersion="9.0.0" htmlExpressInstall="true" htmlHistoryManagement="true" outputFolderPath="bin" sourceFolderPath="src">
+    <compilerSourcePath/>
+    <libraryPath>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/playerglobal.swc" linkType="2"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/utilities.swc" linkType="1"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/flex.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/framework.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/rpc.swc" linkType="1"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/charts.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <libraryPathEntry kind="1" path="${FRAMEWORKS}/locale/{locale}" linkType="1"/>
+      <libraryPathEntry kind="3" path="\Contributor\src\component\HTMLComponent.swc" linkType="1"/>
+      <libraryPathEntry kind="3" path="/ReusableComponents1/bin/ReusableComponents1.swc" linkType="1" sourcepath="/ReusableComponents1/src"/>
+    </libraryPath>
+    <sourceAttachmentPath>
+      <sourceAttachmentPathEntry kind="3" path="${FRAMEWORKS}/libs/flex.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <sourceAttachmentPathEntry kind="3" path="${FRAMEWORKS}/libs/framework.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <sourceAttachmentPathEntry kind="3" path="${FRAMEWORKS}/libs/charts.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <sourceAttachmentPathEntry kind="3" path="/ReusableComponents1/bin/ReusableComponents1.swc" linkType="1" sourcepath="/ReusableComponents1/src"/>
+    </sourceAttachmentPath>
+  </compiler>
+  <applications>
+    <application path="Contributor.mxml"/>
+    <application path="src\src\src\src\src\src\Contributor\bin\Contributor.swf"/>
+    <application path="src\src\src\src\src\src\src\Contributor.mxml"/>
+    <application path="src\src\src\src\src\src\src\src\Contributor.mxml"/>
+    <application path="src\src\src\src\src\src\src\src\src\Contributor\bin\Contributor.swf"/>
+    <application path="src\src\src\src\src\src\src\src\src\Contributor.mxml"/>
+    <application path="src\src\src\src\src\src\src\src\src\ContributorSearch.mxml"/>
+    <application path="src\src\src\src\src\src\Contributor.mxml"/>
+    <application path="src\src\src\src\src\src\src\src\bin\Contributor.swf"/>
+    <application path="src\src\src\src\src\bin\Contributor.swf"/>
+    <application path="src\src\src\src\src\Contributor.mxml"/>
+    <application path="src\src\src\src\Contributor.mxml"/>
+    <application path="src\src\src\Contributor.mxml"/>
+    <application path="src\src\Contributor.mxml"/>
+    <application path="src\Contributor.mxml"/>
+  </applications>
+  <buildCSSFiles/>
+</actionScriptProperties>

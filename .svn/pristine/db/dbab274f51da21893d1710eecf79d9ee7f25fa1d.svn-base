@@ -1,0 +1,58 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>DataGridColumnSortFunctions.as</title>
+<link rel="stylesheet" type="text/css" href="../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="asComment">// ActionScript file        
+</span>            <span class="asReserved">public</span> <span class="asReserved">static</span> <span class="asFunction">function</span> numericSortCompareFunction<span class="asBracket">(</span>o1<span class="asOperator">:</span>Object, o2<span class="asOperator">:</span>Object<span class="asBracket">)</span><span class="asOperator">:</span>int <span class="asBracket">{</span>
+                <span class="asComment">// Used on numeric columns (such as currency) to ensure that they are sorted numerically instaead of by character
+</span>                <span class="asVar">var</span> str1<span class="asOperator">:</span>String;
+                <span class="asVar">var</span> str2<span class="asOperator">:</span>String;
+                <span class="asVar">var</span> num1<span class="asOperator">:</span>Number;
+                <span class="asVar">var</span> num2<span class="asOperator">:</span>Number;
+                <span class="asVar">var</span> returnVal<span class="asOperator">:</span>int;
+                
+                str1 <span class="asOperator">=</span> o1.toString<span class="asBracket">()</span>;
+                str2 <span class="asOperator">=</span> o2.toString<span class="asBracket">()</span>;
+                
+                num1 <span class="asOperator">=</span> Number<span class="asBracket">(</span>str1<span class="asBracket">)</span>;
+                <span class="asReserved">if</span> <span class="asBracket">(</span>isNaN<span class="asBracket">(</span>num1<span class="asBracket">))</span>
+                <span class="asBracket">{</span>
+                    <span class="asComment">// Keep chopping leading characters off the strnig until we get a number
+</span>                    <span class="asComment">// This is to deal with currencies
+</span>                    num1 <span class="asOperator">=</span> Number<span class="asBracket">(</span>str1<span class="asBracket">)</span>;
+                    <span class="asReserved">while</span> <span class="asBracket">(</span> str1.length <span class="asOperator">&gt;</span> 0 <span class="asOperator">&amp;&amp;</span> isNaN<span class="asBracket">(</span>num1<span class="asBracket">)</span> <span class="asBracket">)</span>
+                    <span class="asBracket">{</span>
+                        str1 <span class="asOperator">=</span> str1.slice<span class="asBracket">(</span>1<span class="asBracket">)</span>;
+                        num1 <span class="asOperator">=</span> str1 <span class="asReserved">as</span> Number;
+                    <span class="asBracket">}</span>
+                <span class="asBracket">}</span>
+                
+                num2 <span class="asOperator">=</span> Number<span class="asBracket">(</span>str2<span class="asBracket">)</span>;
+                
+                <span class="asReserved">if</span> <span class="asBracket">(</span>isNaN<span class="asBracket">(</span>num2<span class="asBracket">))</span>
+                <span class="asBracket">{</span>
+                    <span class="asComment">// Keep chopping leading characters off the strnig until we get a number
+</span>                    <span class="asComment">// This is to deal with currencies
+</span>                    num1 <span class="asOperator">=</span> Number<span class="asBracket">(</span>str2<span class="asBracket">)</span>;
+                    <span class="asReserved">while</span> <span class="asBracket">(</span> str2.length <span class="asOperator">&gt;</span> 0 <span class="asOperator">&amp;&amp;</span> isNaN<span class="asBracket">(</span>num2<span class="asBracket">)</span> <span class="asBracket">)</span>
+                    <span class="asBracket">{</span>
+                        str2 <span class="asOperator">=</span> str2.slice<span class="asBracket">(</span>1<span class="asBracket">)</span>;
+                        num2 <span class="asOperator">=</span> str2 <span class="asReserved">as</span> Number;
+                    <span class="asBracket">}</span>
+                <span class="asBracket">}</span>
+                
+                <span class="asReserved">if</span> <span class="asBracket">(</span> isNaN<span class="asBracket">(</span>num1<span class="asBracket">)</span> <span class="asOperator">||</span> isNaN<span class="asBracket">(</span>num2<span class="asBracket">)</span> <span class="asOperator">||</span> num2 <span class="asOperator">==</span> num1 <span class="asBracket">)</span>
+                    returnVal <span class="asOperator">=</span> 0;
+                <span class="asReserved">else</span> <span class="asReserved">if</span> <span class="asBracket">(</span>num1 <span class="asOperator">&lt;</span> num2<span class="asBracket">)</span>
+                    returnVal <span class="asOperator">=</span> <span class="asOperator">-</span>1;
+                <span class="asReserved">else</span> <span class="asReserved">if</span> <span class="asBracket">(</span>num1 <span class="asOperator">&gt;</span> num2<span class="asBracket">)</span>
+                    returnVal <span class="asOperator">=</span> 1;
+                
+                <span class="asReserved">return</span> returnVal;            
+            <span class="asBracket">}</span></pre></body>
+</html>

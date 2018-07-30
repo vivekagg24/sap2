@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flexLibProperties version="1">
+  <includeClasses>
+    <classEntry path="ni.components.DateInputPlus"/>
+    <classEntry path="ni.components.IterativeOperation"/>
+    <classEntry path="ni.components.NIProgressBar"/>
+    <classEntry path="ni.components.SelectableTextInput"/>
+    <classEntry path="ni.components.SelectableTextInputPlus"/>
+    <classEntry path="ni.components.TextInputPlus"/>
+    <classEntry path="ni.components.cas.QueryPopup"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>

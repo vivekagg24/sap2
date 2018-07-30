@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+					layout="absolute"
+					paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0" 
+			    	initialize="init();" minWidth="1000"
+					creationComplete="creationComplete();"
+					creationPolicy="all" 
+					horizontalScrollPolicy="auto" verticalScrollPolicy="auto" xmlns:ns1="visualComponents.*">
+
+	<mx:Script source="scripts/Processing_general.as"/>
+	<mx:Script source="scripts/Report_printing.as"/>
+	<mx:Script>
+		<![CDATA[
+   //Modification Log
+/*
+IC#93228 - Modification to Closing Stock Report
+users reporting that incorrect values being returned when selecting 
+weekly report. This was due to thefact that the related fm
+ZNP_CLOSING_STOCK~_REPORT was using dates rather than Week ID to select the data from
+ZNP_STOCK_HIST
+Rectified by modifying fm and also passing week details to fm from this actionscript
+*/
+		
+		import FormPrintView;
+
+		// week number combo box
+		[Bindable]
+		private var weekList:Array;
+
+		[Bindable]
+		public var SelectedWeek:String;
+		public var passedWeek:String;
+	
+		[Bindable]
+		public var dateFrom:String;
+		[Bindable]
+		public var dateTo:String;
+		[Bindable]
+		public var yearTo:String;
+		[Bindable]
+		public var weekTo:String;
+		[Bindable]
+		public var yearFrom:String;
+		[Bindable]
+		public var weekFrom:String;	
+		[Bindable]
+		public var selWeek:String;	
+		[Bindable]
+		public var selYear:String;	//IC#93228
+	
+		// get deliveries for site selected
+		public function getClosingStock():void {			
+	    	// This function is run when the application is first opened	
+			wsGetClosingStock.ZNP_CLOSING_STOCK_REPORT.send();
+		}
+
+		// when refresh button clicked, refresh the screen
+		public function doRefresh():void
+		{
+ 			CursorManager.setBusyCursor();
+			// Refresh display
+			currentState = '';
+
+			// Get Closing Stock for site
+			//getClosingStock();
+			getWeekNo();
+    		CursorManager.removeBusyCursor(); 
+		}  		
+
+		// get week numbers for site selected
+		public function getWeekNo():void {
+    		// This function is run when the application is first opened	
+			wsGetWeekNumbers.ZNP_GET_WEEK_NUMBERS.send();
+		}
+
+ 		// when refresh button clicked, refresh the screen
+		public function clearDates():void
+		{
+			dateFrom = '';
+			dateTo = '';
+			selWeek = '';//IC#93228
+			selYear = '';//IC#93228
+		} 
+
+		// display the results
+		public function showResults(event:ResultEvent):void {
+			// This is the result of the webservice called by getDeliveries();
+			// output messages		
+ 			var XMLMessList:XMLList;
+
+			XMLMessList = wsGetClosingStock.ZNP_CLOSING_STOCK_REPORT.lastResult.RE_T_MESSAGES.item;
+			if (XMLMessList && XMLMessList[0] != null) {
+				var messagePopup:Message =  PopUpManager.createPopUp(this, Message) as Message;
+					messagePopup.messageTab = XMLMessList;	
+			} 
+		}			          
+
+		//Process messages and error from SAP function calls
+		public function processingReturned(event:ResultEvent):void {
+			// We have the result of a rejection or an approval back from SAP
+ 			var b:XML = new XML(event.result[0]);
+			var d:String;
+			var XMLMessList:XMLList;	
+			
+ 			if (event.target.service == "ZNP_PLANT_AUTH_CHECKService") {
+				XMLMessList = wsGetPlants.ZNP_PLANT_AUTH_CHECK.lastResult.RE_T_MESSAGES.item;
+		        PopulatePlant(wsGetPlants.ZNP_PLANT_AUTH_CHECK.lastResult.ET_WERKS.item);
+				SelectPlant();
+			} else if (event.target.service == "ZNP_GET_WEEK_NUMBERSService") {
+				XMLMessList = wsGetWeekNumbers.ZNP_GET_WEEK_NUMBERS.lastResult.RE_T_MESSAGES.item;
+		        PopulateWeek(wsGetWeekNumbers.ZNP_GET_WEEK_NUMBERS.lastResult.ET_WEEK_NO.item);
+				SelectWeek();
+			}
+		
+			// output messages		
+			if (XMLMessList && XMLMessList[0] != null) {
+				var messagePopup:Message =  PopUpManager.createPopUp(this, Message) as Message;
+					messagePopup.messageTab = XMLMessList;	
+			}
+			doRefresh(); 
+		} 
+		
+		public function closingReturned(event:ResultEvent):void {
+			// We have the result of a rejection or an approval back from SAP
+ 			var b:XML = new XML(event.result[0]);
+			var d:String;
+			var XMLMessList:XMLList;
+			var messagePopup:Message;
+				
+			if (event.target.service == "ZNP_GET_WEEK_NUMBERSService") {
+				XMLMessList = wsGetWeekNumbers.ZNP_GET_WEEK_NUMBERS.lastResult.RE_T_MESSAGES.item;
+	    	    PopulateWeek(wsGetWeekNumbers.ZNP_GET_WEEK_NUMBERS.lastResult.ET_WEEK_NO.item);
+				SelectWeek();
+			}
+		
+			// output messages		
+			if (XMLMessList && XMLMessList[0] != null) {
+				messagePopup =  PopUpManager.createPopUp(this, Message) as Message;
+				messagePopup.messageTab = XMLMessList;	
+			}
+			getClosingStock();	
+		}		
+
+		// set the week drop list to selected value
+		public function setWeekCombo():void {
+			var alert_text:String;
+		
+			comboWeek.setFocus();
+			
+			if(comboWeek.selectedItem != null){
+				dateFrom = comboWeek.selectedItem.data1;
+				dateTo = comboWeek.selectedItem.data2;		
+				selWeek = comboWeek.selectedItem.data4; //IC#93228		
+				selYear = comboWeek.selectedItem.data3; //IC#93228		
+			}
+			getClosingStock();
+		}
+		
+		// set the week drop list of sites the user is authorised to receipt
+		private function PopulateWeek(weekXML:Object):void{
+			var weeksXML:XMLList = weekXML as XMLList;
+	        var xmlWeekLength:int  = weeksXML.length();
+        	weekList = new Array();
+        	var fiscal:uint;
+
+    	    var i:Number=0;
+	        for (i=0; i< xmlWeekLength; i++){ 
+	        	fiscal = uint(weeksXML[i].ZYEAR - 1);
+            	var value:String = 'Week ' + weeksXML[i].ZWEEK.toString()
+            		+ ' ' + fiscal + '/' + weeksXML[i].ZYEAR.toString() + ' '
+        	    	+ '   ' + weeksXML[i].DATE_FROM.toString().substr(8,2) + '/'
+    	        	+ weeksXML[i].DATE_FROM.toString().substr(5,2) + '/'
+	            	+ weeksXML[i].DATE_FROM.toString().substr(0,4)
+            		+ ' - ' + weeksXML[i].DATE_TO.toString().substr(8,2) + '/'
+        	    	+ weeksXML[i].DATE_TO.toString().substr(5,2) + '/'
+    	        	+ weeksXML[i].DATE_TO.toString().substr(0,4);            	
+	            var key1:String = weeksXML[i].DATE_FROM.toString();		            
+            	var key2:String = weeksXML[i].DATE_TO.toString();  
+        	    var key3:String = weeksXML[i].ZYEAR.toString();
+    	        var key4:String = weeksXML[i].ZWEEK.toString()
+	            var key5:String = weeksXML[i].ZYEAR_TO.toString();
+            	var key6:String = weeksXML[i].ZWEEK_TO.toString();                        
+        	    weekList.push({label: value, data1: key1, data2: key2, data3: key3, data4: key4, data5: key5, data6: key6});
+ 			} 
+	    }
+	    
+		// set the week to be returned when calling getDeliveries
+		private function SelectWeek():void{					
+        	for (var i:int = 0; i< weekList.length; i++){	      	
+        		if(weekList[i].data1 == dateFrom && weekList[i].data2 == dateTo) {
+        			comboWeek.selectedIndex = i;
+	        		return;
+    	    	}
+        	}
+	    	comboWeek.selectedIndex = 0;
+			dateFrom = weekList[0].data1;
+			dateTo = weekList[0].data2;  
+			yearTo = weekList[0].data5;	
+			weekTo = weekList[0].data6;
+			yearFrom = weekList[0].data3;	
+			weekFrom = weekList[0].data4;	
+			selWeek = weekList[0].data4; //IC#93228
+			selYear = weekList[0].data3; //IC#93228	
+		}	    				 		        		
+		]]>
+	</mx:Script>
+<!-- web service to call into SAP -->
+<!-- get plants -->
+	<mx:WebService id="wsGetPlants"
+ 		wsdl="{wsdl_prefix + 'ZNP_PLANT_AUTH_CHECK'}"
+     	useProxy="false"
+     	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsGetPlants')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PLANT_AUTH_CHECK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_UNAME></I_UNAME>
+				<ET_WERKS></ET_WERKS>	
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- get weeks numbers -->
+	<mx:WebService id="wsGetWeekNumbers"
+ 		wsdl="{wsdl_prefix + 'ZNP_GET_WEEK_NUMBERS'}"
+     	useProxy="false"
+     	result="closingReturned(event)"
+  		fault="webServiceFault(event,'wsGetWeekNumbers')" 
+  		load="forceSecureWSDL(event)"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_GET_WEEK_NUMBERS"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<ET_WEEK_NO></ET_WEEK_NO>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- Get list of expected deliveries and processed deliveries from this week -->
+<!-- //IC#93228 - added selWeek and selYear -->
+	<mx:WebService id="wsGetClosingStock"
+ 		wsdl="{wsdl_prefix + 'ZNP_CLOSING_STOCK_REPORT'}"
+     	useProxy="false" 
+     	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetClosingStock')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_CLOSING_STOCK_REPORT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<DATE_FROM>{dateFrom}</DATE_FROM>
+				<DATE_TO>{dateTo}</DATE_TO>
+				<SEL_WEEK>{selWeek}</SEL_WEEK>
+				<SEL_YEAR>{selYear}</SEL_YEAR>
+				<PROCESSED_DELIVERIES></PROCESSED_DELIVERIES>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+	<mx:Panel x="2" y="2" height="120" width="100%" title="Closing Stock Report" layout="absolute" fontFamily="Arial" fontSize="18" fontWeight="bold" backgroundAlpha="0">
+		<mx:Label x="15" y="10" text="Site:" fontSize="10"/>
+		<mx:ComboBox id="comboPlant" x="90" y="10" width="200" fontSize="10" 
+			dataProvider="{plantsList}" change = "clearDates(); setCombo();" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Button x="448" y="10" id="refresh" click="doRefresh()" label="Refresh Report" fontSize="12"/>
+		<mx:Button x="448" y="39" label="Print Closing Stock" click="doPrint(wsGetClosingStock.ZNP_CLOSING_STOCK_REPORT.lastResult.PROCESSED_DELIVERIES.item, 'Closing Stock', comboPlant.text, comboWeek.text)" fontSize="12"/>
+		<mx:Label x="15" y="40" text="Week number:" fontSize="10"/>
+		<mx:ComboBox id="comboWeek" x="90" y="40" width="313" fontSize="10" 
+			dataProvider="{weekList}" change = "setWeekCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Text x="696" y="-1" text="News UK Newsprint" height="36" fontSize="28" fontFamily="Times"/>				
+	</mx:Panel>
+
+	<mx:Panel x="0" y="125" height="528" width="100%" title="Closing Stock (current week)" backgroundAlpha="0">
+		<mx:DataGrid id="ClosingStock" dataProvider="{wsGetClosingStock.ZNP_CLOSING_STOCK_REPORT.lastResult.PROCESSED_DELIVERIES.item}" editable="true" enabled="true" height="488" wordWrap="true">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Vendor"         textAlign="left"  dataField="NAME1"             width="160" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill"           textAlign="left"  dataField="MILL_NAME"         width="160" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material"       textAlign="left"  dataField="MAKTX"             width="140" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Opening Weight" textAlign="right" dataField="OPENING_WEIGHT"    width="65"  editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Opening Reels"  textAlign="right" dataField="OPENING_REEL"      width="65"  editable="false" backgroundColor="0xDCDCDC"/>				
+				<mx:DataGridColumn headerText="Del. Weight"    textAlign="right" dataField="DELIVERIES_WEIGH"  width="65"  editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Del. Reels"     textAlign="right" dataField="DELIVERIES_REEL"   width="50"  editable="false" backgroundColor="0xDCDCDC"/>	
+				<mx:DataGridColumn headerText="Adj. Weight"    textAlign="right" dataField="ADJUST_WEIGHT"     width="65"  editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Adj Reels"      textAlign="right" dataField="ADJUST_REEL"       width="50"  editable="false" backgroundColor="0xDCDCDC"/>	
+				<mx:DataGridColumn headerText="Transf. Weight" textAlign="right" dataField="TRANSFER_WEIGHT"   width="65"  editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Transf. Reels"  textAlign="right" dataField="TRANSFER_REEL"     width="50"  editable="false" backgroundColor="0xDCDCDC"/>	
+				<mx:DataGridColumn headerText="Usage Weight"   textAlign="right" dataField="USAGE_WEIGHT"      width="65"  editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Usage Reels"    textAlign="right" dataField="USAGE_REEL"        width="50"  editable="false" backgroundColor="0xDCDCDC"/>	
+				<mx:DataGridColumn headerText="Closing Weight" textAlign="right" dataField="CLOSING_WEIGHT"    width="65"  editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Closing Reels" textAlign="right" dataField="CLOSING_REEL"    width="65"  editable="false" backgroundColor="0xDCDCDC"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+</mx:Application>

@@ -1,0 +1,14 @@
+{
+  "timesheets": {
+    "open": "3"
+  },
+
+  "approval": {
+    "total": "6"
+  },
+
+  "projects": {
+    "total" : "1"
+  }
+
+}

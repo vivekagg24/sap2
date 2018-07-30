@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Search for people in SAP
+     Search either for users or employees
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       height="24"
+	       tabChildren="true"
+	       tabEnabled="false"
+	       horizontalScrollPolicy="off"
+	       verticalScrollPolicy="off"
+	 >
+<mx:Metadata>
+	[Event("change")]
+	[Event("personSearchChosen")]
+	[Event("personSearchNotFound")]
+	
+</mx:Metadata>
+
+
+	<mx:TextInput left="0" right="36" y="0" maxChars="{maxChars}"
+		          height="24"
+		id="txtPerson"
+	    enter="doSearch()"	    
+	    focusOut="handleTextInputFocusOut(event);"	   
+	    change="handleChange(event)"	    
+	    />
+	    
+	<mx:Button right="0" y="0" width="30" height="24"
+	    paddingLeft="0"
+	    paddingRight="0"
+		 label=""
+		 icon="@Embed('images/Search2.gif')"
+		 id="btnSearch"
+		 click="doSearch()"/>
+	<mx:WebService id="wsSearch" showBusyCursor="true"
+	    wsdl="{wsdl_prefix + 'Z_EMPLOYEE_SEARCH'}"
+		result="handleResult(event)"
+	    fault="handleFault(event)">
+	    <mx:operation name="Z_EMPLOYEE_SEARCH" concurrency="last" resultFormat="e4x">
+	    	<mx:request xmlns="">
+	    		<IM_STRING>{tSearchString}</IM_STRING>
+	    		<IM_FIRST_NAME>{tSearchFName}</IM_FIRST_NAME>
+	    		<IM_LAST_NAME>{tSearchLName}</IM_LAST_NAME>
+	    		<IM_ACTIVE_ONLY>{tSearchActiveOnly}</IM_ACTIVE_ONLY>
+	    		<IM_ONLY_USERS>{tSearchUsersOnly}</IM_ONLY_USERS>
+	    		<IM_ONLY_CMS_USERS>{tSearchCMSOnly}</IM_ONLY_CMS_USERS>
+	    	</mx:request>
+	    </mx:operation>		
+	</mx:WebService>	 
+		 
+		 
+	<mx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.core.UIComponent;
+			import nihr.PersonSearchClasses.*;
+			import mx.collections.XMLListCollection;
+			import mx.rpc.events.*;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			
+			// Variables to encapsulate properties of text box
+			[Bindable]
+			public var maxChars:int;
+			
+			// Variables for search
+			[Bindable]
+			private var tSearchString:String;
+			[Bindable]
+			private var tSearchFName:String;
+			[Bindable]
+			private var tSearchLName:String;
+			[Bindable]
+			private var tSearchActiveOnly:String = 'X';
+			[Bindable]
+			private var tSearchUsersOnly:String = '';			
+			[Bindable]
+			private var tSearchCMSOnly:String = '';
+			
+						
+			// 	Variables for connection to SAP
+			[Bindable] 
+			public var wsdl_prefix:String = "/zni/bc/soap/wsdl11?services=";
+			private const service:String = "Z_EMPLOYEE_SEARCH"
+			private var searchActive:Boolean = false;
+			
+			// Variables for the employee chosen
+			protected var _pernr:String;
+			protected var _firstName:String;
+			protected var _lastName:String;
+			protected var _uname:String;
+			
+			// Search to return username or employee
+			public var returnUname:Boolean = true;
+			
+			// Search paramters
+			public var only_users:Boolean;
+			public var only_cms_users:Boolean;
+			
+			
+			
+			
+			// Handle the user clicking on the "Search" button
+			protected function doSearch():void
+			{
+				if (txtPerson.text.length == 0)
+				{
+					// Prompt the user to enter a first name and last name
+					var popup:PersonSearchPopUp = PersonSearchPopUp(PopUpManager.createPopUp(parentApplication as DisplayObject, PersonSearchPopUp, false));
+					PopUpManager.centerPopUp(popup);					
+					popup.addEventListener(PersonSearchEvent.PERSON_SEARCH_REQUEST, doNameSearch);
+				}
+				else
+				{
+					// Search based on whatever is in the text field
+					tSearchFName = "";
+					tSearchLName = "";
+					tSearchString = txtPerson.text;
+					
+					// Perpare to send
+					tSearchCMSOnly = "";
+					tSearchUsersOnly = "";
+					if (only_cms_users)
+						tSearchCMSOnly = "X";				
+					if (only_users)
+						tSearchUsersOnly = "X";	
+					
+					// Send					
+					wsSearch.Z_EMPLOYEE_SEARCH.send();
+					this.enabled = false
+					this.searchActive = true;
+				}				
+			}
+			
+			// Search by first name last name
+			protected function doNameSearch(event:PersonSearchEvent):void
+			{
+				
+				// Remove the event listener so the object can be garbage collected
+				(event.target as PersonSearchPopUp).removeEventListener(PersonSearchEvent.PERSON_SEARCH_REQUEST, doNameSearch);
+				
+				// Call the search as long as something is supplied
+				tSearchString = "";
+				tSearchFName = event.firstName;
+				tSearchLName = event.lastName;
+				
+				// Perpare to send
+				tSearchCMSOnly = "";
+				tSearchUsersOnly = "";
+				if (only_cms_users)
+					tSearchCMSOnly = "X";				
+				if (only_users)
+					tSearchUsersOnly = "X";	
+					
+				
+				if (tSearchFName != "" || tSearchLName != "")
+				{
+					wsSearch.Z_EMPLOYEE_SEARCH.send();
+					this.enabled = false
+					this.searchActive = true;					
+				}			
+				
+			}
+			
+			/** Employee chosen
+			*
+			*/
+			protected function personChosenInPopUp(event:PersonSearchEvent):void
+			{
+				_firstName = event.firstName
+				_lastName = event.lastName;
+				_pernr = event.pernr;
+				_uname = event.uname;
+				
+				// Set the text
+				if (this.returnUname)
+					txtPerson.text = _uname;
+				else
+					txtPerson.text = _pernr;
+				
+				// Stop listening for the search request event to allow garbage colllection
+				(event.target as UIComponent).removeEventListener(PersonSearchEvent.PERSON_SEARCH_REQUEST, personChosenInPopUp);
+				
+				// Re-dispatch the event from this object (used for data binding)
+				var e:PersonSearchEvent = event.clone() as PersonSearchEvent;				
+				event.stopImmediatePropagation();
+				this.dispatchEvent(e);
+			}
+			
+					
+			
+			protected function handleResult(event:ResultEvent):void
+			{
+				this.enabled = true;
+				this.searchActive = false;
+				// Search results returned from SAP
+				var resultList:XMLListCollection = new XMLListCollection(event.result.EX_T_EMPLOYEES.item);
+				var e:PersonSearchEvent;
+				if (resultList == null || resultList.length == 0)
+				{
+					// Reset variables
+					_firstName = "";
+					_lastName = "";
+					_pernr = "";
+					_uname = "";
+					
+					// Trigger data binding
+					e = new PersonSearchEvent(PersonSearchEvent.PERSON_SEARCH_NOTFOUND, true, true, _firstName, _lastName, _pernr, _uname);
+					this.dispatchEvent(e);
+					this.executeBindings();
+					var a:Alert = Alert.show("No results found");
+					a.addEventListener(FlexEvent.REMOVE, setFocusOnText)				
+					return;
+				}
+				else if (resultList.length == 1)
+				{
+					// Exactly one result found
+					var x:XML = resultList.getItemAt(0) as XML;
+					
+					// Set our variables					
+					_firstName = x.VORNA.toString();
+					_lastName = x.NACHN.toString();
+					_pernr = x.PERNR.toString();
+					_uname = x.UNAME.toString();
+					
+					// Set the text
+					if (this.returnUname)
+						txtPerson.text = _uname;
+					else
+						txtPerson.text = _pernr;
+				
+					// Dispatch the event from this object (used by data binding)
+					e = new PersonSearchEvent(PersonSearchEvent.PERSON_SEARCH_CHOSEN, true, true, _firstName, _lastName, _pernr, _uname);
+					this.dispatchEvent(e);
+					this.executeBindings();
+					
+				}
+				else
+				{
+					// Show the search results
+					var popup:PersonSearchResults = PersonSearchResults(PopUpManager.createPopUp(parentApplication as DisplayObject, PersonSearchResults, false));
+					PopUpManager.centerPopUp(popup);
+					popup.y = popup.y + 100;
+					popup.results = resultList;					
+					popup.addEventListener(PersonSearchEvent.PERSON_SEARCH_CHOSEN, personChosenInPopUp);					
+				}
+				
+			}
+			
+			private function setFocusOnText(event:Object):void
+			{
+				this.txtPerson.setFocus();
+			}
+			
+			
+			protected function handleFault(event:FaultEvent):void
+			{
+				this.enabled = true;
+				this.searchActive = false;
+				Alert.show(event.fault.message.toString(), "Server error");
+			}
+			
+			/** Make sure that change events triggered by the text input field bubble
+			*/
+			protected function handleChange(event:Event):void
+			{
+				// If the change event doesn't bubble up, trigger a new one
+				// The new event will have a target of this object, rather than 
+				// TextInput field.
+				if (!event.bubbles) 
+				{
+					var ev:Event = new Event("change", true, true);
+					this.dispatchEvent(ev);
+				}
+					
+			}
+			
+			protected function handleTextInputFocusOut(event:FocusEvent):void
+			{
+				// Firstly, we don't trigger an event just because we focus out due to an alert
+				var obj:Object = event.relatedObject;
+				while (obj != null)
+				{
+					if (obj is Alert)
+						return;
+					
+					if (obj.hasOwnProperty("parent"))
+						obj = obj.parent;
+					else
+						obj = null;						
+				}
+				
+				// Secondly, we don't dispatch the event if the field is empty
+				if (this.text.length == 0)
+					return;
+					
+				this.dispatchEvent(new PersonSearchEvent(PersonSearchEvent.PERSON_SEARCH_CHOSEN))
+				
+			}
+			
+			
+			/** Read-only fields. When an employee is chosen, data binding will be triggered
+			*   by the PersonSearchChosen event.
+			*/
+			[Bindable(event="personSearchChosen")]
+			public function get text():String
+			{
+				return txtPerson.text;
+			}
+			public function set text(text:String):void
+			{
+				txtPerson.text = text;
+			}
+			
+			[Bindable(event="personSearchChosen")]
+			public function get firstName():String
+			{
+				return _firstName;
+			}
+			[Bindable(event="personSearchChosen")]
+			public function get lastName():String
+			{
+				return _lastName;
+			}
+			[Bindable(event="personSearchChosen")]
+			public function get person():String
+			{
+				return _pernr;
+			}
+			[Bindable(event="personSearchChosen")]
+			public function get username():String
+			{
+				return _uname;
+			}					
+			
+			
+			// Handle focus in
+			override public function setFocus():void
+			{
+				txtPerson.setFocus();				
+			}
+			
+			
+		]]>
+	</mx:Script>	 
+		 
+		 
+</mx:Canvas>

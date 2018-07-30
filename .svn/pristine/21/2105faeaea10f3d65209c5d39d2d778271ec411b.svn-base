@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+					layout="absolute"
+					paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0" 
+			    	initialize="init();" minWidth="1000"
+					creationComplete="creationComplete();"
+					creationPolicy="all" 
+					horizontalScrollPolicy="auto" verticalScrollPolicy="auto" xmlns:ns1="visualComponents.*">
+
+	<mx:Script source="scripts/Processing_general.as"/>
+	<mx:Script source="scripts/Report_printing.as"/>
+	<mx:Script>
+		<![CDATA[
+		import FormPrintView;
+		
+		// get deliveries for site selected
+		public function getDeliveries():void {
+	    	// This function is run when the application is first opened	
+			wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.send();
+		}
+
+		// when refresh button clicked, refresh the screen
+		public function doRefresh():void
+		{
+ 			CursorManager.setBusyCursor();
+			// Refresh display
+			currentState = '';
+
+			// Get deliveries for site
+			getDeliveries();
+    		CursorManager.removeBusyCursor(); 
+		}  		
+
+		// when refresh button clicked, refresh the screen
+		public function clearDates():void
+		{
+			dateFrom.text = '';
+			dateTo.text = '';
+		}
+
+		// display the results
+		public function showResults(event:ResultEvent):void {
+			// This is the result of the webservice called by getDeliveries();
+			// output messages		
+ 			var XMLMessList:XMLList;
+
+			XMLMessList = wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.RE_T_MESSAGES.item;
+			dateFrom.text = wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.DATE_FROM.toString().substr(8,2)
+						+ '.' + wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.DATE_FROM.toString().substr(5,2)
+						+ '.' + wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.DATE_FROM.toString().substr(0,4);
+	 		dateTo.text = wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.DATE_TO.toString().substr(8,2)
+						+ '.' + wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.DATE_TO.toString().substr(5,2)
+						+ '.' + wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.DATE_TO.toString().substr(0,4);
+			if (XMLMessList && XMLMessList[0] != null) {
+				var messagePopup:Message =  PopUpManager.createPopUp(this, Message) as Message;
+					messagePopup.messageTab = XMLMessList;	
+			} 
+		}			          
+
+		//Process messages and error from SAP function calls
+		public function processingReturned(event:ResultEvent):void {
+			// We have the result of a rejection or an approval back from SAP
+ 			var b:XML = new XML(event.result[0]);
+			var d:String;
+			var XMLMessList:XMLList;
+	
+ 			if (event.target.service == "ZNP_PLANT_AUTH_CHECKService") {
+				XMLMessList = wsGetPlants.ZNP_PLANT_AUTH_CHECK.lastResult.RE_T_MESSAGES.item;
+		        PopulatePlant(wsGetPlants.ZNP_PLANT_AUTH_CHECK.lastResult.ET_WERKS.item);
+				SelectPlant();
+			}
+		
+			// output messages		
+			if (XMLMessList && XMLMessList[0] != null) {
+				var messagePopup:Message =  PopUpManager.createPopUp(this, Message) as Message;
+					messagePopup.messageTab = XMLMessList;	
+			}
+			doRefresh(); 
+		}  		        		
+		]]>
+	</mx:Script>
+<!-- web service to call into SAP -->
+<!-- get plants -->
+	<mx:WebService id="wsGetPlants"
+ 		wsdl="{wsdl_prefix + 'ZNP_PLANT_AUTH_CHECK'}"
+     	useProxy="false"
+     	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsGetPlants')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PLANT_AUTH_CHECK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_UNAME></I_UNAME>
+				<ET_WERKS></ET_WERKS>	
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- Get list of expected deliveries and processed deliveries from this week -->
+	<mx:WebService id="wsGetDeliveries"
+ 		wsdl="{wsdl_prefix + 'ZNP_GOODS_RECEIPT_REPORT'}"
+     	useProxy="false" 
+     	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetDeliveries')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_GOODS_RECEIPT_REPORT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<DATE_FROM>{DateToSAPFormat(dateFrom.text)}</DATE_FROM>
+				<DATE_TO>{DateToSAPFormat(dateTo.text)}</DATE_TO>
+				<PROCESSED_DELIVERIES></PROCESSED_DELIVERIES>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+    <mx:DateValidator id="fromDateDateV" 
+        source="{dateFrom}" property="text" allowedFormatChars="." trigger="{refresh}"   
+        inputFormat="dd.mm.yyyy" invalid="Alert.show('Invalid date from date');" triggerEvent="click" 
+        valid="doRefresh();"/>
+        
+    <mx:DateValidator id="toDateDateV" 
+        source="{dateTo}" property="text" allowedFormatChars="." trigger="{refresh}"   
+        inputFormat="dd.mm.yyyy" invalid="Alert.show('Invalid date to date');" triggerEvent="click" 
+        valid="doRefresh();"/>	
+	
+	<mx:Panel x="2" y="2" height="120" width="100%" title="Goods Receipt Report" layout="absolute" fontFamily="Arial" fontSize="18" fontWeight="bold" backgroundAlpha="0">
+		<mx:Label x="15" y="10" text="Site:" fontSize="10"/>
+		<mx:ComboBox id="comboPlant" x="70" y="10" width="200" fontSize="10" 
+			dataProvider="{plantsList}" change = "clearDates(); setCombo();" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Button x="448" y="10" id="refresh" click="doRefresh()" label="Refresh Report" fontSize="12"/>
+		<mx:Button x="448" y="39" label="Print Deliveries/Transfers" click="doPrint(wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.PROCESSED_DELIVERIES.item, 'Goods Receipt',  comboPlant.text, dateFrom.text + ' to ' + dateTo.text)" fontSize="12"/>
+		<ns1:DateField1 x="103" y="40" width="117" fontSize="10" id="dateFrom" enabled="true" editable="true" formatString="DD.MM.YYYY"/>
+		<ns1:DateField1 x="255" y="40" width="117" fontSize="10" id="dateTo" enabled="true" editable="true" formatString="DD.MM.YYYY"/>	
+		<mx:Label x="15" y="40" text="Receipt Dates" fontSize="10" toolTip="This is the date the item was receipted" />
+		<mx:Label x="229.5" y="40" text="to" fontSize="10"/>				
+		<mx:Text x="696" y="-1" text="News UK Newsprint" height="36" fontSize="28" fontFamily="Times"/>				
+	</mx:Panel>
+
+	<mx:Panel x="1" y="125" height="528" width="100%" title="Deliveries/transfers receipted (current week)" backgroundAlpha="0">
+		<mx:DataGrid id="ReceiptedDeliveries" dataProvider="{wsGetDeliveries.ZNP_GOODS_RECEIPT_REPORT.lastResult.PROCESSED_DELIVERIES.item}" editable="true" enabled="true" height="488" wordWrap="true">
+			<mx:columns>
+				<mx:DataGridColumn headerText="PO no." dataField="EBELN" width="80" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Line no." dataField="EBELP" width="40" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="LIFNR" width="55" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="NAME1" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL" width="44" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL_NAME" width="170" editable="false" backgroundColor="0xDCDCDC"/>				
+				<mx:DataGridColumn headerText="Material" dataField="MATNR" width="56" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material Description" dataField="MAKTX" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Delivery Date" dataField="DEL_DATE" width="77" editable="false" labelFunction="dateLabel" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Delivery ticket" dataField="DEL_NOTE" width="100" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Weight (ton)" dataField="WEIGHT" width="84" textAlign="left" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Reels" dataField="REEL" width="43" textAlign="left" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Type" dataField="DEL_TYPE" width="37" editable="false" backgroundColor="0xDCDCDC"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+</mx:Application>

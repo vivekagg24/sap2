@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" title="Claimant Details" 
+	creationComplete="doInit();" autoLayout="true"> 
+
+	<mx:Script >
+		<![CDATA[
+		import mx.managers.PopUpManager;
+	
+		public var error:Boolean;
+
+		[Bindable]
+		private var textStyle:String="";	
+		
+		private function doInit():void {
+			this.move(100, 100); // For some reason, PoUpManager.centre doesn't work very well,
+			this.alpha = 1.0;
+			this.setStyle("borderAlpha", 1.0);
+
+			this.claimant.text = data.CLAIMANT;
+			if (data.CASUAL == "X") {
+				this.casual.text = "Casual"; 
+			}
+			else {
+				this.casual.text = "Permanent";
+			}
+			
+			this.position.text = data.CLAIMANT_POS;
+			this.department.text = data.DEPARTMENT;
+			this.homeCC.text = data.HOME_CC;
+			
+			if (error)textStyle="error";
+			btnOK.setFocus();	
+		}
+	
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			super.updateDisplayList(unscaledWidth, unscaledHeight);		
+		}
+	
+		private function handleClose():void{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			parentApplication.focusManager.activate();
+			if (parentApplication.hasOwnProperty("focusField") &&
+			   parentApplication.focusField!=null)
+			{	
+				parentApplication.focusField.setFocus();
+				trace(parentApplication.focusField.id);
+			}
+			if (parentApplication.hasOwnProperty("focusEvent") && parentApplication.focusEvent!="") 
+			{
+				parentApplication.dispatchEvent(new Event(parentApplication.focusEvent));
+			}
+		}
+		]]>
+	</mx:Script>
+	<mx:Style>
+		.error{color:red}
+	</mx:Style>
+
+	<mx:VBox width="500">
+		<mx:HBox width="100%">
+			<mx:Label x="10" width="150"  id="lbl_name" text="Claimant" fontWeight="bold" visible="true" includeInLayout="true"/>
+			<mx:TextInput x="200" width="220" id="claimant" editable="false" visible="true" includeInLayout="true"/>		
+			<mx:Label  id="casual" visible="true" includeInLayout="true"/>
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label x="10" width="150" id="lbl_Position" text="Position" fontWeight="bold" visible="true" includeInLayout="true"/>
+			<mx:TextInput x="200" width="220" id="position" editable="false" visible="true" includeInLayout="true"/>
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label x="10" width="150" id="lbl_Department" text="Department" fontWeight="bold" visible="true" includeInLayout="true"/>
+			<mx:TextInput x="200" width="220" id="department" editable="false" visible="true" includeInLayout="true"/>				
+		</mx:HBox>	
+		<mx:HBox width="100%">
+			<mx:Label x="10" width="150" id="lbl_home_cc" text="Home Cost centre" fontWeight="bold" visible="true" includeInLayout="true"/>
+			<mx:TextInput x="200" width="220" id="homeCC" editable="false" visible="true" includeInLayout="true"/>		
+		</mx:HBox>
+		<mx:Canvas height="40" width="100%"
+			      horizontalScrollPolicy="off"
+			       verticalScrollPolicy="off">	
+			<mx:ControlBar horizontalAlign="center" id="bar2"  width="60" horizontalCenter="0">
+				<mx:HBox defaultButton="{btnOK}">
+					<mx:Button 
+						click="handleClose()" 
+						id="btnOK" 
+						label="OK"  />
+				</mx:HBox>
+			</mx:ControlBar>
+		</mx:Canvas>						
+	</mx:VBox>
+</mx:TitleWindow>

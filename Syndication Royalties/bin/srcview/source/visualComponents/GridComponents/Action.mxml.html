@@ -1,0 +1,88 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Action.mxml</title>
+<link rel="stylesheet" type="text/css" href="../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:Canvas</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot; width=&quot;<span class="mxmlString">100</span>&quot; height=&quot;<span class="mxmlString">42</span>&quot; autoLayout=&quot;<span class="mxmlString">true</span>&quot;<span class="mxmlComponent">&gt;</span>
+    <span class="mxmlTag">&lt;mx:Script&gt;</span>
+        <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+            <span class="asReserved">import</span> mx.events.DynamicEvent;
+            <span class="asReserved">import</span> mx.controls.Alert;
+               <span class="asReserved">import</span> mx.managers.PopUpManager;                 
+                        
+            <span class="asReserved">private</span> <span class="asFunction">function</span> onHoldClick<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+            <span class="asBracket">{</span>
+                  <span class="asVar">var</span> message<span class="asOperator">:</span>onHold <span class="asOperator">=</span>  PopUpManager.createPopUp<span class="asBracket">(</span><span class="asReserved">this</span>, onHold<span class="asBracket">)</span> <span class="asReserved">as</span> onHold;                  
+                  message.data <span class="asOperator">=</span> <span class="asReserved">this</span>.data;               
+            <span class="asBracket">}</span>
+            
+            <span class="asReserved">private</span> <span class="asFunction">function</span> onHistoryClick<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+            <span class="asBracket">{</span>
+                  <span class="asVar">var</span> messagePopup<span class="asOperator">:</span>History <span class="asOperator">=</span>  PopUpManager.createPopUp<span class="asBracket">(</span><span class="asReserved">this</span>, History<span class="asBracket">)</span> <span class="asReserved">as</span> History;                                                     
+                  messagePopup.historyTab <span class="asOperator">=</span> parentApplication.getHistory<span class="asBracket">(</span><span class="asReserved">this</span>.data.PARENT_WIID<span class="asBracket">)</span>;
+            <span class="asBracket">}</span>
+            
+            <span class="asReserved">private</span> <span class="asFunction">function</span> onFormClick<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+            <span class="asBracket">{</span>
+                <span class="asReserved">import</span> flash.net.<span class="asOperator">*</span>;
+
+<span class="asComment">/*                      var adobeFormURL:String = this.parentApplication.portalURL + 
+                                            &quot;/irj/servlet/prt/portal/prteventname/Navigate/prtroot/pcd!3aportal_content&quot; +
+                                            &quot;!2fcom.morse.portalconfig!2fuk.co.newsint.NI_Desktop!2fframeworkPages!2fuk.co.newsint.portal.frameworkpage!2fcom.sap.portal.innerpage!2fcom.sap.portal.contentarea?&quot; +
+                                            &quot;NavigationTarget=ROLES%3A%2F&quot; +
+                                            &quot;%2Fportal_content&quot; +
+                                            &quot;%2Fcom.sap.pct%2Fspecialist&quot; +
+                                            &quot;%2Fcom.sap.pct.erp.hradmin.bp_folder&quot; +
+                                            &quot;%2Fcom.sap.pct.erp.hradmin.11.bp_folder&quot; +
+                                            &quot;%2Fcom.sap.pct.erp.hradmin.11.roles&quot; +
+                                            &quot;%2Fcom.sap.pct.erp.hradmin.11.HRAdministrator&quot; +
+                                            &quot;%2Foverview%2Fcom.sap.pct.erp.hradmin.11.overview&quot; +
+                                            &quot;%2Fcom.sap.pct.erp.hradmin.11.start_processes&quot; +
+                                            &quot;&amp;DynamicParameter=WI_ID%3D&quot; + this.data.WIID +
+                                            &quot;&amp;CurrentWindowId=WID1278491345079&quot; +
+                                            &quot;&amp;NavMode=1&quot;;  */</span>     
+
+                <span class="asVar">var</span> adobeFormURL<span class="asOperator">:</span>String <span class="asOperator">=</span> <span class="asReserved">this</span>.parentApplication.portalURL <span class="asOperator">+</span> 
+                                          <span class="asString">&quot;/irj/servlet/prt/portal/prtroot/pcd!3aportal_content!2fcom.morse.portalconfig!2fuk.co.newsint.NI_Desktop!2fframeworkPages!2fuk.co.newsint.portal.frameworkpage!2fcom.sap.portal.headerless_frameworkpage!2fcom.sap.portal.innerpage?&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;NavigationTarget=ROLES://portal_content/com.morse.portalconfig/uk.co.newsint.custom_ESS_assetts/uk.co.newsint.roles/uk.co.newsint.my_team/com.sap.pct.erp.mss.14.display_form&quot;</span> <span class="asOperator">+</span>
+<span class="asComment">//                                          &quot;NavigationTarget=navurl%3A%2F%2F5f14a2bb90f2c090535506104ba601cf&quot; +
+</span>                                          <span class="asString">&quot;&amp;dropPRTEvent=OBNEvent&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;BOTechnicalName=employee&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;BOSystemAlias=SAP_ERP_HumanResources&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;Operation=display_form_manager&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;isOBN=true&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;FORM_SCENARIO_VERSION=00000&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;FORM_TITLE=&quot;</span> <span class="asOperator">+</span> <span class="asReserved">this</span>.data.FORM_DESC <span class="asOperator">+</span> <span class="asString">&quot;+-+Standard+Step&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;ISR_SCENARIO=&quot;</span> <span class="asOperator">+</span> <span class="asReserved">this</span>.data.SCENARIO <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;STEP_OBJECT_GUID=&quot;</span> <span class="asOperator">+</span> <span class="asReserved">this</span>.data.STEP_GUID <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;DynamicParameter=FORM_SCENARIO_VERSION%3d00000%26&quot;</span> <span class="asOperator">+</span>
+                                                   <span class="asString">&quot;FORM_TITLE%3d&quot;</span> <span class="asOperator">+</span> <span class="asReserved">this</span>.data.FORM_DESC <span class="asOperator">+</span> <span class="asString">&quot;%2b-%2bStandard%2bStep%26&quot;</span> <span class="asOperator">+</span>
+                                            <span class="asString">&quot;ISR_SCENARIO%3d&quot;</span> <span class="asOperator">+</span> <span class="asReserved">this</span>.data.SCENARIO <span class="asOperator">+</span> <span class="asString">&quot;%26&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;STEP_OBJECT_GUID%3d&quot;</span> <span class="asOperator">+</span> <span class="asReserved">this</span>.data.STEP_GUID <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;CurrentWindowId=WID1282650326890&quot;</span> <span class="asOperator">+</span>
+                                          <span class="asString">&quot;&amp;NavMode=3&quot;</span>;
+
+                <span class="asVar">var</span> formURL<span class="asOperator">:</span>URLRequest <span class="asOperator">=</span> <span class="asReserved">new</span> URLRequest<span class="asBracket">(</span>adobeFormURL<span class="asBracket">)</span>;
+                navigateToURL<span class="asBracket">(</span>formURL,<span class="asString">&quot;_blank&quot;</span><span class="asBracket">)</span>;                                                      
+            <span class="asBracket">}</span>
+            <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+        <span class="mxmlTag">&lt;/mx:Script&gt;</span> 
+        
+    <span class="mxmlComponent">&lt;mx:HBox</span> horizontalGap=&quot;<span class="mxmlString">2</span>&quot;<span class="mxmlComponent">&gt;</span>
+    <span class="mxmlComment">&lt;!--</span><span class="mxmlComment"> view approval history </span><span class="mxmlComment">--&gt;</span>
+    <span class="mxmlComment">&lt;!--</span><span class="mxmlComment"> put item on hold </span><span class="mxmlComment">--&gt;</span>
+    <span class="mxmlComment">&lt;!--</span><span class="mxmlComment"> view original form </span><span class="mxmlComment">--&gt;</span>
+    <span class="mxmlComponent">&lt;/mx:HBox&gt;</span>     
+<span class="mxmlComment">&lt;!--</span><span class="mxmlComment">&lt;mx:Image source=&quot;@Embed(&apos;../../HR/images/detail_on.gif&apos;)&quot; 
+     resize=&quot;false&quot; click=&quot;onFormClick()&quot; useHandCursor=&quot;true&quot; buttonMode=&quot;true&quot; mouseChildren=&quot;false&quot; toolTip=&quot;Display form&quot; width=&quot;23&quot; x=&quot;67&quot;/&gt;   </span><span class="mxmlComment">--&gt;</span>
+    <span class="mxmlComponent">&lt;mx:Image</span> source=&quot;<span class="mxmlString">@Embed(&apos;../../HR/images/hold_on.gif&apos;)</span>&quot;   
+     resize=&quot;<span class="asReserved">false</span>&quot; click=&quot;onHoldClick<span class="asBracket">()</span>&quot; useHandCursor=&quot;<span class="mxmlString">true</span>&quot; buttonMode=&quot;<span class="mxmlString">true</span>&quot; mouseChildren=&quot;<span class="mxmlString">false</span>&quot; toolTip=&quot;<span class="mxmlString">Hold/Unhold item</span>&quot; x=&quot;<span class="mxmlString">39</span>&quot;<span class="mxmlComponent">/&gt;</span>
+    <span class="mxmlComponent">&lt;mx:Image</span> source=&quot;<span class="mxmlString">@Embed(&apos;../../HR/images/history_on.gif&apos;)</span>&quot;
+     resize=&quot;<span class="asReserved">false</span>&quot; click=&quot;onHistoryClick<span class="asBracket">()</span>&quot; useHandCursor=&quot;<span class="mxmlString">true</span>&quot; buttonMode=&quot;<span class="mxmlString">true</span>&quot; mouseChildren=&quot;<span class="mxmlString">false</span>&quot; toolTip=&quot;<span class="mxmlString">Display approval history</span>&quot; x=&quot;<span class="mxmlString">10</span>&quot;<span class="mxmlComponent">/&gt;</span>
+<span class="mxmlComponent">&lt;/mx:Canvas&gt;</span></pre></body>
+</html>

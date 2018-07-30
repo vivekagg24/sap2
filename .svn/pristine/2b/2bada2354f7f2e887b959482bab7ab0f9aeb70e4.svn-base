@@ -1,0 +1,5 @@
+jQuery.sap.declare('nuk.sap.timesheet.util.Validator');
+
+nuk.sap.timesheet.util.Validator = {
+
+};

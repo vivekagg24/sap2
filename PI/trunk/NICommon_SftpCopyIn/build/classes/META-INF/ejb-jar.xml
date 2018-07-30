@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar id="ejb-jar_ID" version="2.1" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd">
+	<description>NI Common SftpCopyIn</description>
+	<display-name>NICommon_SftpCopyIn</display-name>
+	<enterprise-beans>
+		<session>
+			<ejb-name>SftpCopyIn_PortTypeBean</ejb-name>
+			<home>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundHome4</home>
+			<remote>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundRemote4</remote>
+			<local-home>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundLocalHome4</local-home>
+			<local>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundLocal4</local>
+			<ejb-class>uk.co.newsint.sap.pi.proxy.sftp.receiver.SftpCopyIn_PortTypeBean</ejb-class>
+			<session-type>Stateless</session-type>
+			<transaction-type>Container</transaction-type>
+		</session>
+
+		<session>
+			<ejb-name>SftpCopySyncIn_PortTypeBean</ejb-name>
+			<home>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundHome4</home>
+			<remote>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundRemote4</remote>
+			<local-home>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundLocalHome4</local-home>
+			<local>com.sap.aii.proxy.xiruntime.core.AbstractProxyInboundLocal4</local>
+			<ejb-class>uk.co.newsint.sap.pi.proxy.sftp.receiver.SftpCopySyncIn_PortTypeBean</ejb-class>
+			<session-type>Stateless</session-type>
+			<transaction-type>Container</transaction-type>
+		</session>
+	</enterprise-beans>
+</ejb-jar>
+

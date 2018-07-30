@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<newStarterOutput>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="substitute" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="71" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Request date" />
+					<field width="120" dataField="I0002_NACHN" type="TextArea" columnTitle="Name" /> 
+					<field width="71" dataField="EFFECTIVE_DATE" type="dateLabel" columnTitle="Start date" />
+					<field width="150" dataField="I0001_PLSTX" type="TextArea" columnTitle="Position" />
+					<field width="150" dataField="I0001_ORGTX" type="TextArea" columnTitle="Deptartment" />
+					<field width="50" dataField="I0001_KOSTL" type="Label" columnTitle="Cost Centre" />
+					<field width="120" dataField="UGNAME" type="TextArea" columnTitle="Requestor" />
+					<field width="72" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="32" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="30" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />
+				</headerFields>
+				<detailFields>
+					<field width="70" dataField="I0008_ANSAL" type="RightLabel" columnTitle="Salary" />
+					<field width="60" dataField="I0008_ANCUR" type="Label" columnTitle="Currency" />
+					<field width="50" dataField="I0007_EMPCT" type="RightLabel" columnTitle="% FTE" /> 
+					<field width="95" dataField="JOB_STATUS" type="Label" columnTitle="Employment Status" /> 
+					<field width="70" dataField="JOURNALIST" type="LineCheckbox" columnTitle="Journalist" />
+					<field width="90" dataField="I0014_ZUORD" type="Label" columnTitle="Car Grade" /> 
+					<field width="35" dataField="FUELP" type="LineCheckbox" columnTitle="Fuel" /> 
+					<field width="120" dataField="I0001_BTEXT" type="Label" columnTitle="Location" />
+					<field width="80" dataField="I0016_PRBZT" type="Label" columnTitle="Probation" />
+					<field width="95" dataField="NOTICE_PERIOD_CURR" type="Label" columnTitle="Employer Notice Period" />
+					<field width="95" dataField="NOTICE_PERIOD" type="Label" columnTitle="Employee Notice Period" />
+					<field width="100" dataField="I0007_RTEXT" type="Label" columnTitle="Work Schedule" />
+				</detailFields>   	
+	    	</newStarterOutput>
+	    	<oneTimeBonus>
+				<headerFields>
+					<field width="35" dataField="" type="lineIm" columnTitle="" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="71" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Request date" />
+					<field width="75" dataField="I0001_ENAME" type="TextArea" columnTitle="Name" /> 
+					<field width="110" dataField="I0001_ORGTX" type="TextArea" columnTitle="Department" />
+					<field width="70" dataField="I0008_ANSAL" type="RightLabel" columnTitle="Salary" />
+					<field width="70" dataField="I0015_BETRG" type="RightLabel" columnTitle="Bonus Amount" />			
+					<field width="50" dataField="BONUS_PERCENTAGE" type="RightLabel" columnTitle="% of salary" /> 
+					<field width="37" dataField="I0015_WAERS" type="Label" columnTitle="Curr." />
+					<field width="165" dataField="DETAILED_JUSTFICATION" type="TextArea" columnTitle="Justification" />
+					<field width="75" dataField="UGNAME" type="TextArea" columnTitle="Requestor" />
+					<field width="71" dataField="I0015_BEGDA" type="dateLabel" columnTitle="Effective date" /> 			
+					<field width="72" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="32" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="36" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />			
+				</headerFields>		
+	    	</oneTimeBonus>
+	    	<ManageLeaver>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="substitute" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="71" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Request date" />
+					<field width="75" dataField="I0001_ENAME" type="TextArea" columnTitle="Name" /> 
+					<field width="105" dataField="I0001_ZZPLA" type="TextArea" columnTitle="Position" />
+					<field width="71" dataField="LEAVING_DATE" type="dateLabel" columnTitle="Leave Date" />
+					<field width="115" dataField="REASON" type="TextArea" columnTitle="Reason" />					
+					<field width="75" dataField="MGNAME" type="TextArea" columnTitle="Line manager" />
+					<field width="69" dataField="OUTSTANDING_HOLPAY" type="RightLabel" columnTitle="Remaining Leave" />
+					<field width="80" dataField="TOTAL" type="RightLabel" columnTitle="Termination Payment" /> 
+					<field width="37" dataField="TOTAL_KEY" type="Label" columnTitle="Curr." />
+					<field width="100" dataField="UGNAME" type="TextArea" columnTitle="Requestor" />
+					<field width="72" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="32" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="36" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />			
+				</headerFields>	
+				<detailFields>
+					<field width="150" dataField="PAYMENT_TYPE_TEXT" type="Label" columnTitle="Pay Type" />
+					<field width="100" dataField="AMOUNT" type="RightLabel" columnTitle="Amount" />
+				</detailFields>					    				
+	    	</ManageLeaver>	
+	    	<ContractChanges>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="substitute" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="71" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Request date" />
+					<field width="71" dataField="EFFECTIVE_DATE" type="dateLabel" columnTitle="Effective date" />
+					<field width="75" dataField="I0001_ENAME" type="TextArea" columnTitle="Name" />
+					<field width="160" dataField="CHANGE_REASON" type="TextArea" columnTitle="Reason for change" /> 
+					<field width="160" dataField="JUSTIFICATION" type="TextArea" columnTitle="Justification" />
+					<field width="80" dataField="COSTOFCHANGECURR" type="RightLabel" columnTitle="Cost (current year)" />
+					<field width="80" dataField="COSTOFCHANGEFULL" type="RightLabel" columnTitle="Cost (full year)" />					
+					<field width="75" dataField="UGNAME" type="TextArea" columnTitle="Requestor" />
+					<field width="72" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="32" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="36" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />			
+				</headerFields>		
+				<detailFields>
+					<field width="22" dataField="IN_OUT" type="InOutIcon" columnTitle="" />
+					<field width="160" dataField="PLSTX" type="Label" columnTitle="Position" />
+					<field width="160" dataField="I0001_ZZORG" type="Label" columnTitle="Department" />
+					<field width="90" dataField="LOCATION" type="Label" columnTitle="Location" />
+					<field width="80" dataField="I0001_KOSTL" type="Label" columnTitle="Cost Centre" />					
+					<field width="100" dataField="NOTICE_PERIOD" type="Label" columnTitle="Notice period" />
+					<field width="100" dataField="I0007_RTEXT" type="Label" columnTitle="Work Schedule" />
+					<field width="95" dataField="JOB_STATUS" type="Label" columnTitle="Employment Status" /> 			
+					<field width="50" dataField="I0007_EMPCT" type="RightLabel" columnTitle="% FTE" /> 
+					<field width="70" dataField="I0008_ANSAL" type="RightLabel" columnTitle="Salary" />
+					<field width="90" dataField="CAR_GRADE" type="Label" columnTitle="Car Grade" /> 
+				</detailFields>    				    				
+	    	</ContractChanges>	
+	    	<NewPosition>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="substitute" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="71" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Request date" />
+					<field width="71" dataField="EFFECTIVE_DATE" type="dateLabel" columnTitle="Effective date" />
+					<field width="150" dataField="POS_TEXT" type="TextArea" columnTitle="Position" />
+					<field width="70" dataField="JOURNALIST" type="LineCheckbox" columnTitle="Journalist" />					
+					<field width="150" dataField="LEAD_OBJ_TEXT" type="TextArea" columnTitle="Department" />
+					<field width="45" dataField="KOSTL" type="Label" columnTitle="Cost Centre" />					
+					<field width="70" dataField="I1005_CPMIN" type="RightLabel" columnTitle="Salary" />
+					<field width="37" dataField="TOTAL_COST_CURRENCY" type="Label" columnTitle="Curr." />
+					<field width="100" dataField="UGNAME" type="TextArea" columnTitle="Requestor" />
+					<field width="72" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="32" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="36" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />			
+				</headerFields>		
+				<detailFields>
+					<field width="90" dataField="CAR_GRADE" type="Label" columnTitle="Car Grade" /> 
+					<field width="35" dataField="FUEL_STATUS" type="LineCheckbox" columnTitle="Fuel" />
+					<field width="80" dataField="TOTAL_COST" type="RightLabel" columnTitle="Cost" />
+					<field width="40" dataField="PERCENTAGE_OF_FTE" type="RightLabel" columnTitle="% FTE" /> 
+					<field width="95" dataField="JOB_STATUS" type="Label" columnTitle="Employment Status" /> 
+					<field width="75" dataField="COST_CENTER_BUDGET_HC" type="RightLabel" columnTitle="Budgeted headcount" />
+					<field width="75" dataField="COST_CENTER_ACTUAL_HC" type="RightLabel" columnTitle="Actual headcount" />
+					<field width="250" dataField="JUSTIFY_NEW_POS" type="Label" columnTitle="Justification" />					
+					<field width="250" dataField="IMPACT_ON_BUSINESS" type="Label" columnTitle="Impact if not approved" />										
+					<field width="68" dataField="BUDGETED_STATUS" type="LineCheckbox" columnTitle="Budgeted" />					
+				</detailFields>    				    				
+	    	</NewPosition>	
+	    	<Replaceleaver>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="substitute" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="71" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Request date" />
+					<field width="71" dataField="EFFECTIVE_DATE" type="dateLabel" columnTitle="Effective date" />
+					<field width="100" dataField="LEAVER_NAME" type="TextArea" columnTitle="Name of leaver" /> 
+					<field width="120" dataField="LEAVER_REASON" type="TextArea" columnTitle="Reason for leaving" />
+					<field width="71" dataField="LEAVER_DATE" type="dateLabel" columnTitle="Leave Date" />
+					<field width="70" dataField="COST_CENTER_BUDGET_HC" type="RightLabel" columnTitle="Budgeted headcount" />			
+					<field width="70" dataField="COST_CENTER_ACTUAL_HC" type="RightLabel" columnTitle="Actual headcount" /> 
+					<field width="150" dataField="IMPACT_BUSINESS" type="TextArea" columnTitle="Impact if not approved" />
+					<field width="75" dataField="UGNAME" type="TextArea" columnTitle="Requestor" />
+					<field width="72" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="32" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="36" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />			
+				</headerFields>		
+				<detailFields>
+					<field width="22" dataField="IN_OUT" type="InOutIcon" columnTitle="" />
+					<field width="160" dataField="LEAD_TEXT" type="Label" columnTitle="Position" />
+					<field width="70" dataField="JOURNALIST" type="LineCheckbox" columnTitle="Journalist" />					
+					<field width="160" dataField="ORG_UNIT_TEXT" type="Label" columnTitle="Department" />
+					<field width="50" dataField="PERCENTAGE_OF_FTE" type="RightLabel" columnTitle="% FTE" /> 
+					<field width="95" dataField="JOB_STATUS" type="Label" columnTitle="Employment Status" /> 			
+					<field width="70" dataField="TOTAL_COST" type="RightLabel" columnTitle="Salary" />
+					<field width="90" dataField="CAR_GRADE" type="Label" columnTitle="Car Grade" /> 
+					<field width="35" dataField="FUEL" type="LineCheckbox" columnTitle="Fuel" /> 
+				</detailFields>    				    				
+	    	</Replaceleaver>					 		
+    	</formatting>

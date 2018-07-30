@@ -1,0 +1,15 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  <ActionSheet
+    title="{i18n>header-help-choose-action}"
+    showCancelButton="true"
+    placement="Bottom">
+    <buttons>
+      <Button text="{i18n>header-help-action-userguide}" icon="sap-icon://message-information" press="doOpenUserGuide" />
+      <Button text="{i18n>header-help-action-pmoportal}" icon="sap-icon://globe" press="doOpenPmoPortal" />
+      <Button text="{i18n>header-help-action-contactpmo}" icon="sap-icon://email" press="doContactPmo" />
+      <Button text="{i18n>header-help-action-reportissue}" icon="sap-icon://error" press="doReportIssue" />
+    </buttons>
+  </ActionSheet>
+</core:FragmentDefinition>

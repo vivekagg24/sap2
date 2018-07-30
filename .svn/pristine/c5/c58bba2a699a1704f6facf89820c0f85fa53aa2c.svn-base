@@ -1,0 +1,43 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+>
+
+  <Dialog title="{i18n>approval-select-project-dialog-title}" id="dialogProjectSelect">
+    <content>
+      <Panel>
+        <HBox>
+          <VBox alignItems="Center" justifyContent="SpaceBetween">
+            <HBox alignItems="Center">
+              <Text text="{i18n>dialog-select-project-header}" class="sapUiMediumMarginBottom"/>
+            </HBox>
+
+            <HBox alignItems="Center">
+              <Label text="{i18n>common-project}"/>
+
+              <Select
+                id="selNewProject"
+                change="onProjectChange"
+                selectedKey="{projectSelect>/new_project_id}"
+                enabled="true"
+                class="sapUiSmallMarginBeginEnd"
+                placeholder="{i18n>timesheet-table-project-placeholder}"
+                items="{projectSelect>/projects}">
+                <core:Item key="{projectSelect>project_id}" text="{projectSelect>name}" />
+              </Select>
+
+            </HBox>
+         </VBox>
+        </HBox>
+        <VerticalLayout xmlns="sap.ui.layout" id="messageContainerProjectSelect" width="100%" class="sapUiSmallMarginTopBottom">
+        </VerticalLayout>
+      </Panel>
+    </content>
+    <buttons>
+      <Button text="{i18n>dialog-button-ok}" type="Accept" press="onSelectProjectOk"/>
+      <Button text="{i18n>dialog-button-cancel}" type="Reject" press="onSelectProjectCancel"/>
+    </buttons>
+  </Dialog>
+
+</core:FragmentDefinition>

@@ -1,0 +1,986 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="GetPOData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PONumber" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPODataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPODataResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PostGoodsReceipt">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sGRXml" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPrintXML" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sUser" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPassword" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PostGoodsReceiptResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PostGoodsReceiptResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMessage" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPrintMessage" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="POSearch">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="dateFrom" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="dateTo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="lifnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ebelnFrom" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ebelnTo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPlant" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="POSearchResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="POSearchResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SupplierSearch">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPcode" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SupplierSearchResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SupplierSearchResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckLogin">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sUname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPassword" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckLoginResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="CheckLoginResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMessage" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RecipientList">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sPlant" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RecipientListResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RecipientListResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetFuncLocHierarchy">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sTopNode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sAll" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetFuncLocHierarchyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetFuncLocHierarchyResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WOGetDetail">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sUname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPassword" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sAufnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sBwart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPlant" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sText" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sUOMXml" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WOGetDetailResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="WOGetDetailResult" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPlant" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sText" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sUOMXml" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MaterialStorageLocationsList">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sPlant" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aMaterials" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="MaterialStorageLocationsListResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="MaterialStorageLocationsListResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetActivityTypes">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sOrderType" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetActivityTypesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetActivityTypesResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetEqunrAndFLoc">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sSernr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMatnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sFLoc" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSLoc" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetEqunrAndFLocResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetEqunrAndFLocResult" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sFLoc" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSLoc" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EqunrSernrValidate">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sSernr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMatnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sEqunr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EqunrSernrValidateResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="EqunrSernrValidateResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSernr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EqunrSernrValidateWithFloc">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sSernr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMatnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sEqunr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EqunrSernrValidateWithFlocResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="EqunrSernrValidateWithFlocResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSernr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sTplnr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateEqunr">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sUname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPassword" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMatnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSernr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sWerks" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sLgort" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sBwart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sEqunr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMessage" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateEqunrResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="CreateEqunrResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sEqunr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMessage" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GoodsMovement">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sUname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPassword" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sAufnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sHText" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMtype" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sRecip" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sItems" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sNewEquip" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMessXML" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GoodsMovementResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="GoodsMovementResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMessXML" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSuccessXML" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckFunctionalLocation">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SFloc" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckFunctionalLocationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="CheckFunctionalLocationResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPlants">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetPlantsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPlantsResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDefaultFunctionalLocations">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetDefaultFunctionalLocationsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDefaultFunctionalLocationsResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WOCheckLock">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sAufnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sLockedBy" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WOCheckLockResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="WOCheckLockResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sLockedBy" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckStorageLocation">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sAufnr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sEqunr" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSernp" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sBwart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sRepFlag" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSloc" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckStorageLocationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="CheckStorageLocationResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSloc" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sMessage" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="StckGetCount">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sIBLNR" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sUname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPassword" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="StckGetCountResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="StckGetCountResult" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sFYear" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="bOK" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPlantName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPlant" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PostInventoryCount">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sIBLNR" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sItemXML" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSernrXML" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sUname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPword" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PostInventoryCountResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PostInventoryCountResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Getinventorylist">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="mystring" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetinventorylistResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetinventorylistResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Createinventorylist">
+        <s:complexType />
+      </s:element>
+      <s:element name="CreateinventorylistResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreateinventorylistResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPlantLocation">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Plant" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPlantLocationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPlantLocationResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMaterialData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Material" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Plant" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Storage" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMaterialDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetMaterialDataResult" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="ok" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="BlindStockCount">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sItemXML" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="plant" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sloc" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sUname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sPword" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Siblnr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="BlindStockCountResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="BlindStockCountResult" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Siblnr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="GetPODataSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPOData" />
+  </wsdl:message>
+  <wsdl:message name="GetPODataSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPODataResponse" />
+  </wsdl:message>
+  <wsdl:message name="PostGoodsReceiptSoapIn">
+    <wsdl:part name="parameters" element="tns:PostGoodsReceipt" />
+  </wsdl:message>
+  <wsdl:message name="PostGoodsReceiptSoapOut">
+    <wsdl:part name="parameters" element="tns:PostGoodsReceiptResponse" />
+  </wsdl:message>
+  <wsdl:message name="POSearchSoapIn">
+    <wsdl:part name="parameters" element="tns:POSearch" />
+  </wsdl:message>
+  <wsdl:message name="POSearchSoapOut">
+    <wsdl:part name="parameters" element="tns:POSearchResponse" />
+  </wsdl:message>
+  <wsdl:message name="SupplierSearchSoapIn">
+    <wsdl:part name="parameters" element="tns:SupplierSearch" />
+  </wsdl:message>
+  <wsdl:message name="SupplierSearchSoapOut">
+    <wsdl:part name="parameters" element="tns:SupplierSearchResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckLoginSoapIn">
+    <wsdl:part name="parameters" element="tns:CheckLogin" />
+  </wsdl:message>
+  <wsdl:message name="CheckLoginSoapOut">
+    <wsdl:part name="parameters" element="tns:CheckLoginResponse" />
+  </wsdl:message>
+  <wsdl:message name="RecipientListSoapIn">
+    <wsdl:part name="parameters" element="tns:RecipientList" />
+  </wsdl:message>
+  <wsdl:message name="RecipientListSoapOut">
+    <wsdl:part name="parameters" element="tns:RecipientListResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetFuncLocHierarchySoapIn">
+    <wsdl:part name="parameters" element="tns:GetFuncLocHierarchy" />
+  </wsdl:message>
+  <wsdl:message name="GetFuncLocHierarchySoapOut">
+    <wsdl:part name="parameters" element="tns:GetFuncLocHierarchyResponse" />
+  </wsdl:message>
+  <wsdl:message name="WOGetDetailSoapIn">
+    <wsdl:part name="parameters" element="tns:WOGetDetail" />
+  </wsdl:message>
+  <wsdl:message name="WOGetDetailSoapOut">
+    <wsdl:part name="parameters" element="tns:WOGetDetailResponse" />
+  </wsdl:message>
+  <wsdl:message name="MaterialStorageLocationsListSoapIn">
+    <wsdl:part name="parameters" element="tns:MaterialStorageLocationsList" />
+  </wsdl:message>
+  <wsdl:message name="MaterialStorageLocationsListSoapOut">
+    <wsdl:part name="parameters" element="tns:MaterialStorageLocationsListResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetActivityTypesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetActivityTypes" />
+  </wsdl:message>
+  <wsdl:message name="GetActivityTypesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetActivityTypesResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetEqunrAndFLocSoapIn">
+    <wsdl:part name="parameters" element="tns:GetEqunrAndFLoc" />
+  </wsdl:message>
+  <wsdl:message name="GetEqunrAndFLocSoapOut">
+    <wsdl:part name="parameters" element="tns:GetEqunrAndFLocResponse" />
+  </wsdl:message>
+  <wsdl:message name="EqunrSernrValidateSoapIn">
+    <wsdl:part name="parameters" element="tns:EqunrSernrValidate" />
+  </wsdl:message>
+  <wsdl:message name="EqunrSernrValidateSoapOut">
+    <wsdl:part name="parameters" element="tns:EqunrSernrValidateResponse" />
+  </wsdl:message>
+  <wsdl:message name="EqunrSernrValidateWithFlocSoapIn">
+    <wsdl:part name="parameters" element="tns:EqunrSernrValidateWithFloc" />
+  </wsdl:message>
+  <wsdl:message name="EqunrSernrValidateWithFlocSoapOut">
+    <wsdl:part name="parameters" element="tns:EqunrSernrValidateWithFlocResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreateEqunrSoapIn">
+    <wsdl:part name="parameters" element="tns:CreateEqunr" />
+  </wsdl:message>
+  <wsdl:message name="CreateEqunrSoapOut">
+    <wsdl:part name="parameters" element="tns:CreateEqunrResponse" />
+  </wsdl:message>
+  <wsdl:message name="GoodsMovementSoapIn">
+    <wsdl:part name="parameters" element="tns:GoodsMovement" />
+  </wsdl:message>
+  <wsdl:message name="GoodsMovementSoapOut">
+    <wsdl:part name="parameters" element="tns:GoodsMovementResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckFunctionalLocationSoapIn">
+    <wsdl:part name="parameters" element="tns:CheckFunctionalLocation" />
+  </wsdl:message>
+  <wsdl:message name="CheckFunctionalLocationSoapOut">
+    <wsdl:part name="parameters" element="tns:CheckFunctionalLocationResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPlantsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPlants" />
+  </wsdl:message>
+  <wsdl:message name="GetPlantsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPlantsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDefaultFunctionalLocationsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDefaultFunctionalLocations" />
+  </wsdl:message>
+  <wsdl:message name="GetDefaultFunctionalLocationsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDefaultFunctionalLocationsResponse" />
+  </wsdl:message>
+  <wsdl:message name="WOCheckLockSoapIn">
+    <wsdl:part name="parameters" element="tns:WOCheckLock" />
+  </wsdl:message>
+  <wsdl:message name="WOCheckLockSoapOut">
+    <wsdl:part name="parameters" element="tns:WOCheckLockResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckStorageLocationSoapIn">
+    <wsdl:part name="parameters" element="tns:CheckStorageLocation" />
+  </wsdl:message>
+  <wsdl:message name="CheckStorageLocationSoapOut">
+    <wsdl:part name="parameters" element="tns:CheckStorageLocationResponse" />
+  </wsdl:message>
+  <wsdl:message name="StckGetCountSoapIn">
+    <wsdl:part name="parameters" element="tns:StckGetCount" />
+  </wsdl:message>
+  <wsdl:message name="StckGetCountSoapOut">
+    <wsdl:part name="parameters" element="tns:StckGetCountResponse" />
+  </wsdl:message>
+  <wsdl:message name="PostInventoryCountSoapIn">
+    <wsdl:part name="parameters" element="tns:PostInventoryCount" />
+  </wsdl:message>
+  <wsdl:message name="PostInventoryCountSoapOut">
+    <wsdl:part name="parameters" element="tns:PostInventoryCountResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetinventorylistSoapIn">
+    <wsdl:part name="parameters" element="tns:Getinventorylist" />
+  </wsdl:message>
+  <wsdl:message name="GetinventorylistSoapOut">
+    <wsdl:part name="parameters" element="tns:GetinventorylistResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreateinventorylistSoapIn">
+    <wsdl:part name="parameters" element="tns:Createinventorylist" />
+  </wsdl:message>
+  <wsdl:message name="CreateinventorylistSoapOut">
+    <wsdl:part name="parameters" element="tns:CreateinventorylistResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPlantLocationSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPlantLocation" />
+  </wsdl:message>
+  <wsdl:message name="GetPlantLocationSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPlantLocationResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetMaterialDataSoapIn">
+    <wsdl:part name="parameters" element="tns:GetMaterialData" />
+  </wsdl:message>
+  <wsdl:message name="GetMaterialDataSoapOut">
+    <wsdl:part name="parameters" element="tns:GetMaterialDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="BlindStockCountSoapIn">
+    <wsdl:part name="parameters" element="tns:BlindStockCount" />
+  </wsdl:message>
+  <wsdl:message name="BlindStockCountSoapOut">
+    <wsdl:part name="parameters" element="tns:BlindStockCountResponse" />
+  </wsdl:message>
+  <wsdl:portType name="POFunctionsSoap">
+    <wsdl:operation name="GetPOData">
+      <wsdl:input message="tns:GetPODataSoapIn" />
+      <wsdl:output message="tns:GetPODataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PostGoodsReceipt">
+      <wsdl:input message="tns:PostGoodsReceiptSoapIn" />
+      <wsdl:output message="tns:PostGoodsReceiptSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="POSearch">
+      <wsdl:input message="tns:POSearchSoapIn" />
+      <wsdl:output message="tns:POSearchSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SupplierSearch">
+      <wsdl:input message="tns:SupplierSearchSoapIn" />
+      <wsdl:output message="tns:SupplierSearchSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckLogin">
+      <wsdl:input message="tns:CheckLoginSoapIn" />
+      <wsdl:output message="tns:CheckLoginSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RecipientList">
+      <wsdl:input message="tns:RecipientListSoapIn" />
+      <wsdl:output message="tns:RecipientListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetFuncLocHierarchy">
+      <wsdl:input message="tns:GetFuncLocHierarchySoapIn" />
+      <wsdl:output message="tns:GetFuncLocHierarchySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WOGetDetail">
+      <wsdl:input message="tns:WOGetDetailSoapIn" />
+      <wsdl:output message="tns:WOGetDetailSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="MaterialStorageLocationsList">
+      <wsdl:input message="tns:MaterialStorageLocationsListSoapIn" />
+      <wsdl:output message="tns:MaterialStorageLocationsListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetActivityTypes">
+      <wsdl:input message="tns:GetActivityTypesSoapIn" />
+      <wsdl:output message="tns:GetActivityTypesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEqunrAndFLoc">
+      <wsdl:input message="tns:GetEqunrAndFLocSoapIn" />
+      <wsdl:output message="tns:GetEqunrAndFLocSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EqunrSernrValidate">
+      <wsdl:input message="tns:EqunrSernrValidateSoapIn" />
+      <wsdl:output message="tns:EqunrSernrValidateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EqunrSernrValidateWithFloc">
+      <wsdl:input message="tns:EqunrSernrValidateWithFlocSoapIn" />
+      <wsdl:output message="tns:EqunrSernrValidateWithFlocSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateEqunr">
+      <wsdl:input message="tns:CreateEqunrSoapIn" />
+      <wsdl:output message="tns:CreateEqunrSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GoodsMovement">
+      <wsdl:input message="tns:GoodsMovementSoapIn" />
+      <wsdl:output message="tns:GoodsMovementSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckFunctionalLocation">
+      <wsdl:input message="tns:CheckFunctionalLocationSoapIn" />
+      <wsdl:output message="tns:CheckFunctionalLocationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPlants">
+      <wsdl:input message="tns:GetPlantsSoapIn" />
+      <wsdl:output message="tns:GetPlantsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDefaultFunctionalLocations">
+      <wsdl:input message="tns:GetDefaultFunctionalLocationsSoapIn" />
+      <wsdl:output message="tns:GetDefaultFunctionalLocationsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WOCheckLock">
+      <wsdl:input message="tns:WOCheckLockSoapIn" />
+      <wsdl:output message="tns:WOCheckLockSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckStorageLocation">
+      <wsdl:input message="tns:CheckStorageLocationSoapIn" />
+      <wsdl:output message="tns:CheckStorageLocationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="StckGetCount">
+      <wsdl:input message="tns:StckGetCountSoapIn" />
+      <wsdl:output message="tns:StckGetCountSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PostInventoryCount">
+      <wsdl:input message="tns:PostInventoryCountSoapIn" />
+      <wsdl:output message="tns:PostInventoryCountSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Getinventorylist">
+      <wsdl:input message="tns:GetinventorylistSoapIn" />
+      <wsdl:output message="tns:GetinventorylistSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Createinventorylist">
+      <wsdl:input message="tns:CreateinventorylistSoapIn" />
+      <wsdl:output message="tns:CreateinventorylistSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPlantLocation">
+      <wsdl:input message="tns:GetPlantLocationSoapIn" />
+      <wsdl:output message="tns:GetPlantLocationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMaterialData">
+      <wsdl:input message="tns:GetMaterialDataSoapIn" />
+      <wsdl:output message="tns:GetMaterialDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="BlindStockCount">
+      <wsdl:input message="tns:BlindStockCountSoapIn" />
+      <wsdl:output message="tns:BlindStockCountSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="POFunctionsSoap" type="tns:POFunctionsSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetPOData">
+      <soap:operation soapAction="http://tempuri.org/GetPOData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostGoodsReceipt">
+      <soap:operation soapAction="http://tempuri.org/PostGoodsReceipt" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="POSearch">
+      <soap:operation soapAction="http://tempuri.org/POSearch" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SupplierSearch">
+      <soap:operation soapAction="http://tempuri.org/SupplierSearch" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckLogin">
+      <soap:operation soapAction="http://tempuri.org/CheckLogin" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RecipientList">
+      <soap:operation soapAction="http://tempuri.org/RecipientList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFuncLocHierarchy">
+      <soap:operation soapAction="http://tempuri.org/GetFuncLocHierarchy" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WOGetDetail">
+      <soap:operation soapAction="http://tempuri.org/WOGetDetail" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MaterialStorageLocationsList">
+      <soap:operation soapAction="http://tempuri.org/MaterialStorageLocationsList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetActivityTypes">
+      <soap:operation soapAction="http://tempuri.org/GetActivityTypes" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEqunrAndFLoc">
+      <soap:operation soapAction="http://tempuri.org/GetEqunrAndFLoc" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EqunrSernrValidate">
+      <soap:operation soapAction="http://tempuri.org/EqunrSernrValidate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EqunrSernrValidateWithFloc">
+      <soap:operation soapAction="http://tempuri.org/EqunrSernrValidateWithFloc" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateEqunr">
+      <soap:operation soapAction="http://tempuri.org/CreateEqunr" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GoodsMovement">
+      <soap:operation soapAction="http://tempuri.org/GoodsMovement" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckFunctionalLocation">
+      <soap:operation soapAction="http://tempuri.org/CheckFunctionalLocation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPlants">
+      <soap:operation soapAction="http://tempuri.org/GetPlants" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDefaultFunctionalLocations">
+      <soap:operation soapAction="http://tempuri.org/GetDefaultFunctionalLocations" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WOCheckLock">
+      <soap:operation soapAction="http://tempuri.org/WOCheckLock" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckStorageLocation">
+      <soap:operation soapAction="http://tempuri.org/CheckStorageLocation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StckGetCount">
+      <soap:operation soapAction="http://tempuri.org/StckGetCount" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostInventoryCount">
+      <soap:operation soapAction="http://tempuri.org/PostInventoryCount" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Getinventorylist">
+      <soap:operation soapAction="http://tempuri.org/Getinventorylist" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Createinventorylist">
+      <soap:operation soapAction="http://tempuri.org/Createinventorylist" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPlantLocation">
+      <soap:operation soapAction="http://tempuri.org/GetPlantLocation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMaterialData">
+      <soap:operation soapAction="http://tempuri.org/GetMaterialData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="BlindStockCount">
+      <soap:operation soapAction="http://tempuri.org/BlindStockCount" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="POFunctions">
+    <wsdl:port name="POFunctionsSoap" binding="tns:POFunctionsSoap">
+      <soap:address location="http://10.194.9.21/PMWebServices/POFunctions.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

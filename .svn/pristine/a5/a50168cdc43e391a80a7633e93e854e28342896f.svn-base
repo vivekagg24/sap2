@@ -1,0 +1,27 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+
+  <QuickView id="quickViewTimesheetComment">
+    <QuickViewPage
+      header="{i18n>timesheet-comment-title}">
+      <QuickViewGroup>
+        <QuickViewGroupElement
+          label="{i18n>timesheet-comment-submitter}"
+          value="{
+            path: 'timesheetComments>/submitter_comment',
+            formatter: 'nuk.sap.timesheet.util.Formatter.formatComment'
+          }"/>
+        <QuickViewGroupElement
+          label="{i18n>timesheet-comment-approver}"
+          value="{
+            path: 'timesheetComments>/approver_comment',
+            formatter: 'nuk.sap.timesheet.util.Formatter.formatComment'
+          }"/>
+      </QuickViewGroup>
+    </QuickViewPage>
+
+  </QuickView>
+
+</core:FragmentDefinition>

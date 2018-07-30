@@ -1,0 +1,220 @@
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	CostCentreCombo.mxml
+		Item renderer for the cost centre field on the payment items data grid
+	
+	Includes:
+		validation on the entry  - sets error counter in parent application
+		event handlers for focus events - e.g. save without entering any amounts or highlighting an errored field
+	
+	The renderer uses the TextInputPlus component to display a listbox with the user's allowed entries
+	A dropdown button also shows the list - to give the impression of a dropdown list box	
+-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         width="100%" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         verticalScrollPolicy="off" 
+         horizontalGap="0"
+         creationComplete="initComponent();" 
+         xmlns:ecs="ecs.components.*"  
+         xmlns:ni="ni.components.*"
+         xmlns:validators="ecs.validators.*">
+    <mx:Style source="../../ECS.css"></mx:Style>
+    <mx:Script>
+        <![CDATA[
+        	import mx.controls.dataGridClasses.DataGridColumn;
+        	import mx.core.Application;
+            import mx.controls.listClasses.ListData;
+            import mx.controls.dataGridClasses.DataGridListData;
+            import mx.controls.listClasses.BaseListData;
+            import mx.controls.DataGrid;
+            import mx.events.FlexEvent;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import ni.components.TextInputPlus;
+            import ecs.generalClasses.CPRItem;
+            import ecs.popups.LookUpCostCentre;
+            import mx.managers.PopUpManager;
+            
+            //This is the value returned to the data provider for the data grid
+            [Bindable]
+            public var costCentre:String = new String(); 	
+            public var description:String = "";		
+            //Row data returned  by get data to data grid (stops rows being jumbled when reused by the DG)
+            private var retData:Object;
+            //CSS style for the input - e.g. disabled
+            [Bindable]
+            private var cssStyle:String="";
+            //Editable flag
+            [Bindable]
+            private var isEditable:Boolean=true;
+            //Valid value?
+            private var isValid:Boolean=true;
+            //Previous valid value
+            private var previousValidState:Boolean=true;
+            
+            // popup window
+            private var win:LookUpCostCentre;
+            
+            
+            private function initComponent():void
+            {
+            	//Event listener - receive focus if the entry is not valid
+            	parentApplication.addEventListener("CostCentreErrorFocus",setErrorFocus, false, 0, true);
+            	//Event listener - receive focus into the first amount field
+            	parentApplication.addEventListener("CostCentreFocus",setRequiredFocus, false, 0, true);
+            }
+            
+            //Receive focus if no entry was made and the user is saving a line with an amount
+        	//Parent applicaiton raises the CostCentreFocus event
+            private function setRequiredFocus(event:Event):void{
+            	if (retData.index==parentApplication.currentItemIndex){
+            		txtCostCentre.setFocus();
+            		event.stopPropagation();	
+            	} 
+            }
+            
+            //Receive focus if the user is trying to save and there is an error in the cost centre field - parent 
+        	//application raises the CostCentreErrorFocus event
+            private function setErrorFocus(event:Event):void{
+            	if (!isValid){
+            		txtCostCentre.setFocus();
+            		event.stopPropagation();	
+            	} 
+            }
+            			
+			override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	
+                    	costCentre=value.costCentre; //Grid gets this field to update the data provider
+                    	txtCostCentre.text=value.costCentre;
+                    	//The DG jumbles the rows !!! Unless we store the row and return in get data
+						retData=value;
+						//Stylename and editable can depend on whether field is disabled or "held" or "set"
+						cssStyle=value.costCentreStyleName;
+						isEditable=value.costCentreEditable;
+						// Validate the field, which also sets the border correclty if using hold data
+						valCostCentre.validate();
+						// Register the renderer for validation
+						(value as CPRItem).costCentreRenderer = this;						
+                    }
+        		}
+        	}
+           	//Return the row to stop the jumbling - occurs because the grid reuses the conponents when scrolling		
+			override public function get data():Object{
+				return retData;
+			}           
+			
+			//Change handler for text field : update the costCentre property and return data structure 
+            private function handleChange():void{
+            	
+             // Turn off the validator while changing text
+             var enabled_holder:Boolean = valCostCentre.enabled;
+             valCostCentre.enabled = false;
+         	 txtCostCentre.text = txtCostCentre.text.toUpperCase();    // Force upper case
+         	 txtCostCentre.text = txtCostCentre.text.replace(/ /, ''); // Remove any spaces
+         	 valCostCentre.enabled = enabled_holder;
+         	 
+			 costCentre=txtCostCentre.text;
+			 if (retData!=null) retData.costCentre = costCentre;
+			 parentApplication.setDataChanged(true);
+			 
+		    }
+            
+           //Show the allowed values dropdown 
+           private function showDropDown():void{ 
+           	 if (isEditable){         	 
+           	 	txtCostCentre.showDropdown();
+           	 	focusManager.setFocus(txtCostCentre);
+           	 }           	  
+           }
+           
+         //Launch the popup
+         public function launchLookUp():void{
+            	
+            	if (!parentApplication.applicationEditable) return;
+            	
+        		win = LookUpCostCentre(PopUpManager.createPopUp(this,LookUpCostCentre,true));
+        		win.costCentres = parentApplication.costCentres;
+
+        		//Add event listeners to the popup - to retrieve the GL code when the popup closes
+        		win["btnOK"].addEventListener("click",getValueFromPopup);
+        		win["btnCancel"].addEventListener("click",setFocusOnInput);
+        		win["dgCostCentres"].addEventListener("doubleClick",getValueFromPopup);
+        		win["toFocus"] = this.txtCostCentre;
+            }
+            
+         public function getValueFromPopup(event:Object= ""):void
+         {
+         	this.description = win.description;
+         	this.costCentre = win.costCentre;
+         	this.txtCostCentre.text = this.costCentre;
+         	handleChange();
+         	parentApplication.costCentreChanged();         	
+		 }
+		 
+		 public function setFocusOnInput(event:Object= ""):void
+		 {
+		 	this.txtCostCentre.setFocus();	
+   		 }
+   		 
+   		 private function handleAddToLast20(event:Event):void
+			{
+				// Find the text for the Cost Centre
+				var e:Object = event as Object;
+				
+   	 			var code:String = e.newItem.data;
+   	 			for each (var item:Object in parentApplication.costCentres)
+   	 			{
+   	 				if (item.data == code)
+   	 				{
+   	 					e.newItem.label = item.label;
+   	 					break;
+   	 				}   	 						
+   	 			}				
+			}	
+          
+
+        ]]>
+    </mx:Script>
+                          
+    <validators:CostCentreValidator
+      id="valCostCentre"
+   	  source="{txtCostCentre}"
+   	  property="text" 
+   	  valid="isValid=true;"
+   	  invalid="isValid=false;"
+   	  listCostCentres="{parentApplication.costCentres}"
+   	  enabled="{parentApplication.applicationEditable}"
+   	  required="false">
+	</validators:CostCentreValidator>                             
+    
+    <ni:TextInputPlus
+		id="txtCostCentre" maxChars="30" width="100"  height="22" borderStyle="solid"
+		listWidth="250"
+		listHeight="250"
+		recentEntries="{parentApplication.last20CostCentres}"
+		editable="{isEditable}"
+	    autoUpdateRecentList="true"
+		styleName="{cssStyle}" 	
+		tabEnabled="{isEditable}"
+		valueCommit="parentApplication.costCentreChanged();"
+		change="handleChange()" 
+		objectAddedToLast20="handleAddToLast20(event);">
+	</ni:TextInputPlus>
+    <mx:Button
+    	icon="@Embed('../../images/helpF4.gif')"
+    	enabled="{isEditable}"
+    	tabEnabled="false"
+    	click="launchLookUp();" width="18" x="0" height="22" styleName="button"/>
+</mx:HBox>

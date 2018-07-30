@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center">
+	<mx:Script>
+		<![CDATA[
+			private function doDetailLine(detailLine:Object):void
+			{
+				var x:XML = new XML(detailLine);
+				parentApplication.onShowLineDetail(x);
+			}
+			]]>
+		</mx:Script> 
+	<mx:Image source="@Embed('../images/display.gif')" toolTip="Show detail" click="doDetailLine(this.data)"/>
+</mx:HBox>

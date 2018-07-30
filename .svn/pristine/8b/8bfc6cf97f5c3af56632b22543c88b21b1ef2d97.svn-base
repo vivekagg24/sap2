@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+					layout="absolute"
+					paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0" 
+				    initialize="init();"  minWidth="1000"
+					creationComplete="creationComplete();"
+					creationPolicy="all"
+					horizontalScrollPolicy="auto" verticalScrollPolicy="auto" xmlns:ns1="visualComponents.*">
+					
+<!-- general functions -->
+	<mx:Script source="scripts/Processing_general.as"/>
+<!-- closing stock specific functions -->
+	<mx:Script source="scripts/Processing_closing_stock.as"/>					
+
+<!-- web service to call into SAP -->
+<!-- get plants -->
+	<mx:WebService id="wsGetPlants"
+ 		wsdl="{wsdl_prefix + 'ZNP_PLANT_AUTH_CHECK'}"
+     	useProxy="false"
+     	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsGetPlants')" 
+  		load="forceSecureWSDL(event)"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PLANT_AUTH_CHECK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_UNAME></I_UNAME>
+				<ET_WERKS></ET_WERKS>	
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- get weeks numbers -->
+	<mx:WebService id="wsGetWeek"
+ 		wsdl="{wsdl_prefix + 'ZNP_GET_WEEK'}"
+     	useProxy="false"
+     	result="closingReturned(event)"
+  		fault="webServiceFault(event,'wsGetWeek')" 
+  		load="forceSecureWSDL(event)"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_GET_WEEK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<ET_WEEK_NO></ET_WEEK_NO>
+				<ET_PARAMETERS></ET_PARAMETERS>				
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- get closing stock -->
+	<mx:WebService id="wsGetClosingStock"
+ 		wsdl="{wsdl_prefix + 'ZNP_CLOSING_STOCK_READ'}"
+     	useProxy="false"
+     	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetClosingStock')"  
+  		load="forceSecureWSDL(event)"   	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_CLOSING_STOCK_READ"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<DATE_FROM>{dateFrom}</DATE_FROM>
+				<DATE_TO>{dateTo}</DATE_TO>
+				<CLOSING_STOCK></CLOSING_STOCK>
+				<GRAMMAGE_TOTALS></GRAMMAGE_TOTALS>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>	
+	
+<!-- validate closing stock -->
+	<mx:WebService id="wsValidateClosingStock"
+ 		wsdl="{wsdl_prefix + 'ZNP_VALIDATE_STOCK'}"
+     	useProxy="false"
+     	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsValidateClosingStock')" 
+  		load="forceSecureWSDL(event)"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_VALIDATE_STOCK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<I_POST>{postFigures}</I_POST>
+				<DATE_FROM>{dateFrom}</DATE_FROM>
+				<DATE_TO>{dateTo}</DATE_TO>	
+				<WEEK_FROM>{weekFrom}</WEEK_FROM>
+				<YEAR_FROM>{yearFrom}</YEAR_FROM>					
+				<WEEK_TO>{weekTo}</WEEK_TO>
+				<YEAR_TO>{yearTo}</YEAR_TO>									
+				<I_CLOSING_STOCK></I_CLOSING_STOCK>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>	
+
+<!-- title -->
+	<mx:Panel x="2" width="100%" y="2" height="90" title="Closing Stock" layout="absolute" fontFamily="Arial" fontSize="18" fontWeight="bold" backgroundAlpha="0">
+		<mx:Label x="15" y="10" text="Site:" fontSize="10"/>
+		<mx:ComboBox id="comboPlant" x="50" y="10" width="200" fontSize="10" 
+			dataProvider="{plantsList}" change = "setCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Label x="258" y="10" text="Week number:" fontSize="10"/>
+		<mx:ComboBox id="comboWeek" x="341" y="10" width="313" fontSize="15" 
+			dataProvider="{weekList}" change = "setWeekCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Button x="662" y="10" click="doRefresh()" label="Refresh Screen" fontSize="12"/>
+		<mx:Text x="785" y="0" text="News UK Newsprint" height="36" fontSize="28" fontFamily="Times"/>	
+	</mx:Panel>
+	
+	<mx:Button x="600" y="100" width="180" height="28" label="Usage Totals" click="displayTotals()"/>
+	<mx:Button x="787" y="100" width="180" height="28" label="Check figures" click="onSubmit(' ')"/>
+	<mx:Button x="975" y="100" width="180" height="28" label="Submit figures" click="onSubmit('X')" />					
+
+	<mx:Panel x="2" y="134" height="552" title="Closing Stock" width="100%" backgroundAlpha="0" verticalGap="0">
+		<mx:Grid y="10" horizontalGap="0" verticalGap="0" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" height="38">
+			<mx:GridRow height="38" >
+				<mx:GridItem width="481" height="100%" horizontalAlign="center">
+				</mx:GridItem>
+				<mx:GridItem width="105" height="100%" horizontalAlign="center" borderStyle="solid" backgroundColor="0xF7F7F7" fontWeight="bold">
+					<mx:Text text="Opening Stock"/>
+				</mx:GridItem>
+				<mx:GridItem width="141" height="100%" horizontalAlign="center" borderStyle="solid" backgroundColor="0xF7F7F7" fontWeight="bold" >
+					<mx:Text text="Deliveries/transfers in"/>
+				</mx:GridItem>
+				<mx:GridItem width="105" height="100%" horizontalAlign="center" borderStyle="solid" backgroundColor="0xF7F7F7" fontWeight="bold">
+					<mx:Text text="Adjustments"/>
+				</mx:GridItem>
+				<mx:GridItem width="105" height="100%" horizontalAlign="center" borderStyle="solid" backgroundColor="0xF7F7F7" fontWeight="bold">
+					<mx:Text text="Transfers out"/>
+				</mx:GridItem>
+				<mx:GridItem width="105" height="100%" horizontalAlign="center" borderStyle="solid" backgroundColor="0xF7F7F7" fontWeight="bold">
+					<mx:Text text="Usage"/>
+				</mx:GridItem>
+				<mx:GridItem width="105" height="40" horizontalAlign="center" borderStyle="solid" backgroundColor="0xF7F7F7" fontWeight="bold" paddingBottom="0" paddingTop="0" paddingLeft="0" paddingRight="0">
+					<mx:TextArea text="Closing stock as of last Sunday" wordWrap="true" width="102" height="36"  backgroundColor="0xF7F7F7"
+						editable="false" paddingLeft="0" paddingRight="0" borderThickness="0" textAlign="center" top="2"/>
+				</mx:GridItem>
+			</mx:GridRow>
+		</mx:Grid>
+
+		<mx:DataGrid y="50" id="ClosingStock1" dataProvider="{closingStock}" editable="true" enabled="true" height="460" wordWrap="true" paddingTop="0" verticalScrollPolicy="on">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Vendor" textAlign="left" dataField="NAME1" width="160" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" textAlign="left" dataField="MILL_NAME" width="160" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material" textAlign="left" dataField="MAKTX" width="160" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="weight" textAlign="center" dataField="OPENING_WEIGHT" width="60" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>
+				<mx:DataGridColumn headerText="reels" textAlign="center" dataField="OPENING_REEL" width="45" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>				
+				<mx:DataGridColumn headerText="weight" textAlign="center" dataField="DELIVERIES_WEIGHT" width="78" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>
+				<mx:DataGridColumn headerText="reels" textAlign="center" dataField="DELIVERIES_REEL" width="63" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>	
+				<mx:DataGridColumn headerText="weight" textAlign="center" dataField="ADJUST_WEIGHT" width="60" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>
+				<mx:DataGridColumn headerText="reels" textAlign="center" dataField="ADJUST_REEL" width="45" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>	
+				<mx:DataGridColumn headerText="weight" textAlign="center" dataField="TRANSFER_WEIGHT" width="60" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>
+				<mx:DataGridColumn headerText="reels" textAlign="center" dataField="TRANSFER_REEL" width="45" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>	
+				<mx:DataGridColumn headerText="weight" textAlign="center" dataField="USAGE_WEIGHT" width="60" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>
+				<mx:DataGridColumn headerText="reels" textAlign="center" dataField="USAGE_REEL" width="45" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.StockValue"/>	
+				<mx:DataGridColumn headerText="weight" textAlign="center" dataField="CLOSING_WEIGHT" width="60">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789." maxChars="13"></mx:TextInput>
+						</mx:Component>															
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn headerText="reels" textAlign="center" dataField="CLOSING_REEL" width="45">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789." maxChars="6"></mx:TextInput>
+						</mx:Component>															
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn headerText="status" textAlign="center" width="45" dataField="STATUS" itemRenderer="visualComponents.trafficIcon" editable="false"/>								
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>		
+</mx:Application>

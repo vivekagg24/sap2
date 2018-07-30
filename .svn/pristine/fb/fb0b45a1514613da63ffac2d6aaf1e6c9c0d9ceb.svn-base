@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="78" height="42" >
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			requestIcon.data = value;
+	 			requestIcon.enabled = false;
+			
+				if (value && value.DEL_FLAG == "D"){
+					requestIcon.enabled = true;
+					requestIcon.visible = true;
+					requestIcon.source = "HR/images/delete.gif";
+					requestIcon.toolTip = "Deletion request";		
+					requestLabel.text = "Deletion request";
+				}
+				else if (value && value.DEL_FLAG == "I"){
+					requestIcon.enabled = true;
+					requestIcon.visible = true;
+					requestIcon.source = "HR/images/S_B_CREA.gif";
+					requestIcon.toolTip = "New request";
+					requestLabel.text = "New request";
+				}
+				else if (value && value.DEL_FLAG == "A"){
+					requestIcon.enabled = true;
+					requestIcon.visible = true;
+					requestIcon.source = "HR/images/S_B_CHNG.gif";
+					requestIcon.toolTip = "Amended request";
+					requestLabel.text = "Amended request";
+				}
+				else {
+		 			requestIcon.enabled = false;
+					requestIcon.visible = false;
+				}
+	 		}
+	 		
+	 		public function set listData(value:BaseListData):void
+	 		{
+	 			requestIcon.listData = value;
+	 		}
+	 		
+	 		public function get listData():BaseListData
+	 		{
+	 			return requestIcon.listData;
+	 		}				
+		]]>
+	</mx:Script>
+		
+	<mx:Image id="requestIcon" 
+		 resize="false" useHandCursor="false" buttonMode="false"> 
+	</mx:Image>
+	<mx:TextArea id="requestLabel" wordWrap="true" width="58" height="42" x="20" backgroundAlpha="0" borderThickness="0">
+		
+	</mx:TextArea>
+</mx:Canvas>

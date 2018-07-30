@@ -1,0 +1,114 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+
+  <Dialog title="{projectEdit>/title}" id="dialogProjectEdit">
+    <content>
+      <Panel>
+        <VBox alignItems="Start">
+          <HBox alignItems="Center">
+            <Label text="{i18n>dialog-add-project-name}"/>
+            <Input
+              id="projectName"
+              value="{projectEdit>/project/name}"
+              class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
+              width="20rem"
+              valueStateText="{i18n>dialog-add-project-name-invalid}"/>
+          </HBox>
+          <HBox alignItems="Center">
+            <Label text="{i18n>dialog-add-project-description}"/>
+            <Input
+              id="projectDescription"
+              value="{projectEdit>/project/description}"
+              class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
+              width="30rem"
+              maxLength="255"
+              valueStateText="{i18n>dialog-add-project-description-invalid}"/>
+          </HBox>
+
+          <HBox alignItems="Center">
+            <Label text="{i18n>dialog-add-project-start-date}"/>
+            <DatePicker
+              id="projectDateFrom"
+              value="{projectEdit>/project/start_date}"
+              width="10rem"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+              change="onListFilterChange"
+              class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
+              fieldGroupIds="dateFilter"
+              validateFieldGroup="onProjectDateValidate"
+              valueStateText="{i18n>common-invalid-date-from}"/>
+          </HBox>
+
+          <HBox alignItems="Center">
+            <Label text="{i18n>dialog-add-project-end-date}"/>
+            <DatePicker
+              id="projectDateTo"
+              value="{projectEdit>/project/end_date}"
+              width="10rem"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+              change="onListFilterChange"
+              class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
+              fieldGroupIds="dateFilter"
+              validateFieldGroup="onProjectDateValidate"
+              valueStateText="{i18n>common-invalid-date-to}"/>
+          </HBox>
+
+          <HBox alignItems="Center">
+            <Label text="{i18n>dialog-add-project-cost-assignment}"/>
+            <Input
+              id="projectCostAss"
+              value="{projectEdit>/project/cost_ass}"
+              class="sapUiSmallMarginBegin"
+              width="10rem"
+              valueStateText="{i18n>dialog-add-project-cost-assignment-invalid}"/>
+            <Select
+              id="selProjectCostAssType"
+              change="onListFilterChange"
+              selectedKey="{projectEdit>/project/cost_ass_type}"
+              enabled="true"
+              width="auto"
+              placeholder="{i18n>timesheet-table-project-placeholder}"
+              items="{config>/project_cost_ass_list}">
+              <core:Item key="{config>id}" text="{config>name}" />
+            </Select>
+          </HBox>
+
+          <HBox alignItems="Center">
+            <Label text="{i18n>dialog-add-project-project-manager}"/>
+            <Label
+              text="{projectEdit>/project/project_manager_name}"
+              class="sapUiSmallMarginBegin"/>
+            <Button
+              icon="sap-icon://employee-lookup"
+              class="sapUiSmallMarginBegin"
+              press="onSelectPm"
+              tooltip="{i18n>project-list-selectpm-tooltip}"/>
+             <Button
+              icon="sap-icon://manager"
+              class="sapUiSmallMarginBegin"
+              press="onEditProjectDefaultPm"
+              tooltip="{i18n>project-list-defaultpm-tooltip}"/>
+            <Button
+              icon="sap-icon://sys-cancel"
+              class="sapUiSmallMarginBegin"
+              press="onEditProjectClearPm"
+              tooltip="{i18n>project-list-clearpm-tooltip}"/>
+          </HBox>
+        </VBox>
+      </Panel>
+
+      <VerticalLayout xmlns="sap.ui.layout" id="messageContainerProject" width="100%" class="sapUiSmallMarginTopBottom">
+      </VerticalLayout>
+
+    </content>
+
+    <buttons>
+      <Button text="{i18n>dialog-button-ok}" type="Accept" press="onEditProjectOk"/>
+      <Button text="{i18n>dialog-button-cancel}" type="Reject" press="onEditProjectCancel"/>
+    </buttons>
+  </Dialog>
+
+</core:FragmentDefinition>

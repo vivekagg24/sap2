@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TextInput xmlns:mx="http://www.adobe.com/2006/mxml" change="TextToUpper()" focusOut="ShiftLeft()">
+
+	  <mx:Script>
+        <![CDATA[
+
+			private function TextToUpper():void{
+				
+				this.text = this.text.toUpperCase();
+			}
+
+			private function ShiftLeft():void{
+				
+				this.horizontalScrollPosition = 0;
+				
+			}
+
+        ]]>
+    </mx:Script>
+
+</mx:TextInput>
+

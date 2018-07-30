@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+ <mx:Panel width="250" height="250" layout="absolute">
+
+  <mx:Label text="Name" x="10" y="25"/>
+  <mx:TextInput width="150" id="userName" x="70" y="25"/>
+  <mx:Label text="Password" x="10" y="55"/>
+  <mx:TextInput width="150" id="userPassword" x="70" y="55"/>
+  <mx:Button label="Submit" x="80" y="150"/>
+   	
+ </mx:Panel>
+<!-- comment in MXML -->
+
+</mx:Application>

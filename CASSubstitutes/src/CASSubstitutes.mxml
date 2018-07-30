@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+
+	           initialize="onInit()"
+	           backgroundColor="0xDDDDDD"
+	           backgroundGradientColors="0xDDDDDD, 0xDDDDDD"
+	           paddingLeft="0"
+	           paddingRight="0"
+	           paddingTop="0"
+	           paddingBottom="0"
+	           layout="absolute"
+	           width="800"
+	           height="600"
+	           verticalAlign="middle"
+	           horizontalAlign="center"
+	           horizontalScrollPolicy="off"
+	           verticalScrollPolicy="off"
+	           creationComplete="creationComplete()" xmlns:ns1="components.*" xmlns:text="flash.text.*">	
+	                      
+	           <mx:Style source="ECS.css"/>
+	           <mx:Script source="scripts/dataDeclarations.as" />
+               <mx:Script source="scripts/casConfigFunctions.as" />
+               <mx:Script source="scripts/r3Functions.as" />
+               <mx:Script source="scripts/conversionFunctions.as" />
+               <mx:Script source="scripts/uiFunctions.as" />
+               
+      
+
+<!-- Start order
+
+1 - Get XML description of all services from CAS service
+
+2 - Get User roles from Portal (once we know user roles, we can initiate the "Add Substitutes" repeater
+
+3 - Two processes in parallel from R3
+3a - Get list of current substitutes
+3b - Get list of people I am a substitute for
+
+-->
+
+	           
+     <mx:Script>
+     	<![CDATA[
+     	        import mx.rpc.events.ResultEvent;
+					
+				protected function onInit():void
+				{
+					// Set up callbacks frmo Javascript
+					ExternalInterface.addCallback("getUserRolesCallback", getCurrentUserRolesCallback);
+					
+					if (Security.sandboxType != Security.REMOTE)
+					{
+						this.wsdl_root = c_dev_server_R3;
+						this.portal_url =  c_dev_server_Portal;	
+						this.userName = 'GYORK';					
+					}
+					else
+					{
+						//this.portal_url = ExternalInterface.call("getPortalUrl"); // call javascript on BSP
+						this.userName   = ExternalInterface.call("getUname"); // call javascript on BSP			
+
+
+								
+					}
+					
+					// Hide the panel
+					showPanel = false;
+										
+					// Load the XML Config file - Step 1
+					load_cas_config();
+					
+		 		  
+     		    	
+					
+				}
+     		
+     		    protected function creationComplete():void
+     		    {
+					// Event handlers
+					dgMySubstitutions.addEventListener(DeleteEvent.delete_event, handleSubstituteDelete);
+     		    }
+     		    
+
+     		    // Load CAS config file via R3 to get around crossdomain restrictions
+     		    protected function load_cas_config():void     		    
+     		    {     		    	
+     		    	if (Security.sandboxType == Security.REMOTE)
+     		    	{
+     		    		CASLoader.url = c_cas_xml_url_R3;
+     		    	}
+     		    	else
+     		    	{
+     		    		CASLoader.url = this.c_dev_server_R3 + c_cas_xml_url_R3;
+     		    	}
+     		    	      		    	
+     		    	CASLoader.send();     	    	
+     		    }
+     		    
+
+     	
+     		
+     			
+     		
+     		
+     	]]>
+     </mx:Script>  
+ 
+  <mx:ProgressBar id="progBar" mode="manual"
+  	                minimum="0" maximum="4"
+  	                verticalCenter="0" horizontalCenter="0"/>
+  <!-- 
+  25%  = Portal config xml loaded
+  50%  = As above, plus user's portal roles loaded
+  75%  = As above, plus one of the R3 function modules has returned (could be either as they are called asynchronously)
+  100% = As above, but BOTH of the R3 function modules has returned
+  
+  -->
+  
+  <mx:VBox width="800" height="570"
+  	       x="0" y="3" id="topPanel"
+  	       visible="{showPanel}" horizontalAlign="center"  	 
+  	       paddingLeft="0" paddingRight="0"
+  	       borderColor="blue"
+  	       >       
+     <mx:Panel  y="29" width="765" height="150"
+     	 layout="absolute" title="My Subsitutions"
+     	 	      headerHeight="15" 
+	      borderThicknessBottom="4"
+	      borderThicknessTop="4"
+	      borderThicknessLeft="4"
+	      borderThicknessRight="4"
+	       >
+          <mx:DataGrid x="0" y="0" height="100%" 
+          	           id="dgMySubstitutions" 
+          	           selectable="false" width="100%">
+               <mx:columns>
+                    <mx:DataGridColumn headerText="System" dataField="GROUPDESC" width="250" />
+                    <mx:DataGridColumn headerText="Substitute" dataField="USERNAME" width="150" />
+                    <mx:DataGridColumn headerText="Start on" dataField="BEGDATUM" width="80"/>
+                    <mx:DataGridColumn headerText="End on" dataField="ENDDATUM" width="80"/>
+                    <mx:DataGridColumn headerText="Status" dataField="ACTIVE_TXT" 
+                    	               width="80"
+                    	               textDecoration="underline"
+                    	               color="0x0000DD"                    	               
+                    	               itemRenderer="components.ActivePassiveRenderer"/>
+                    <mx:DataGridColumn headerText="Delete" itemRenderer="components.DataGridDelete" width="55" />
+                    
+                    
+               </mx:columns>
+          </mx:DataGrid>
+     </mx:Panel>
+     <mx:Repeater id="rpAddSubstitutes" dataProvider="{this.user_cas_groups}" >
+     	  <ns1:PanelAddSubstitutions possSubs="{possibleSubs.source}"
+     	  	                         filterVal="{rpAddSubstitutes.currentItem.SUBAPPSGRP}"
+     	  	                         filterValDesc="{rpAddSubstitutes.currentItem.GROUPDESC}"
+     	  	                         repeaterObject="{rpAddSubstitutes.currentItem}"
+     	  	                         title="{'Add to my ' + rpAddSubstitutes.currentItem.GROUPDESC + ' Substitutes'}">
+    	 </ns1:PanelAddSubstitutions>
+     </mx:Repeater>
+     <mx:Panel  width="765" height="150"
+     	 layout="absolute" title="Who am I a substitute for?"
+     	 	      headerHeight="15" 
+	      borderThicknessBottom="4"
+	      borderThicknessTop="4"
+	      borderThicknessLeft="4"
+	      borderThicknessRight="4"
+	      
+     	 >
+          <mx:DataGrid x="0" y="0" height="100%"
+          	           id="dgISubstituteFor"
+          	           selectable="false" 
+          	           sortableColumns="false"
+          	            width="100%">
+               <mx:columns>
+                    <mx:DataGridColumn headerText="System" dataField="GROUPDESC" width="250" />
+                    <mx:DataGridColumn headerText="Substitute For" dataField="USERNAME" width="150"/>
+                    <mx:DataGridColumn headerText="Start on" dataField="BEGDATUM" width="80"/>
+                    <mx:DataGridColumn headerText="End on" dataField="ENDDATUM" width="80"/>
+                    <mx:DataGridColumn headerText="Status" dataField="ACTIVE_TXT"
+                    	               textDecoration="underline"
+                    	               width="80"
+                    	               color="0x0000DD"                    	               
+                    	               itemRenderer="components.ActivePassiveRenderer"
+                    	               />
+               </mx:columns>
+          </mx:DataGrid>
+     </mx:Panel>
+     <mx:Spacer height="1" />
+     <mx:Canvas width="100%">
+     	<mx:Button label="Save Changes"
+     		      x="20" click="save()" 
+     		      id="btSave" enabled="false"
+     		      styleName="save" />
+     </mx:Canvas>
+	 
+</mx:VBox>
+	
+<!-- HTTP and Web Services --> 
+<mx:HTTPService id="CASLoader"
+	            fault="Alert.show('Error loading CAS Services: ' + event.toString())"
+	            useProxy="false"
+	            
+	            result="cas_config_result(event)" /> 
+	            
+	            
+<mx:WebService  id="wsR3"
+	            wsdl="{wsdl_root + c_cas_R3_url}"	
+	            concurrency="last"
+	            showBusyCursor="true"
+	            >
+	<mx:operation name="Z_CAS_GET_POSSIBLE_SUBS"	              
+		          resultFormat="e4x"
+		          result="resultPossibleSubs(event)"
+		          >
+		<mx:request xmlns="">
+			<UNAME>{this.userName}</UNAME>
+			<SUBAPPSGRP_TAB>{convertXmlToArray(user_cas_groups)}</SUBAPPSGRP_TAB>
+		</mx:request>
+	</mx:operation>
+	
+	<mx:operation name="Z_CAS_GET_SUBSTITUTES_CURRENT"
+		          resultFormat="e4x"
+		          result="resultCurrentSubs(event)"
+		          >
+		<mx:request xmlns="">
+			<UNAME>{this.userName}</UNAME>
+			<SUBAPPSGRP_TAB>{convertXmlToArray(user_cas_groups)}</SUBAPPSGRP_TAB>			
+		</mx:request>		
+	</mx:operation>	
+	
+	<mx:operation name="Z_CAS_MAINTAIN_SUBSTITUTES"
+		          resultFormat="e4x"
+		          result="resultSave(event)"
+		          fault="refreshFromR3()"
+		          >
+		<mx:request xmlns="">
+			<UNAME>{this.userName}</UNAME>
+			<SUBAPPSGRP_TAB>{convertXmlToArray(user_cas_groups)}</SUBAPPSGRP_TAB>		
+			<SUBSTITUTIONS></SUBSTITUTIONS>
+			<SUBSTITUTED></SUBSTITUTED>	
+		</mx:request>		
+	</mx:operation>	
+		
+</mx:WebService>            
+	
+	
+</mx:Application>

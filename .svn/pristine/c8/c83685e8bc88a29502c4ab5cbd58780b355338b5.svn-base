@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- Custom control for the header area of the printed page. -->
+
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="60%"
+    horizontalAlign="right" verticalAlign="bottom" >
+	<mx:Script>
+		<![CDATA[
+			[Bindable] 	
+ 			public var title:String;
+ 			[Bindable] 	
+ 			public var site:String;
+ 			[Bindable] 	
+ 			public var dtext:String;
+		]]>
+	</mx:Script>
+    <mx:Label text="{title}" fontSize="24"/>
+    <mx:Label text="{site}" fontSize="16"/>
+    <mx:Label text="{dtext}" fontSize="16"/>
+</mx:HBox>

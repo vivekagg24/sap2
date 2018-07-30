@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" color="0x000000"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+
+    <mx:Image id="imageIcon" click="iconPress(event)" 
+    	useHandCursor="true"
+        
+    	buttonMode="true" />
+    <mx:Label id="labelValue"/>
+
+<mx:Script>
+<![CDATA[
+
+		import CMS.generalClasses.*;
+        import mx.core.*;
+	   	import mx.collections.ArrayCollection;
+	   	import ni.components.cas.QueryPopup;
+	   	
+        public var indent:Number = 10;
+
+		[Embed(source="../../CMS/images/contract_tree.gif")]
+        
+        public static var closeIcon:Class;
+
+		[Embed(source="../../CMS/images/expand_tree.gif")]
+        
+        public static var openIcon:Class;
+
+		[Embed(source="../../CMS/images/query_timer_yellow.gif")]
+     //   [Bindable]
+        public static var queryIconYellow:Class;       
+        
+		[Embed(source="../../CMS/images/query_timer_red.gif")]
+     //   [Bindable]
+        public static var queryIconRed:Class;        
+
+        /************************************************************************
+        /* setValue
+        /*************************************************************************/
+        override public function set data(data:Object):void{
+
+            if(data != null){
+				
+                  if(data.childList.length > 0){
+
+                    if(data.isOpen == false){
+                            imageIcon.visible = true;
+                            imageIcon.source = new openIcon as BitmapAsset;
+                            
+                      }
+                      else{
+                            imageIcon.visible = true;
+                            imageIcon.source = new closeIcon as BitmapAsset;
+                            
+                      }
+                  imageIcon.x = 20 + data.indent;     
+                  }
+				  else if (data.onQuery) // Show the "On query" icon
+                          {
+                          	  imageIcon.visible = true;
+                          	  imageIcon.source = new queryIconRed as BitmapAsset;
+                          	  imageIcon.toolTip = "End query";
+                          	  imageIcon.x =  25	;
+                          	  
+                          }   
+                          else{ // Show the "put on query" icon
+                          	  imageIcon.visible = true;
+                          	  imageIcon.source = new queryIconYellow as BitmapAsset;
+                          	  imageIcon.toolTip = "Put on query";
+                          	  imageIcon.x =  25 ;
+                          }
+                         
+	          }
+          }
+
+        /************************************************************************
+        /* iconPress
+        /*************************************************************************/
+        private function iconPress(event:MouseEvent):void{
+
+                callLater(disclosurePress);
+        }
+
+        /************************************************************************
+        /* disclosurePress
+        /*************************************************************************/
+        private function disclosurePress():void{
+
+           var indexNum:Number = parentApplication.myRow -1;
+           var item:ApprovalTree = parentApplication.dp[indexNum];
+		    if ((parentApplication.dp[indexNum] as ApprovalTree).childList.length > 0)
+		    {
+	            if(parentApplication.dp[indexNum].isOpen == false){
+					DataProviderManager.openItem(item,indexNum);
+	            }
+	            else{
+					DataProviderManager.closeItem(item,indexNum);  
+	            }
+	        }
+	        else
+	        {
+	        	launchQueryPopup(item,indexNum);
+	        }
+        }
+
+        /************************************************************************
+        /* launchQueryPopup
+        /*************************************************************************/
+        private function launchQueryPopup(item:Object, indexNum:Number):void{
+			//parentApplication.closeSection(item,indexNum); 
+			var _data:ApprovalTree = (parentApplication.dp[indexNum] as ApprovalTree)
+			var obj:Object = QueryPopup.show(parentApplication as DisplayObject, _data, parentApplication.ws1.Z_CMS_PUT_ON_QUERY, parentApplication.refreshGrid);
+			obj.x += 20;
+        }      
+        
+]]>
+</mx:Script>
+
+</mx:Canvas>

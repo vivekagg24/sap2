@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+	            layout="absolute">
+
+	<mx:Label     x="20" y="60" text="Email"/>
+	<mx:TextInput left="90" right="60" height="22" y="60"/>
+	
+	<mx:Label x="20" y="90" text="Comments"/>
+	<mx:TextArea left="90" right="60" top="90" bottom="190"/>
+		
+	<mx:Button label="Send" right="60" height="23" bottom="150"/>
+
+	
+</mx:Application>

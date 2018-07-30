@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	DoublePaymentWarning
+		
+		Show the doouble payment warnings - any CPR for same amount, contributor etc.
+		User can continue on with save or cancel
+		
+-->
+<!-- 
+Modification History
+~~~~~~~~~~~~~~~~~~~~
+Ref: CR233110 - M.Ward
+Modified as below to make duplicate payment box draggable
+Action
+Remove Application Tag, moved Style tag inside of TitleWindow Tag
+Set 
+	TitleWindow Enabled="true"
+	BorderAlpha = "1"
+	Alpha = "1"
+-->
+
+<!--
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	top="100" backgroundGradientAlphas="[0, 0]"
+	 backgroundAlpha="0"
+	 defaultButton="{btnContinue}">
+-->
+<!--
+<mx:Style source="../../ECS.css"/>
+-->
+
+<!--	<mx:TitleWindow x="239" y="156" width="780" height="427" layout="absolute" -->
+	<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" x="239" y="156" width="780" height="427" layout="absolute"
+		 close="closeHandler()"
+		 creationComplete="doInit()"
+		 showCloseButton="true"
+		 title="Double Payment Warning!!"
+		 enabled = "true"
+		 borderAlpha="1"
+		 alpha="1"
+		 backgroundAlpha="1">
+<mx:Style source="../../ECS.css"/>
+	<mx:Script>
+    <![CDATA[
+    	
+        import mx.managers.PopUpManager;
+        import mx.controls.Alert;
+       
+       	[Bindable]
+       	private var doublePayments:XMLList;
+		
+		private function doInit():void{
+			doublePayments = parentApplication.doublePayments.item;			
+			dg.setFocus();
+		}
+		
+		private function returnContinue():void{
+			//Continue on to save?
+			closeHandler();
+			parentApplication.doublePaymentContinue();
+			
+  		}
+  		
+  		private function closeHandler():void
+  		{
+  			PopUpManager.removePopUp(this);
+  			this.focusManager.deactivate(); 
+  			this.systemManager.removeFocusManager(this);
+  			parentApplication.focusManager.activate();
+  			
+  		}
+  		
+  		/** Explain when the double payment check appears
+  		*
+  		*/  		
+  		private function explanation():void
+  		{
+  			var explanation:String = "When a payment is entered into ECS, the system checks to see if there are any payments " + 
+  					                 "already on the system which may be duplicates of the payment being entered. \n\n" + 
+  					                 "ECS will highlight a payment as a possible duplicate if the currency, total net amount," +
+  					                 " contributor and publication are all the same.";
+  			var title:String = "Explanation of Duplicate Payment Check";
+  			
+  			var al:Alert = Alert.show(explanation, title);
+  			al.setStyle("fontSize", 12);                 
+  					                 
+  		}
+		  		
+	    ]]>
+	</mx:Script>
+
+	<mx:Panel 
+		id="pnlMain"
+		x="10" 
+		y="10" 
+		width="716" 
+		height="361" 
+		layout="absolute" 
+		backgroundAlpha="1.0" 
+		color="#ff0000"
+		defaultButton="{btnContinue}">
+		<mx:title>The following payments have already been made to this contributor:</mx:title>
+		<mx:DataGrid 
+			id="dg"
+			x="0" y="0" width="686" height="288" 
+			dataProvider="{doublePayments}"
+			styleName="dataGrid">
+			<mx:columns>
+				<mx:DataGridColumn headerText="CPR" dataField="BELNR" width="80"/>
+				<mx:DataGridColumn headerText="Amount" dataField="WRBTR" width="80"/>
+				<mx:DataGridColumn headerWordWrap="true" headerText="Contributor's Ref" dataField="XBLNR" width="85"/>
+				<mx:DataGridColumn headerText="Story" dataField="STORY"/>
+				<mx:DataGridColumn headerWordWrap="true" headerText="Publication Date" dataField="PUBDATE" width="80"/>	
+<!--start CR255113 - Make it possible for duplicate box to how page no -->				
+				<mx:DataGridColumn headerWordWrap="true" headerText="Page No.s" dataField="PAGENOS" width="40"/>	
+<!--End CR255113 - Make it possible for duplicate box to how page no -->				
+				<mx:DataGridColumn headerWordWrap="true" headerText="Cost Centre" dataField="KOSTL" width="80"/>	
+				<mx:DataGridColumn headerWordWrap="true" headerText="" dataField="LTEXT" width="140"/>				
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:Button x="256" y="292" 
+			 styleName="button" 
+			 label="Cancel" 
+			 click="closeHandler();parentApplication.txtStory.setFocus();" 
+			 icon="@Embed('../../images/cancel.gif')" 
+			 width="90"/>
+		<mx:Button x="5" y="292" 
+			 styleName="button" 
+			 color="0x8800BB"
+			 label="When does this warning appear?" 
+			 click="explanation()" 		
+			 width="200"/>
+		<mx:Button x="354" y="292" 
+			styleName="button" 
+			id="btnContinue" 
+			label="Continue" 
+			click="returnContinue()" 
+			icon="@Embed('../../images/OK.gif')" 
+			width="88"
+			focusEnabled="true"/>
+	</mx:Panel>
+	</mx:TitleWindow>
+<!-- </mx:Application> -->

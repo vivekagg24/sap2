@@ -1,0 +1,332 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{02CC49C9-6576-4A1E-ABCF-583A6F82F5F3}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ce5b</RootNamespace>
+    <AssemblyName>NIHandheld</AssemblyName>
+    <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>PocketPC</PlatformFamilyName>
+    <PlatformID>b2c48bd2-963d-4549-9169-1fa021dce484</PlatformID>
+    <OSVersion>5.02</OSVersion>
+    <DeployDirSuffix>
+    </DeployDirSuffix>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <FormFactorID>
+    </FormFactorID>
+    <StartupObject>ce5b.Program</StartupObject>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <DeployDirPrefix>%25CSIDL_PERSONAL%25</DeployDirPrefix>
+    <ApplicationIcon>CHECKMRK.ICO</ApplicationIcon>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <NativePlatformName>Windows Mobile 6 Professional SDK</NativePlatformName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;$(PlatformFamilyName)</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <FileAlignment>512</FileAlignment>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;$(PlatformFamilyName)</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <FileAlignment>512</FileAlignment>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="frmBlindStockPost.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmBlindStockPost.Designer.cs">
+      <DependentUpon>frmBlindStockPost.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmBlindCount.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmBlindCount.Designer.cs">
+      <DependentUpon>frmBlindCount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PlatformInfo.cs" />
+    <Compile Include="frmCountByDocument.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmCountByDocument.Designer.cs">
+      <DependentUpon>frmCountByDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmFnLoc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmFnLoc.Designer.cs">
+      <DependentUpon>frmFnLoc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmLogon.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmLogon.Designer.cs">
+      <DependentUpon>frmLogon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmPMGM.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPMGM.Designer.cs">
+      <DependentUpon>frmPMGM.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmPOGR.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPOGR.Designer.cs">
+      <DependentUpon>frmPOGR.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmSearch.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSearch.Designer.cs">
+      <DependentUpon>frmSearch.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmShowLog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmShowLog.Designer.cs">
+      <DependentUpon>frmShowLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmStart.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmStart.Designer.cs">
+      <DependentUpon>frmStart.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmStockCountMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmStockCountMain.Designer.cs">
+      <DependentUpon>frmStockCountMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmStockCountStart.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmStockCountStart.Designer.cs">
+      <DependentUpon>frmStockCountStart.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmStockMenu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmStockMenu.Designer.cs">
+      <DependentUpon>frmStockMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmSupplierSearch.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSupplierSearch.Designer.cs">
+      <DependentUpon>frmSupplierSearch.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HTTPSAPGateway.cs" />
+    <Compile Include="logger.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="frmLogon.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmLogon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPMGM.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmPMGM.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmStart.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmStart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmStockMenu.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmStockMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="ShowHelp.cs" />
+    <Compile Include="Web References\newsint.ad.ni.sapr3d\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
+    <Compile Include="Web References\SAPGateway\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pictureBox1.Image.jpg" />
+    <None Include="Web References\SAPGateway\POFunctions.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferenceUrl Include="http://10.194.9.22/PMWebServices/POFunctions.asmx">
+      <UrlBehavior>Static</UrlBehavior>
+      <RelPath>Web References\SAPGateway\</RelPath>
+      <UpdateFromURL>http://10.194.9.22/PMWebServices/POFunctions.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>
+      </CachedAppSettingsObjectName>
+      <CachedSettingsPropName>
+      </CachedSettingsPropName>
+    </WebReferenceUrl>
+    <WebReferenceUrl Include="http://sapr3p.ni.ad.newsint/sap/bc/soap/wsdl11%3fservices=Z_PM_GET_STORAGE_LOC&amp;sap-client=007">
+      <UrlBehavior>Static</UrlBehavior>
+      <RelPath>Web References\newsint.ad.ni.sapr3d\</RelPath>
+      <UpdateFromURL>http://sapr3p.ni.ad.newsint/sap/bc/soap/wsdl11%3fservices=Z_PM_GET_STORAGE_LOC&amp;sap-client=007</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>
+      </CachedAppSettingsObjectName>
+      <CachedSettingsPropName>
+      </CachedSettingsPropName>
+    </WebReferenceUrl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
+    <None Include="Web References\newsint.ad.ni.sapr3d\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Web References\newsint.ad.ni.sapr3d\wsdl11.wsdl" />
+    <None Include="Web References\newsint.ad.ni.sapr3d\ZHANDHELD_LOC.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\SAPGateway\POFunctions.disco" />
+    <None Include="Web References\SAPGateway\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="frmPOGR.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmPOGR.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="frmBlindStockPost.resx">
+      <DependentUpon>frmBlindStockPost.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmBlindCount.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmBlindCount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCountByDocument.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmCountByDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmFnLoc.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmFnLoc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSearch.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmSearch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmShowLog.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmShowLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmStockCountMain.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmStockCountMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmStockCountStart.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmStockCountStart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSupplierSearch.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmSupplierSearch.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.WindowsCE.Forms" />
+    <Reference Include="Microsoft.WindowsMobile.DirectX" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Forms.DataGrid" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CHECKMRK.ICO" />
+    <Content Include="glv.gif" />
+    <Content Include="NIHandheld.htm" />
+    <Content Include="NIHandHeldFTP.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\DataSources\" />
+  </ItemGroup>
+  <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
+  <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}">
+        <HostingProcess disable="1" />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>

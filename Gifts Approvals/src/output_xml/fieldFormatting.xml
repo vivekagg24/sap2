@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<GIFTPayments>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="71" dataField="EFFECTIVE_DATE" type="dateLabel" columnTitle="Request date" />
+					<field width="140" dataField="DEPARTMENT" type="TextArea" columnTitle="Department" /> 
+					<field width="140" dataField="REASONFORREQUEST" type="TextArea" columnTitle="Description" />
+					<field width="140" dataField="PAYEESNAME" type="TextArea" columnTitle="Payee" />
+<!--					<field width="50" dataField="COSTCODE1" type="Label" columnTitle="cost centre" /> -->
+					<field width="70" dataField="TOTAL" type="RightLabel" columnTitle="Total" />
+					<field width="50" dataField="CURRENCY" type="Label" columnTitle="Curr." /> 
+					<field width="110" dataField="UGNAME" type="Label" columnTitle="Requestor" />
+					<field width="72" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="32" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="30" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />
+				</headerFields>
+				<detailFields>
+					<field width="70" dataField="BZKEY" type="RightLabel" columnTitle="Item no." />
+					<field width="200" dataField="ACCOUNTTEXT" type="Label" columnTitle="GL account" /> 
+					<field width="200" dataField="PROJECTTEXT" type="Label" columnTitle="Project code" />
+					<field width="100" dataField="AMOUNT" type="RightLabel" columnTitle="Amount" /> 
+				</detailFields> 				  	
+	    	</GIFTPayments>
+    	</formatting>

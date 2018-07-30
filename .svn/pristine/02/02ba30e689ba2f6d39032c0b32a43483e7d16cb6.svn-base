@@ -1,0 +1,34 @@
+{
+  "mode": "home",
+  "showBack": "false",
+  "isDataChanged": "false",
+  "isPendingRefresh": "false",
+  "dateFormatShort": "YYYY-MM-DD",
+  "dateFormatLong": "",
+  "approval_status_list": [
+  {
+    "id": "*",
+    "name": "Any"
+  }, {
+    "id": "awaitapp",
+    "name": "Awaiting approval"
+  }, {
+    "id": "approved",
+    "name": "Approved"
+  }, {
+    "id": "rejected",
+    "name": "Rejected"
+  }
+  ],
+  "project_cost_ass_list": [
+  {
+    "id": "capex",
+    "name": "CapEx (Asset)"
+  },
+  {
+    "id": "opex",
+    "name": "Opex (Cost Centre)"
+  }
+  ]
+
+}

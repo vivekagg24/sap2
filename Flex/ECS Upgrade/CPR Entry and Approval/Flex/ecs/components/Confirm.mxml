@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry and Approval
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	Confirm.mxml
+		Confirmation popup
+-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	 title="Confirmation"
+	  creationComplete="doInit();" tabChildren="true" keyUp="handleKeyUp(event);">
+<mx:Script>
+<![CDATA[
+import mx.managers.PopUpManager;
+[Bindable]
+public var question:String="";
+public var defaultButtonS:String = "";
+
+// Since popups are always parented by SystemManager, we can't rely on this.parentApplication like we can 
+// with normal components (i.e. those which aren't popups)
+// Therefore we need a reference to the application which we are running in (which may not be parentApplication)
+public var trueParentApp:Object; 
+
+private function doInit():void {
+	PopUpManager.centerPopUp(this);
+	defaultButtonS = defaultButtonS.toLowerCase();
+	
+	if (defaultButtonS == "yes")
+	{
+		btnYes.setFocus();		
+	}
+	else if (defaultButtonS == "no")
+	{
+		btnNo.setFocus();		
+	}	
+}
+
+
+private function confirm(response:String):void {
+	var event:Event = new Event("selected" + response);
+	dispatchEvent(event);
+	PopUpManager.removePopUp(this);
+	this.focusManager.deactivate();
+	this.systemManager.removeFocusManager(this);	
+	
+	if (trueParentApp && trueParentApp.focusManager)
+	{
+		trueParentApp.focusManager.activate();
+	}
+	else if (systemManager && parentApplication && parentApplication.focusManager)
+	{
+		parentApplication.focusManager.activate();
+	}
+	
+}
+
+protected function handleKeyUp(event:KeyboardEvent):void
+{
+	if (event.charCode == 0x59 || event.charCode == 0x79)  // key 'y' pressed
+	{
+		confirm('Yes');
+	}
+	else if (event.charCode == 0x4E || event.charCode == 0x6E)  // key 'n' pressed
+	{
+		confirm('No');
+	}
+}
+
+]]>
+</mx:Script>
+
+<mx:VBox horizontalAlign="center">
+<mx:Text text="{question}" height="60" width="250" fontSize="12" />
+</mx:VBox>
+<mx:ControlBar horizontalAlign="center">
+<mx:HBox focusEnabled="false">
+<mx:Button click="confirm('Yes');" label="Yes (y)" id="btnYes" focusEnabled="true"/>
+<mx:Button click="confirm('No');" label="No (n)" id="btnNo" focusEnabled="true"/>
+</mx:HBox>
+</mx:ControlBar>
+</mx:TitleWindow>

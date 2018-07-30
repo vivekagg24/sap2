@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml"
+	      layout="absolute"
+	      width="400" height="300"
+	      title="Search Results"
+	      defaultButton="{btnSelect}">
+<mx:Metadata>
+	[Event(PersonSearchChosen)]
+</mx:Metadata>
+	<mx:DataGrid x="0" y="0" width="100%"
+		 id="dg"
+		 selectable="true"
+		 doubleClickEnabled="true"
+		 itemDoubleClick="handleDoubleClick(event)" 
+		 dataProvider="{results}" height="226">
+		<mx:columns>
+			<mx:DataGridColumn headerText="User Name"      dataField="UNAME"/>
+			<mx:DataGridColumn headerText="Payroll Number" dataField="PERNR"/>
+			<mx:DataGridColumn headerText="First Name"     dataField="VORNA"/>
+			<mx:DataGridColumn headerText="Last Name"      dataField="NACHN"/>
+		</mx:columns>
+	</mx:DataGrid>
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.XMLListCollection;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			public var results:XMLListCollection;
+			
+			protected function handleDoubleClick(event:ListEvent):void
+			{
+				//Employee selected
+				if (event.rowIndex > 0) // Ignore double-click on top line
+				dispatchEventOnSelection(event.rowIndex - 1);
+						
+			}
+			
+			protected function handleSelectClicked():void
+			{
+				if (dg.selectedIndex > -1)
+				dispatchEventOnSelection(dg.selectedIndex);
+			}
+			
+			
+			
+			
+			private function dispatchEventOnSelection(item:int):Event
+			{
+				var event:PersonSearchEvent;
+				var obj:XML = results.getItemAt(item) as XML;
+				
+				
+				var fname:String = obj.VORNA.toString();
+				var lname:String = obj.NACHN.toString();
+				var pernr:String = obj.PERNR.toString();
+				var uname:String = obj.UNAME.toString();
+				
+				event = new PersonSearchEvent(PersonSearchEvent.PERSON_SEARCH_CHOSEN, true, true, fname, lname, pernr, uname);
+				this.dispatchEvent(event);
+				
+				// Close the popup				
+				close();
+				
+				return event;
+			}	
+			
+			
+			protected function close():void
+			{
+				PopUpManager.removePopUp(this);
+				this.visible = false;
+			}
+			
+			
+		]]>
+	</mx:Script>
+	<mx:Button x="123" y="234" label="Select" id="btnSelect" click="handleSelectClicked()"/>
+	<mx:Button x="192" y="234" label="Cancel" id="btnCancel" click="close()"/>
+	
+</mx:Panel>

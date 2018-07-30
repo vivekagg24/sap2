@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+<mx:Glow id="buttonGlow" color="0x99FF66" alphaFrom="1.0" alphaTo="0.3" duration="1500"/>
+
+<mx:Parallel id="BlurMoveShow" target="{myLabel}">
+
+<mx:Blur id="numbersBlur" 
+  blurYFrom="10.0" blurYTo="0.0"
+  blurXFrom="10.0" blurXTo="0.0"
+  duration="2000"/>
+  
+   
+<mx:Move id="numbersMove" yBy="20" duration="2000" /> 
+  
+</mx:Parallel>
+
+	<mx:Panel x="10" y="10" width="200" height="300" layout="absolute">
+
+		<mx:Button x="40" y="60" label="View" id="myButton" 
+			mouseUpEffect="{buttonGlow}" 
+            click="BlurMoveShow.play();  
+			myLabel.visible=true;"/>
+
+		<mx:Label x="40" y="100" text="4 8 15 16 23 42" id="myLabel" visible="false"/>
+
+	</mx:Panel>
+
+
+	
+</mx:Application>

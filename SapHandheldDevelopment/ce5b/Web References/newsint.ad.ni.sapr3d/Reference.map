@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiscoveryClientResultsFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Results>
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="http://sapr3t.ni.ad.newsint/sap/bc/soap/wsdl11?services=Z_PM_GET_STORAGE_LOC&amp;sap-client=007" filename="wsdl11.wsdl" />
+  </Results>
+</DiscoveryClientResultsFile>

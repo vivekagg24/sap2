@@ -1,0 +1,146 @@
+{
+  "_version": "1.1.0",
+  "sap.app": {
+    "_version": "1.1.0",
+    "id": "nuk.sap.timesheet",
+    "type": "application",
+    "i18n": "i18n/messageBundle.properties",
+    "title": "{{app-title}}",
+    "description": "{{app-description}}",
+    "applicationVersion": {
+      "version": "0.1.0"
+    }
+  },
+  "sap.ui": {
+    "_version": "1.1.0",
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    },
+    "supportedThemes": [
+      "sap_bluecrystal"
+    ]
+  },
+  "sap.ui5": {
+    "_version": "1.1.0",
+    "rootView": "nuk.sap.timesheet.view.App",
+    "dependencies": {
+      "minUI5Version": "1.30",
+      "libs": {
+        "sap.m": {}
+      }
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "nuk.sap.timesheet.i18n.messageBundle"
+        }
+      },
+      "tiles": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/tiles.json"
+      },
+     "config": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/config.json"
+      }
+   },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "nuk.sap.timesheet.view",
+        "controlId": "idAppTimesheet",
+        "controlAggregation": "pages",
+        "transition": "slide",
+        "bypassed": {
+          "target": "notfound"
+        }
+      },
+      "routes": [
+        {
+          "pattern": "",
+          "name": "login",
+          "target": "login"
+        },
+         {
+          "pattern": "launchpad",
+          "name": "launchpad",
+          "target": "launchpad"
+        },
+        {
+          "pattern": "timesheet/{id}",
+          "name": "timesheet",
+          "target": "timesheet"
+        },
+        {
+          "pattern": "timesheets",
+          "name": "timesheets",
+          "target": "timesheetlist"
+        },
+        {
+          "pattern": "approval",
+          "name": "approval",
+          "target": "approval"
+        },
+        {
+          "pattern": "substitutes",
+          "name": "substitutes",
+          "target": "substitutes"
+        },
+        {
+          "pattern": "projects",
+          "name": "projects",
+          "target": "projectlist"
+        },
+        {
+          "pattern": "project/{id}",
+          "name": "project",
+          "target": "project"
+        }
+      ],
+      "targets": {
+        "approval": {
+          "viewName": "Approval",
+          "viewLevel": 1
+        },
+        "launchpad": {
+          "viewName": "Launchpad",
+          "viewLevel": 1
+        },
+        "login": {
+          "viewName": "Login",
+          "viewLevel": 1
+
+        },
+        "substitutes": {
+          "viewName": "Substitutes",
+          "viewLevel": 1
+        },
+        "timesheet": {
+          "viewName": "Timesheet",
+          "viewLevel": 3
+        },
+        "timesheetlist": {
+          "viewName": "TimesheetList",
+          "viewLevel": 1
+        },
+        "project": {
+          "viewName": "Project",
+          "viewLevel": 3
+        },
+        "projectlist": {
+          "viewName": "ProjectList",
+          "viewLevel": 1
+        },
+        "notfound": {
+          "viewName": "NotFound",
+          "viewLevel": 1
+        }
+      }
+    }
+  }
+}

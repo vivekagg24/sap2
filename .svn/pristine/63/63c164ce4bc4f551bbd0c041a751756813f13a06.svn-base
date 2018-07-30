@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	LookUPProjectCode.mxml
+		
+		Search project codes on SAP based on project name. 
+		Wildcards not required.
+		SAP function is Z_ECS_SEARCH_PROJECT_CODES
+		
+-->
+<!--<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	top="100" left="200" backgroundGradientAlphas="[0, 0]"
+	 backgroundAlpha="0" modalTransparencyDuration="0"
+	 width="760" height="727"
+	 dragEnter="DragManager.acceptDragDrop(event.target as IUIComponent)"
+	 mouseDown="mouseDownHandlerForDrag(event);"	 
+	 frameRate="60"
+	 
+	 > -->
+<mx:TitleWindow width="560" height="427" layout="absolute"
+		 close="btnCancel.dispatchEvent(new MouseEvent(MouseEvent.CLICK))"
+		 creationComplete="doInit()"
+		 showCloseButton="true"
+		 title="Project Code Selection"
+		 backgroundAlpha="1"
+		 x="100" y="200"
+		 xmlns:mx="http://www.adobe.com/2006/mxml"
+		 >	 
+	<mx:Style source="../../ECS.css"/>
+	<mx:Script>
+    <![CDATA[
+    	import mx.events.ChildExistenceChangedEvent;
+    	import mx.events.DragEvent;
+    	import mx.controls.Alert;
+    	import mx.effects.effectClasses.MoveInstance;
+    	import mx.effects.EffectManager;
+
+    	
+        import mx.managers.PopUpManager;
+       
+       	public var project:String;			//Selected project
+       	public var description:String;		//Description of selected project
+       	//Data provider
+       	[Bindable]
+       	private var results:XMLList;
+       	//publication id (used in search)
+       	[Bindable]
+       	private var publicationID:String;
+
+       	// Since popups are always parented by SystemManager, we can't rely on this.parentApplication like we can 
+		// with normal components (i.e. those which aren't popups)
+		// Therefore we need a reference to the application which we are running in.
+		public var trueParentApp:Object; 
+       	
+		
+		private function doInit():void{
+			publicationID=trueParentApp.getPublicationId();
+			txtName.setFocus();
+		//	this.addEventListener(DragEvent.DRAG_OVER, handleDragOver, true);
+		//	systemManager.addEventListener(DragEvent.DRAG_OVER, handleDragOver, true);
+		}
+		
+		public function cleanClose():void
+		{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			systemManager.removeFocusManager(this);
+		}
+		
+		private function returnValue():void{
+  			if (dgProjects.selectedIndex>-1){ 	
+  				project = dgProjects.selectedItem.DATA;
+  				description = dgProjects.selectedItem.LABEL;
+  			}
+  			cleanClose();
+  			
+  			
+  		}
+  		
+  		import mx.rpc.events.ResultEvent;
+		//Call web service to run the search  	
+		private function launchSearch():void{
+			if (txtName.text==""){
+				Alert.show("Please enter some search criteria");
+				return;
+			}
+			
+			// Set the data for the call
+			trueParentApp.wsAllBusyCursor.Z_ECS_SEARCH_PROJECT_CODES.request.IM_NAME = txtName.text;
+			trueParentApp.wsAllBusyCursor.Z_ECS_SEARCH_PROJECT_CODES.request.IM_PUBID = publicationID;
+			
+			// Add a weak-reference event listener
+			trueParentApp.wsAllBusyCursor.Z_ECS_SEARCH_PROJECT_CODES.addEventListener(ResultEvent.RESULT, handleResults, false, 0, true);  
+			
+			// Call 
+			trueParentApp.wsAllBusyCursor.Z_ECS_SEARCH_PROJECT_CODES.send();
+			
+		}
+		
+		//Callback from the web service
+		private function handleResults(resultEvent:ResultEvent):void{
+			if (!this.isPopUp || !this.visible)
+				return;
+			
+			results = resultEvent.result.RE_T_PROJECTS.item;
+			if (results.length()==0) Alert.show("No project codes found");
+			else {
+				//Select the first row
+				dgProjects.selectedIndex=0;
+				dgProjects.setFocus();
+			}
+			
+			// Remove the event listener
+			trueParentApp.wsAllBusyCursor.Z_ECS_SEARCH_PROJECT_CODES.removeEventListener(ResultEvent.RESULT, handleResults);  
+			
+		} 	
+		
+		//Handle user pressing enter on datagrid to select an item from the list
+		private function handleKeyDownDG(event:KeyboardEvent):void{
+			if (event.keyCode==Keyboard.ENTER) btnOK.dispatchEvent(new MouseEvent(MouseEvent.CLICK));			
+		}
+		
+		// Allow the user to drag the popup
+		include "includeDragForPopUp.as";
+		
+
+		
+	    ]]>
+	</mx:Script>
+
+<!--	<mx:WebService id="wsSearch" 
+    	wsdl="{parentApplication.wsdlRoot}Z_ECS_SEARCH_PROJECT_CODES"
+    	useProxy="false"
+    	result="handleResults(event.result)"
+     	showBusyCursor="true">   
+	    <mx:operation name="Z_ECS_SEARCH_PROJECT_CODES"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	<mx:request>
+	    		<IM_NAME>{txtName.text}</IM_NAME>
+	    		<IM_PUBID>{publicationID}</IM_PUBID>
+	    		<RE_T_PROJECTS></RE_T_PROJECTS>
+	    	</mx:request>
+		</mx:operation>
+	</mx:WebService> -->
+	
+
+		 
+
+	<mx:Panel 
+		x="10" y="10" width="516" height="361" layout="absolute"
+		defaultButton="{btnSearch}">
+		<mx:DataGrid x="0" y="38" width="486" height="250" id="dgProjects"
+			dataProvider="{results}"
+			styleName="dataGrid"
+			doubleClickEnabled="true"
+			doubleClick="returnValue()"
+			keyDown="handleKeyDownDG(event)">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Project" dataField="DATA" width="100"/>
+				<mx:DataGridColumn headerText="Description" dataField="LABEL"/>
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:Button x="159" y="289" 
+			id="btnCancel"
+			 styleName="button" label="Cancel" click="cleanClose();" icon="@Embed('../../images/cancel.gif')" width="70"/>
+		<mx:Button x="241" y="289" 
+			styleName="button" id="btnOK" label="OK" click="returnValue()" icon="@Embed('../../images/OK.gif')" width="70"/>
+		<mx:TextInput x="81" y="8" width="193" id="txtName" />
+		<mx:Text x="10" y="10" text="Description"/>
+		<mx:Button x="282" y="8" label="Search" icon="@Embed('../../images/search.gif')" styleName="button" width="70"
+			click="launchSearch()" id="btnSearch"/>
+	</mx:Panel>
+	</mx:TitleWindow>
+<!--</mx:Application> -->

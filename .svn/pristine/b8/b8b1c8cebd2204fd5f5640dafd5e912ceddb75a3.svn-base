@@ -1,0 +1,245 @@
+# App Descriptor
+app-title=News UK Timesheets
+app-description=News UK Timesheet
+
+# Common
+common-date-range-invalid=Invalid date range
+common-status-overdue-description=Overdue
+common-status-rejected-description=Rejected
+common-invalid-date-from=Start date must be before end date
+common-invalid-date-to=End date must be after start date
+common-name=Name
+common-username=Username
+common-personnel-no=Personnel number
+common-email-address=Email address
+common-timesheet=Timesheet
+common-display-comments-tooltip=Display comments
+common-project=Project
+common-error-fetching-data=Error reading data
+
+# Header
+header-title=Timesheets
+header-image-logo-alt=News UK logo
+header-logout-tooltip=Log out
+header-help-tooltip=Help and support
+header-help-choose-action=Choose an action
+header-button-home=Home
+header-button-timesheets=Timesheets
+header-button-approval=Approval
+header-button-projects=Projects
+header-help-action-userguide=View timesheet user guide
+header-help-action-pmoportal=Open the PMO Portal
+header-help-action-contactpmo=Timesheet query?
+header-help-action-reportissue=Report an issue
+
+# Login
+login-title=News Timesheets
+login-prompt=Log in to the timesheet system using your News UK Google credentials
+login-help=Can't log in? Please contact Service Desk on x26969
+login-login-error=Unable to log in. Please try again
+login-login-error-detail=Detail: {0}
+login-refresh-dialog-text=Reading user details...
+
+# Overview
+overview-refresh-dialog-text=Refreshing...
+
+# Timesheet List View
+timesheetlist-title=News UK Timesheets - Timesheets
+timesheetlist-refresh-dialog-text=Refreshing timesheet list...
+timesheetlist-table-date-selection=Timesheets for
+timesheetlist-table-date-to=to
+timesheetlist-table-dates=Timesheet Period
+timesheetlist-table-timesheet-name=Timesheets
+timesheetlist-table-hours-submitted=Submitted hours
+timesheetlist-table-hours-billable=Billable hours
+timesheetlist-table-status=Status
+timesheetlist-table-action=Action
+timesheetlist-table-note=Note
+timesheetlist-table-no-data=No matching timesheets found
+timesheetlist-table-month-earlier=One month earlier
+timesheetlist-table-month-later=One month later
+timesheetlist-table-this-week=Reset dates
+timesheetlist-table-this-week-tooltip=Reset dates to show this week
+timesheetlist-table-refresh-tooltip=Refresh
+timesheetlist-table-invalid-date-from=Start date must be before end date
+timesheetlist-table-invalid-date-to=End date must be after start date
+timesheetlist-display-timesheet-tooltip=Display timesheet
+timesheetlist-edit-timesheet-tooltip=Edit timesheet
+timesheetlist-withdraw-timesheet-tooltip=Withdraw timesheet
+
+# Timesheet View
+timesheet-table-title=Timesheet for
+timesheet-table-title-sep=to
+timesheet-table-project=Project or Activity
+timesheet-table-status=Status
+timesheet-table-no-data=No time entered
+timesheet-table-project-placeholder=Select a project or activity
+timesheet-table-submitter-comment-placeholder=Optional comments for the approver
+timesheet-table-row-add=Add line
+timesheet-table-row-add-tooltip=Add project or activity
+timesheet-table-row-delete-tooltip=Delete
+timesheet-table-total-billable=Total Billable Hours:
+timesheet-table-total-nonbillable=Total Non-Billable Hours:
+timesheet-table-total-hours=Total Hours:
+timesheet-table-project-total=Total
+timesheet-table-timesheet-empty=You haven't entered any time on the timesheet
+timesheet-table-timesheet-too-many-hours=You cannot enter more than 24x7 hours for a week
+timesheet-table-timesheet-empty-project=Please select a project for each entry
+timesheet-withdraw-warning=Are you sure you want to withdraw this timesheet?\nIf you do, it will be available for editing and resubmission
+timesheet-withdraw-warning-title=Withdraw timesheet
+timesheet-saving-dialog-text=Submitting timesheet...
+timesheet-status=Status
+timesheet-comment-title=Comments
+timesheet-comment-submitter=Submitter comments
+timesheet-comment-approver=Approver comments
+timesheet-new=New
+timesheet-withdraw=Withdraw
+timesheet-submitted-ok=Timesheet submitted
+timesheet-withdraw-successful=Timesheet withdrawn
+timesheet-input-hours-invalid=Time must be between 0 and 24 hours
+timesheet-submit=Submit
+timesheet-cancel=Cancel
+timesheet-day1=0
+timesheet-day2=1
+timesheet-day3=2
+timesheet-day4=3
+timesheet-day5=4
+timesheet-day6=5
+timesheet-day7=6
+
+# Approval View
+approval-title=News UK Timesheets - Approval
+approval-refresh-dialog-text=Refreshing approval list...
+approval-table-no-data=No matching timesheets found
+approval-table-filter-status=Status
+approval-table-filter-date=Timesheets for
+approval-table-filter-date-to=to
+approval-table-month-earlier=One month earlier
+approval-table-month-later=One month later
+approval-table-header-submitter=Submitted by
+approval-table-header-id=Timesheet ID
+approval-table-header-project=Project or Activity
+approval-table-header-projects=Projects or Activities
+approval-table-header-period=Period
+approval-table-header-total-billable=Billable Hours
+approval-table-header-status=Status
+approval-table-header-comment-to-submitter=Approval/rejection comment
+approval-table-header-comment-to-approver=Comment to approver
+approval-table-view-settings-dialog-text=Display Settings
+approval-table-select-other-project-tooltip=Select project for 'other' time
+approval-approve=Approve
+approval-reject=Reject
+approval-approve-successful=Timesheets approved successfully
+approval-reject-successful=Timesheets rejected successfully
+approval-error=Error approving timesheets
+approval-none-selected-approve=Please select one or more timesheets to approve
+approval-none-selected-reject=Please select one or more timesheets to reject
+approval-submitter-info-title=Submitter Information
+approval-select-project-dialog-title=Select project
+approval-select-project-update-successful=Timesheet updated successfully
+
+# Substitute View
+
+# Project List View
+project-list-title=Projects
+project-list-refresh-dialog-text=Refreshing project list...
+project-list-no-data=No projects have been defined
+project-list-no-resource-data=No resources have been assigned to the project. They can be assigned using the "Add Resource" button
+project-list-resource-assigned=Assigned
+project-list-resource-id=ID
+project-list-refresh-tooltip=Refresh
+project-list-project-add=Add
+project-list-project-add-tooltip=Add a new project
+project-list-project-edit=Edit
+project-list-project-edit-tooltip=Edit project
+project-list-project-close=Close
+project-list-project-close-tooltip=Close project
+project-list-resource-add=Add Resource
+project-list-header-id=Project ID
+project-list-header-description=Description
+project-list-header-pm-name=Project Manager
+project-list-header-cost-assignment=Cost Assignment
+project-list-header-dates=Start and Finish Dates
+project-list-error-reading=Error reading project data
+project-list-not-selected=Please select a project
+project-list-selectpm-tooltip=Select project manager
+project-list-defaultpm-tooltip=Select default project manager
+project-list-clearpm-tooltip=Remove project manager
+
+timesheet-popover-title=Timesheet for {0} to {1}
+
+project-add-resource-title=Add Resource
+project-add-resource-first-name=First name
+project-add-resource-last-name=Last name
+project-add-resource-position=Position
+project-add-resource-department=Department
+project-add-resource-username=Username
+project-add-resource-personnel-id=Personnel ID
+project-add-resource-is-contractor=Contractor?
+project-add-resource-no-data=No matches found
+project-add-resource-empty-search=Please enter a resource name
+project-add-resource-error-adding=Error adding resource to project
+project-add-resource-error-reading=Error searching for resources
+project-add-resource-search-dialog-text=Searching...
+project-delete-resource-warning=Are you sure you want to remove {0} from the project?
+project-delete-resource-warning-title=Remove resource assignment
+project-updated-ok=Project updated
+project-update-error=Error updating project. Please try again
+project-resources-updated-ok=Project resource assignments updated
+project-not-selected=Please select a project
+project-select-pm-empty-search=Please enter a project manager name
+project-select-pm-error-reading=Error searching for a project manager
+
+# 'Not Found' View
+notfound-title=Not Found
+notfound-text=The requested URL was not found
+notfound-description=Please check the URL and try again. \nPlease contact Service Desk if you encounter any further problems
+
+# Dialogs
+dialog-button-ok=Ok
+dialog-button-cancel=Cancel
+dialog-button-yes=Yes
+dialog-button-no=No
+dialog-loading-timesheet-title=Loading
+dialog-loading-timesheet-text=Loading timesheet...
+dialog-saving-timesheet-title=Saving
+dialog-saving-timesheet-text=Saving timesheet...
+dialog-add-project-title-add=Add New Project
+dialog-add-project-title-edit=Edit Project - {0}
+dialog-add-project-name=Name
+dialog-add-project-description=Description
+dialog-add-project-start-date=Start Date
+dialog-add-project-end-date=End Date
+dialog-add-project-cost-assignment=Cost assignment
+dialog-add-project-project-manager=Project Manager
+dialog-add-project-project-manager-placeholder=Search to find the project manager
+dialog-add-project-name-invalid=Please provide a name
+dialog-add-project-description-invalid=Please provide a description
+dialog-add-project-cost-assignment-invalid=Please provide a cost assignment
+dialog-select-project-header=Please select a project to replace the 'Other' project
+dialog-add-resource-title=Add Resource
+dialog-add-resource-name=Name
+dialog-add-resource-name-placeholder=Search by first/last name
+dialog-add-resource-username=Username
+dialog-add-resource-username-placeholder=Search by network username
+dialog-add-resource-no-data=No matching resources found
+dialog-add-resource-select-project=Please select a project to add resources
+dialog-edit-resource-title=Edit Resource
+dialog-edit-resource-name=Name
+dialog-edit-resource-start-date=Start Date
+dialog-edit-resource-end-date=End Date
+dialog-edit-resource-add-month=Add month
+dialog-edit-resource-add-month-tooltip=Add one month
+dialog-unsaved-data-title=Unsaved data
+dialog-unsaved-data-text=You have unsaved data. Are you sure you want to navigate away?
+dialog-select-pm-title=Select Project Manager
+dialog-select-pm-no-data=No matching resources found
+
+# Emails
+email-support--subject=Timesheet system issue
+email-support--body=Hi Service Desk,\n\nCould the following please be assigned to epOps.\n\n<Provide details of the issue>
+
+# PMO
+email-pmo-subject=Timesheet system query
+email-pmo-body=
+

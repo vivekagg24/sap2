@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="50 " height="42">
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+	 	    import com.adobe.viewsource.ViewSource;
+            import mx.managers.PopUpManager;
+            import mx.collections.ArrayCollection;
+		
+ 		
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			notesIcon.data = value;
+	 			notesIcon.enabled = false;
+			
+				if (value && value.NOTES == "X"){
+					notesIcon.enabled = true;
+					notesIcon.visible = true;
+					notesIcon.toolTip = "Additional information available";
+				}
+				else {
+		 			notesIcon.enabled = false;
+					notesIcon.visible = false;
+				}
+
+	 			super.data = value;
+	 			attachIcon.data = value;
+	 			attachIcon.enabled = false;
+			
+				if (value && value.ATTACHMENT == "X"){
+					attachIcon.enabled = true;
+					attachIcon.visible = true;
+					attachIcon.toolTip = "Attachment available - open form to view";
+				}
+				else {
+		 			attachIcon.enabled = false;
+					attachIcon.visible = false;
+				}
+								
+	 		}
+	 		
+	 		public function set listData(value:BaseListData):void
+	 		{
+	 			notesIcon.listData = value;
+	 		}
+	 		
+	 		public function get listData():BaseListData
+	 		{
+	 			return notesIcon.listData;
+	 		}		
+	 		
+	 				
+		]]>
+	</mx:Script>
+		
+	<mx:HBox horizontalGap="0">
+
+	</mx:HBox>	 
+    <mx:Metadata>
+       <!-- [Event(name="displayNotes", type="mx.events.DynamicEvent")] -->
+    </mx:Metadata>
+    <mx:Image id="attachIcon" source="HR/images/S_ATTACH.gif"
+    	 resize="false" width="15" maxWidth="15" x="25">
+    </mx:Image>
+    <mx:Image id="notesIcon" source="@Embed('../../HR/images/Notes.gif')"
+    	 click="onClick()" resize="false" useHandCursor="true" buttonMode="true" mouseChildren="false"  x="9"> 
+    	<mx:Script>
+			<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+  		 	import mx.managers.PopUpManager;  
+  		 	//import mx.controls.listClasses.BaseListData;  		 	
+			
+			private function onClick():void
+			{ 				
+				var message:Notes = PopUpManager.createPopUp(this, Notes) as Notes;
+				    message.data = this.data;
+			}	    
+ /*  				var messagePopup:History =  PopUpManager.createPopUp(this, History) as History;
+  				messagePopup.historyTab = parentApplication.getHistory(this.data.PARENT_WIID); 
+				import flash.net.*; */
+
+/*				var adobeFormURL:String = this.parentApplication.portalURL + 
+											"/irj/servlet/prt/portal/prteventname/Navigate/prtroot/pcd!3aportal_content" +
+											"!2fcom.morse.portalconfig!2fuk.co.newsint.NI_Desktop!2fframeworkPages!2fuk.co.newsint.portal.frameworkpage!2fcom.sap.portal.innerpage!2fcom.sap.portal.contentarea?" +
+											"NavigationTarget=ROLES%3A%2F" +
+											"%2Fportal_content" +
+											"%2Fcom.sap.pct%2Fspecialist" +
+											"%2Fcom.sap.pct.erp.hradmin.bp_folder" +
+											"%2Fcom.sap.pct.erp.hradmin.11.bp_folder" +
+											"%2Fcom.sap.pct.erp.hradmin.11.roles" +
+											"%2Fcom.sap.pct.erp.hradmin.11.HRAdministrator" +
+											"%2Foverview%2Fcom.sap.pct.erp.hradmin.11.overview" +
+											"%2Fcom.sap.pct.erp.hradmin.11.start_processes" +
+											"&DynamicParameter=WI_ID%3D" + this.data.WIID +
+											"&CurrentWindowId=WID1278491345079" +
+											"&NavMode=1";
+				var formURL:URLRequest = new URLRequest(adobeFormURL);
+		        navigateToURL(formURL,"_blank");   */
+					
+			]]>
+		</mx:Script> 
+    </mx:Image>
+</mx:Canvas>

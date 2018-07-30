@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Application: ECS Payments Viewer
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+Overview:
+	This a web flex alternative to the SAP transaction ZECSL CPR Payments reports
+	The flex application sits communicates with the back end via 2 principle web services (RFCs on SAP):
+		Z_ECS_CPR_LIST_GET_SEL_SCREEN
+		Z_ECS_CPR_LIST_GET_DATA
+		 
+	
+	The application loads the selection screen on the creationComplete Event.
+	Cost centre selection is based on the user's settings in the table ZECSUSERCC
+	"Batch number" and "entered by" dropdowns are generated based on the full data list that would appear if the
+	user was to run the report for their cost centres over payments entered in the previous 4 weeks.
+	
+	The list is generated based on the user's selection choice and is displayed in a datagrid.
+	
+
+--> 
+<mx:Application 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:ns1="ni.components.*"
+	xmlns:ecs="ecs.components.*"
+	layout="absolute"
+	initialize="setWSDLPath()"
+	creationComplete="startApp()"
+	creationPolicy="all" xmlns:VDG="VDG.*"
+	resize="setGridAreaHeight()">
+	 
+	<mx:Script> 
+		<![CDATA[
+			import mx.events.DataGridEvent;
+			import ContributorSearch;
+			import mx.collections.ArrayCollection;
+			import mx.formatters.CurrencyFormatter;
+			import mx.formatters.CurrencyFormatter;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.ListEvent;
+
+			[Bindable]
+			public var wsdlRoot:String;
+			[Bindable]
+			private var pubid:String = "";		//Publication ID
+			[Bindable]
+			private var publications:Array;		//Array of publications the user belongs to
+			[Bindable]
+			private var costCentres:Array;		//Array of cost centrs the user belongs to
+			[Bindable]
+			private var ECSStatuses:Array;		//Array of ECS statuses
+			[Bindable]
+			private var batches:Array;			//Array of batch numbers (for sel screen)
+			[Bindable]
+			private var createdByList:Array;	//Array of user names (for sel screen) - users who entered the payments
+			[Bindable]
+			private var dp:ArrayCollection;
+			[Bindable]
+			private var costCentresXML:XMLList; //XML list of cost centres for selection
+			[Bindable]
+			private var last20Contributors:Array;
+			[Bindable]
+			private var itemAreaHeight:int = 510;	//Height of the items area section
+			[Bindable]
+			private var entryDateFrom:String;	
+			[Bindable]
+			private var entryDateTo:String;
+			[Bindable]
+			private var pubDateFrom:String;
+			[Bindable]
+			private var pubDateTo:String;
+			[Bindable]
+			protected var cprViewer:Object;
+			
+			public var contribSearchPopup:IFlexDisplayObject;       // Contributor Search popup;
+			public var prevContributor:String;						//Previous contributor that we got details for
+			private var currFormat:CurrencyFormatter = new CurrencyFormatter();
+			private var dateFormat:DateFormatter = new DateFormatter();
+			private var getPublications:Boolean = true;	//Flag - get the list of publications when building the sel screen
+			public var allowNewContributor:Boolean = false;
+
+			private var swfmodule_cpr_entry:String; // URL of CPR Entry Flex application (swf)			
+			/*
+				setWSDlPath
+				if running locally or on the SAP server set the path to the web service 
+				wsdl files appropriately
+			*/
+			private function setWSDLPath():void{
+					
+				if( Security.sandboxType == Security.REMOTE ){
+					//Running on the SAP WebAS
+					wsdlRoot = WSDL_SICF_PREFIX + "services=";
+					swfmodule_cpr_entry = "/sap/bc/bsp/sap/zecs_cpr/CPREntry.swf";   
+					 
+				}
+				else{
+					//Running from the Flex IDE
+					 wsdlRoot = DEV_SERVER       	// Which SAP server should we connect to?
+				              	+ WSDL_SICF_PREFIX
+				             	+ SAP_CLIENT       	// Which SAP client should we connect to?
+				            	+ "services=" ; 
+				      if (application.url.toString().indexOf("debug") > -1)
+				     {
+				     	swfmodule_cpr_entry = "CPREntry-debug.swf";   	
+				     }
+				     else
+				     {
+				     	swfmodule_cpr_entry = "CPREntry.swf";   	
+				     }	        	
+				}							
+			}
+			/*
+			startApp
+				Run when the application starts (creation complete).
+				Initialise the application
+				load the selection screen 
+			*/
+			private function startApp():void {
+				var today:Date = new Date();
+				fscommand("showmenu","false");				//Hide the flash player menu
+				currFormat.currencySymbol = "";
+				currFormat.precision = 2;
+				dateFormat.formatString = "DD/MM/YYYY"
+				loadScreen();								//Load the selection screen 
+				dtEntryDateFrom.text = dateFormat.format(new Date(today.getTime() - 14 * 24*60*60*1000));
+				dtEntryDateTo.text= dateFormat.format(today);
+				ws1.Z_ECS_GETLAST20.send();			//Get the last 20 contributors used	
+				setGridAreaHeight();						
+			}
+			
+			/*
+			loadScreen
+				Get the selection screen
+			*/
+			private function loadScreen():void {
+				
+				dp=new ArrayCollection;
+				ws1.Z_ECS_CPR_LIST_GET_SEL_SCREEN.send();
+			}
+			
+			/*
+			getSelScreenCallBack
+				callback from web service wrapper for Z_ECS_CPR_LIST_GET_SEL_SCREEN
+				builds the dataproviders for the selection screen
+			*/
+			private function getSelScreenCallBack(result:Object):void {
+				if (getPublications) {
+					//Build dropdown list of publications (realistically only one)
+					publications = buildDropdownList(new XML(ws1.Z_ECS_CPR_LIST_GET_SEL_SCREEN.lastResult).EX_T_PUBLICATIONS, false);
+					getPublications = false;
+				}
+				 
+				//Default the publication if necessary 
+				if (comboPubID.selectedIndex < 0)  comboPubID.selectedIndex = 0;
+				
+				//Build cost centre list (bound to list)
+				costCentresXML = new XML(ws1.Z_ECS_CPR_LIST_GET_SEL_SCREEN.lastResult).EX_T_COST_CENTRES;
+				costCentres = buildDropdownList(costCentresXML, false);
+				//Build batch list (bound to combobox)
+				batches =  buildDropdownList(new XML(ws1.Z_ECS_CPR_LIST_GET_SEL_SCREEN.lastResult).EX_T_BATCHES, false);
+				//Build created by list (bound to combobox)
+				createdByList =  buildDropdownList(new XML(ws1.Z_ECS_CPR_LIST_GET_SEL_SCREEN.lastResult).EX_T_ENTERED_BY, false);
+					
+				ECSStatuses = buildDropdownList(new XML(ws1.Z_ECS_CPR_LIST_GET_SEL_SCREEN.lastResult).EX_T_STATUSES, false);
+				selAllListItems(true,lstStatus,ECSStatuses);
+				selAllListItems(true,lstCostCentres,costCentres);
+			}
+			
+			/*
+				selAllCostCentres
+					(de)select all cost centres in the list component
+			*/
+			private function selAllListItems(all:Boolean,list:List,dp:Array):void {
+				if (all) {
+					var indices:Array = new Array();
+					for (var i:int = 0; i < dp.length; i++) {
+						indices[i] = i;
+					}
+					list.selectedIndices = indices;
+				} else {
+					list.selectedIndices = new Array();
+				}
+			}
+			
+			/* 
+				getLast20CallBack (Z_ECS_GETLAST20)
+					populate the value help lists for contribuor number and name
+			
+			*/
+			private function getLast20CallBack(result:Object):void{
+				var item:valueForDropdown;
+				last20Contributors=new Array();
+				for each (var contributor:XML in result.EX_T_CON_DETAIL.item){
+					
+					item = new valueForDropdown();
+					item.data = removeleadingZeros(contributor.LIFNR);
+					item.label = item.data + " " + contributor.NAME1;
+					last20Contributors.push(item);					
+				}
+				last20Contributors.sortOn("data");
+			}
+			
+			/*
+				launchContributorSearch
+					Launch the advanced contributor search
+			*/
+			public function launchContributorSearch():void{
+				var win:ContributorSearch;
+				
+				win = ContributorSearch( PopUpManager.createPopUp(this,ContributorSearch,true));
+			}
+			
+			public function setAllowNewContributor():void{
+				
+			}
+			
+			/*
+				formatUserDate
+					Make sure date is DD/MM/YYYY			
+			*/
+			private function formatUserDate(dtEntry:DateField):void{
+				var  dateString:String="";
+				var pattern:RegExp = /[.]/g;
+				//Replace . with /
+				dateString = dtEntry.text.replace(pattern,"/");
+				if (dateString.length<6) return;
+				var stringHelp:StringHelper = new StringHelper();
+				dateString  = stringHelp.trim(dateString,"");
+				//Add in / if not entered
+				if (dateString.substr(2,1)!="/") 
+					dateString = dateString.slice(0,2) + "/" + dateString.slice(2,dateString.length);
+				if (dateString.substr(5,1)!="/") 
+					dateString = dateString.slice(0,5) + "/" + dateString.slice(5,dateString.length);
+				//Make 07 2007. Only works until 2099 but that'll do
+				if (dateString.length == 8)
+					dateString = dateString.slice(0,6) + "20" + dateString.slice(6,8);
+				dtEntry.text=dateString;
+			}
+			
+			private function runReportCallBack(result:Object):void{
+				var found:Boolean;
+				
+								
+				dp = new ArrayCollection();		
+				//Go through results from Z_ECS_GET_APPROVAL_DATA
+				dp.disableAutoUpdate();
+				for each(var cpr:XML in result.CH_T_REPORT.item) {
+					var s:* = getCurrentRow(cpr);
+					dp.addItem(s);	
+					found=true;
+				}
+				dp.enableAutoUpdate();	
+				
+				
+/* 				
+				// Calculate how to scroll
+				// If we have a few items, a couple of pages worth, just draw all items and let the application
+				// handle scrolling.
+				// If we have a lot of items, drawing everything would be too slow, so let the datagrid
+				// handle scrolling
+				if (dp.length < 40)
+				{ // Scroll in panel
+					pnlItemsArea.verticalScrollPolicy = "on";
+					pnlItemsArea.horizontalScrollPolicy = "on";
+					dgPaymentsViewer.verticalScrollPolicy = "off";
+					dgPaymentsViewer.horizontalScrollPolicy = "off";
+					
+					pnlItemsArea.percentWidth = 100;			
+					dgPaymentsViewer.rowCount = dp.length + 1;
+					dgPaymentsViewer.validateNow();
+					var maxHeight:uint = pnlItemsArea.viewMetrics.bottom
+				                        + pnlItemsArea.viewMetrics.top 
+				                        + dgPaymentsViewer.viewMetrics.bottom
+				                        + dgPaymentsViewer.viewMetrics.top
+				                        + (dgPaymentsViewer.rowHeight * (dp.length));
+				    pnlItemsArea.height = Math.min(maxHeight,pnlItemsArea.parent.height) 
+				    var maxWidth:uint = pnlItemsArea.viewMetrics.right
+				                        + pnlItemsArea.viewMetrics.left 
+				                        + dgPaymentsViewer.width; 
+				    pnlItemsArea.width  = Math.min(maxWidth,pnlItemsArea.parent.width)   
+
+					
+				}
+				else
+				{ // Scrolling the datagrid
+					pnlItemsArea.verticalScrollPolicy = "off";
+					pnlItemsArea.horizontalScrollPolicy = "off";
+					dgPaymentsViewer.verticalScrollPolicy = "auto";
+					dgPaymentsViewer.horizontalScrollPolicy = "auto";
+					
+					pnlItemsArea.percentHeight = 100;	
+					pnlItemsArea.percentWidth = 100;	
+					dgPaymentsViewer.percentHeight = 100;
+					dgPaymentsViewer.percentWidth = 100;
+				}				
+				*/
+
+				
+				dgPaymentsViewer.executeBindings(); 
+				
+
+					
+				
+				if(!found) Alert.show("No payments were found","ECS Payments Viewer");
+			}
+			
+			private function setGridAreaHeight():void{
+				try{
+					itemAreaHeight = application.height - tabSelectionCriteria.height - 20;
+				}
+				catch (err:Error){}
+			}
+			/*
+				showCPR
+					Launch the iView to display a CPR
+			*/
+/* 			public function showCPR(cpr:String,company:String,year:String):void{
+				if (cpr==null ||cpr=="")return
+				var iviewURL:String="pcd:portal_content/com.ni.cis.NIDevelopment/com.ni.cis.ecs.ECS/com.ni.cis.ecs.ecsbspiviews/com.ni.cas.cis.ecs.iv_bsp_paymententry?mode=3";
+				iviewURL+= "&cpr=" + cpr;
+				iviewURL+= "&company=" + company;
+				iviewURL+= "&year=" + year;
+				ExternalInterface.call("portalNavigate",iviewURL,"1","toolbar=no,width=1000,height=800,resizable=yes,left=50,top=50","cpr");
+			} */
+/*
+	showCPR
+		Launch the iView to display a CPR
+*/
+		
+			
+			
+			
+			
+						/*
+				getData
+				 Call web service wrapper for Z_ECS_CPR_LIST_GET_DATA which returns all the 
+				 payments 
+					
+			*/
+			private function getData():void {
+				var arrCostCentres:Array = new Array();	//Arr of cost centre XML nodes passed as parameter to RFC
+				var i:int = 0;
+				var cc:XML ;							//Cost centre XML node
+				var arrStatuses:Array = new Array();	//Arr of cost centre XML nodes passed as parameter to RFC
+				var status:XML ;							//Cost centre XML node
+				
+				//Get all the cost centres from the list box and populate structure for web service
+				for each(var item:valueForDropdown in lstCostCentres.selectedItems) {
+					cc = new XML("<item><COST_CENTRE></COST_CENTRE></item>");
+					cc.COST_CENTRE = item.data;
+					arrCostCentres[i] = cc;		
+					i++;
+				}
+				//Get all the statuses from the list box and populate structure for web service
+				i=0;
+				for each(item in lstStatus.selectedItems) {
+					status = new XML("<item><STATUS></STATUS></item>");
+					status.STATUS = item.data;
+					arrStatuses[i] = status;		
+					i++;
+				}
+				//A cost centre choice has been made?
+				if (i > 0 || (txtCostCentreFrom.text!="" || txtCostCentreTo.text!="") ) {
+        			
+        			//Populate unbound parameters for web service and send
+        			ws1.Z_ECS_CPR_LIST_GET_DATA.request.IM_T_COST_CENTRES = arrCostCentres;
+        			ws1.Z_ECS_CPR_LIST_GET_DATA.request.IM_T_STATUSES = arrStatuses;
+        			entryDateFrom=getDateForSAP(dtEntryDateFrom.text);
+        			entryDateTo=getDateForSAP(dtEntryDateTo.text);
+        			pubDateFrom=getDateForSAP(dtPubDateFrom.text);
+        			pubDateTo=getDateForSAP(dtPubDateTo.text);
+					ws1.Z_ECS_CPR_LIST_GET_DATA.send();
+				} else {
+					Alert.show("Please select at least one cost centre","ECS Payments Viewer");
+				}
+			}	
+			
+			/*
+				getCurrentRow
+					Get the grid data structure for the current XML row in 
+					the results returned from Z_ECS_CPR_LIST_GET_DATA
+					
+			*/
+			private function getCurrentRow(cpr:XML):ReportItem {
+			
+				var row:ReportItem = new ReportItem();
+				var decimals:String;
+				
+				//CPR Number
+				row.cpr = cpr.BELNR.toString();
+				//CPR Status
+				row.STATUS = cpr.STATUS.toString();
+				
+				//Story
+				row.story = cpr.STORY.toString();
+				//Amount in document currency
+				decimals = cpr.DECIMALS.toString();
+				currFormat.precision = int(decimals);
+				row.amount = currFormat.format(cpr.AMOUNT.toString());
+				row.currency = cpr.CURRENCY.toString();
+				//Contributor number
+				row.contributor =cpr.LIFNR.toString();
+				//Contributor name
+				row.contributorName = cpr.NAME1.toString();
+				//Publication date
+				row.publicationDate = dateFormat.format(cpr.PUBDATE.toString());
+				//Reason the payment is urgent
+				row.enteredBy = cpr.LOCKED_BY.toString();
+				row.enteredDate = dateFormat.format(cpr.ERDAT.toString());
+				row.lastChangedBy = cpr.ERNAM.toString();
+														
+				//Urgent item flag
+				if (cpr.URGENT.toString() != "") {
+					row.urgent = true;
+				} else {
+					row.urgent = false;
+				}
+				//Urgent item flag
+				if (cpr.HELD.toString() != "") {
+					row.held = true;
+				} else {
+					row.held = false;
+				}
+				
+				//Page numbers
+				row.pageNumbers = cpr.PAGENOS.toString();
+				// Get rid of leading zeroes.
+				row.pageNumbers = removeleadingZeros(row.pageNumbers);
+				
+				//Company Code
+				row.company = cpr.BUKRS.toString();
+				//Fiscal Year
+				row.year = cpr.GJAHR.toString();
+				//Batch number
+				row.batch = cpr.BATCH.toString();
+				//Cost centre
+				row.costCentre = cpr.COSTCENTRE.toString();
+				row.costCentreDescription = cpr.KOSTL.toString();
+				return row; 
+			}
+			
+			/*
+	showCPR
+		Launch the iView to display a CPR
+*/
+public function showCPR(cpr:String,company:String,year:String):void{
+	if (cpr==null ||cpr=="")return
+	
+	if (this.height >= 600)  // Enough room on screen, so open popup
+	{
+		var cprkey:CPRKey = new CPRKey();
+		cprkey.docNo = cpr;
+		cprkey.year = year;
+		cprkey.company_code = company;
+		cprkey.access_mode = "2";//Change
+		showCPRPopup(cprkey);		
+	}
+	else  // Too small for popup, so open in new iview
+	{
+		var iviewURL:String="pcd:portal_content/com.ni.cis.NIDevelopment/com.ni.cis.ecs.ECS/com.ni.cis.ecs.ecsbspiviews/com.ni.cas.cis.ecs.iv_bsp_paymententry?mode=3";
+		iviewURL+= "&cpr=" + cpr;
+		iviewURL+= "&company=" + company;
+		iviewURL+= "&year=" + year;
+		ExternalInterface.call("portalNavigate",iviewURL,"1","toolbar=no,width=1000,height=800,resizable=yes,left=50,top=50","cpr");
+ 		
+	}
+
+ }
+	
+
+import mx.events.PropertyChangeEvent;
+import mx.controls.SWFLoader;
+import mx.managers.*;
+import ecs.generalClasses.CPRKey;
+import flash.events.IOErrorEvent;
+import flash.events.Event;
+import mx.events.FlexEvent;
+import ecs.generalClasses.LoaderPopup;
+
+private var popupCPR:LoaderPopup;      // Remember the popup so we can show it again
+private var cprToShowInPopup:CPRKey; // Details of what to load
+
+protected function preloadCPRPopup():void
+{
+	cprToShowInPopup = new CPRKey()
+	cprToShowInPopup.access_mode = "3";// Display
+	cprToShowInPopup.docNo = "";
+	
+	
+	// Create invisible popup
+	popupCPR = PopUpManager.createPopUp(this, LoaderPopup, true) as LoaderPopup;
+	popupCPR.doClose();
+	popupCPR.visible = false;
+	
+	// Start the loader
+	var sl:SWFLoader = popupCPR.swfloader;
+	sl.addEventListener(IOErrorEvent.IO_ERROR, function():void {Alert.show('Error displaying payment')} );
+	sl.addEventListener(Event.COMPLETE, myFunc, false, 0, true);
+	sl.load(swfmodule_cpr_entry);	
+	
+	PopUpManager.removePopUp(popupCPR);
+	popupCPR = null;	
+}
+	
+
+
+/** Load the CPREntry screen as a popup to display a CPR
+ */
+protected function showCPRPopup(cprToShow:CPRKey):void
+{
+	cprToShowInPopup = cprToShow; // Remember the details of the cpr we want to open so we can
+	                              // pass it to CPREntry.swf when it has loaded
+	
+	trace("Opening CPREntry popup from approval screen  " + getTimer());
+	if (popupCPR)
+	{		
+		popupCPR.visible = true;
+		var ev:Event = new Event(Event.COMPLETE);
+		PopUpManager.bringToFront(popupCPR);
+		popupCPR.swfloader.dispatchEvent(ev); // Make it act like it just loaded itself
+		resizeCPRPopup()
+		popupCPR.title = "Edit payment " + cprToShow.docNo;
+		
+	}
+	else
+	{
+		// show the popup
+		var popup:LoaderPopup = PopUpManager.createPopUp(this, LoaderPopup, true) as LoaderPopup;
+		PopUpManager.bringToFront(popup);		
+		popup.visible = true;
+					
+		PopUpManager.centerPopUp(popup);
+		PopUpManager.bringToFront(popupCPR);
+		popup.y = 100;
+		
+		// Start the loader
+		var sl:SWFLoader = popup.swfloader;
+		sl.addEventListener(IOErrorEvent.IO_ERROR, function():void {Alert.show('Error displaying payment')} );
+		sl.addEventListener(Event.COMPLETE, functionOnCPRLoad, false, 0, true);
+		sl.load(swfmodule_cpr_entry);	
+		
+		popupCPR = popup;
+		popupCPR.title = "Edit payment " + cprToShow.docNo;		
+		resizeCPRPopup()
+	}		
+}
+
+/** When we load the CPR, tell it what to do
+ * 
+ *  This method gets called twice, first when the popup is created and secondly
+ *  when the swf is loaded and ready
+ */
+private function functionOnCPRLoad(event:Event):void
+{
+	if (popupCPR == null)
+		return;
+	
+	var loaderSM:SystemManager = SystemManager(popupCPR.swfloader.content);
+	if (loaderSM == null) return; 
+	
+	var cprApp:Object = loaderSM.application;
+	if (cprApp == null) // If not ready yet, wait until its ready
+	{
+		loaderSM.addEventListener(FlexEvent.APPLICATION_COMPLETE, functionOnCPRLoad, false, 0, true);
+		return;
+	}
+	
+	trace("Passing parameters to CPREntry popup from approval screen  " + getTimer());
+	cprApp.loadNewCPR(cprToShowInPopup.docNo, cprToShowInPopup.year, cprToShowInPopup.company_code, cprToShowInPopup.access_mode);
+	cprApp.containing_popup_window = popupCPR; // Gives the CPR screen a reference to its containing popup
+}
+
+// Resize the CPR popup depending on the current application size
+private function resizeCPRPopup():void
+{
+		if (!popupCPR) return;
+	
+		if (this.width > 1200)
+			popupCPR.width = 1100;
+		else
+			popupCPR.width = this.width - 50;
+			
+		if (this.height > 900)			
+			popupCPR.height = 800;
+		else
+			popupCPR.height = this.height - 100;	
+		
+		// Scroll back to top-left	
+		popupCPR.verticalScrollPosition = 0;
+		popupCPR.horizontalScrollPosition = 0;
+}	
+
+private function myFunc(event:Event):void
+{
+
+}
+
+private function gridDoubleClick(event:ListEvent):void
+{
+	var __cpr:CPRKey = new CPRKey();
+	var row:int = event.rowIndex - 1; // Take off 1 for the header
+	var val:* = dp.getItemAt(row);
+	__cpr.year = val.year;
+	__cpr.docNo = val.cpr;
+	__cpr.company_code = val.company;
+	__cpr.access_mode = "2";
+	
+	showCPRPopup(__cpr);
+	
+}
+		]]>
+	</mx:Script>
+	
+
+	<!--General utilities-->
+	<mx:Script source="ecs/scripts/Utilities.as"></mx:Script>
+	<!--Constants-->
+	<mx:Script source="ecs/CPREntryScripts/Data/Constants.as"></mx:Script>
+	<mx:Style source="ECS.css"/>
+	<!--Glow for cost centre choice labels-->
+	<mx:Glow id="effGlow" duration="1500" repeatCount="3"></mx:Glow>
+	
+
+	<mx:WebService id="ws1"	
+		fault="Alert.show(event.fault.faultString,MESSAGE_TITLE)" 
+    	wsdl="{wsdlRoot}Z_ECS_CPR_LIST_GET_SEL_SCREEN,Z_ECS_GETLAST20,Z_ECS_CPR_LIST_GET_DATA"
+    	useProxy="false"    	
+     	showBusyCursor="true">   
+     	
+     <!--Z_ECS_CPR_LIST_GET_SEL_SCREEN: get the data to build the selection fields-->
+	    <mx:operation name="Z_ECS_CPR_LIST_GET_SEL_SCREEN"  
+	    	 resultFormat="e4x" concurrency="single" 
+	    	 result="getSelScreenCallBack(event.result)">
+	    	<mx:request>
+	    		<IM_PUBID>{comboPubID.selectedItem.data}</IM_PUBID>
+	    	</mx:request>
+		</mx:operation>
+
+	
+	<!-- Get the user's last 20 contributors-->
+	    <mx:operation name="Z_ECS_GETLAST20"  
+	    	 result="getLast20CallBack(event.result)"   	
+	    	 resultFormat="e4x" concurrency="last">
+		</mx:operation>		
+
+	
+	<!-- Get the report data-->
+	    <mx:operation name="Z_ECS_CPR_LIST_GET_DATA"  
+	    	 result="runReportCallBack(event.result)"   
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    		<IM_PUBID>{comboPubID.selectedItem.data}</IM_PUBID>
+	    		<IM_BATCH>{txtBatch.text}</IM_BATCH>
+	    		<IM_ENTERED_BY>{txtEnteredBy.text}</IM_ENTERED_BY>
+	    		<IM_COST_CENTRE_LOW>{txtCostCentreFrom.text}</IM_COST_CENTRE_LOW>
+	    		<IM_COST_CENTRE_HIGH>{txtCostCentreTo.text}</IM_COST_CENTRE_HIGH>
+	    		<IM_ENTRY_DATE_FROM>{entryDateFrom}</IM_ENTRY_DATE_FROM>
+	    		<IM_ENTRY_DATE_TO>{entryDateTo}</IM_ENTRY_DATE_TO>
+	    		<IM_PUBDATE_FROM>{pubDateFrom}</IM_PUBDATE_FROM>
+	    		<IM_PUBDATE_TO>{pubDateTo}</IM_PUBDATE_TO>
+	    		<IM_CONTRIBUTOR>{txtContributor.text}</IM_CONTRIBUTOR>
+	    		<IM_CPR>{txtCPR.text}</IM_CPR>
+	    		<IM_T_COST_CENTRES></IM_T_COST_CENTRES>
+	    		<IM_T_STATUSES></IM_T_STATUSES>	    		
+	    		<CH_T_REPORT></CH_T_REPORT>
+	    	</mx:request>
+		</mx:operation>		
+	</mx:WebService>
+	
+	<mx:DateValidator 
+		source="{dtEntryDateFrom}"
+		property="text"
+        inputFormat="dd/mm/yyyy"
+        required="false"
+        allowedFormatChars="/." >
+    </mx:DateValidator>
+    <mx:DateValidator 
+		source="{dtEntryDateTo}"
+		property="text"
+        inputFormat="dd/mm/yyyy"
+        required="false"
+        allowedFormatChars="/." >
+    </mx:DateValidator>
+    <mx:DateValidator 
+		source="{dtPubDateFrom}"
+		property="text"
+        inputFormat="dd/mm/yyyy"
+        required="false"
+        allowedFormatChars="/." >
+    </mx:DateValidator>
+    <mx:DateValidator 
+		source="{dtPubDateTo}"
+		property="text"
+        inputFormat="dd/mm/yyyy"
+        required="false"
+        allowedFormatChars="/." >
+    </mx:DateValidator>
+    
+	<mx:TabNavigator x="0" y="0" width="100%" height="167" id="tabSelectionCriteria">
+		<mx:Canvas label="Selection Criteria" width="100%" height="131" backgroundColor="#F2F2F2">
+			<mx:Canvas x="10" y="10" width="483" height="121" borderStyle="solid" backgroundColor="#cacaff" backgroundAlpha=".25">
+				<mx:Label x="10" y="12" text="Entry Date" fontWeight="bold"/>
+				<mx:Label x="10" y="38" text="Publication Date" fontWeight="bold"/>
+				<mx:Label x="282" y="91" text="Entered By" fontWeight="bold"/>
+				<mx:DateField x="138" y="10" id="dtEntryDateFrom" editable="true" focusOut="formatUserDate(dtEntryDateFrom)" width="104" formatString="DD/MM/YYYY"/>
+				<mx:DateField x="285" y="10" id="dtEntryDateTo" editable="true" focusOut="formatUserDate(dtEntryDateTo)" width="104" formatString="DD/MM/YYYY"/> 
+				<mx:DateField x="138" y="36" id="dtPubDateFrom" editable="true" focusOut="formatUserDate(dtPubDateFrom)" width="104" formatString="DD/MM/YYYY"/>
+				<mx:DateField x="285" y="36" id="dtPubDateTo" editable="true" focusOut="formatUserDate(dtPubDateTo)" width="104" formatString="DD/MM/YYYY"/>
+				<ns1:TextInputPlus x="358" y="87" width="113"
+					recentEntries="{createdByList}"
+					listWidth="139"
+					listHeight="400" id="txtEnteredBy"/>
+				<mx:Label x="10" y="90" text="Contributor" fontWeight="bold"/>
+				<ns1:TextInputPlus 
+					x="138" y="88"
+					id="txtContributor" 
+					maxChars="10" width="104"
+					listWidth="300"
+					listHeight="400"
+					recentEntries="{last20Contributors}"/>			
+				<mx:Button x="250" y="87" id="btnContribSearch" width="20" click="launchContributorSearch()" styleName="button" useHandCursor="true" icon="@Embed('images/search.gif')" tabEnabled="false">
+					<mx:toolTip>Click here to use the advanced contributor search screen</mx:toolTip>
+				</mx:Button>
+				<mx:Label x="282" y="66" text="Batch" fontWeight="bold"/>
+				<ns1:TextInputPlus 
+					x="358" y="62" width="113"
+					id="txtBatch"
+					maxChars="10"
+					recentEntries="{batches}"
+					listWidth="139"
+					listHeight="400"/>
+				<mx:Label x="10" y="66" text="CPR Number" fontWeight="bold"/>
+				<mx:TextInput x="138" y="64" width="104" id="txtCPR"/>
+				
+			</mx:Canvas>
+			<mx:Canvas x="511" y="10" width="408" height="121" borderStyle="solid" backgroundColor="#cacaff" backgroundAlpha=".25">
+				<mx:Label x="10" y="10" text="Payment Status" fontWeight="bold"/>
+				<mx:List x="124" y="5" width="270" height="110" id="lstStatus" dataProvider="{ECSStatuses}" allowMultipleSelection="true"></mx:List>
+				<mx:Image x="54" y="36" source="@Embed('images/sell_all.gif')" 
+					click="selAllListItems(true,lstStatus,ECSStatuses)"
+					useHandCursor="true" buttonMode="true"/>
+				<mx:Image x="78" y="36" source="@Embed('images/desel_all.gif')" 
+					click="selAllListItems(false,lstStatus,ECSStatuses)"
+					useHandCursor="true" buttonMode="true"/>
+			</mx:Canvas>
+			<mx:Button x="927" y="54" label="Run Report" styleName="button" click="getData()"/>
+		</mx:Canvas>
+		<mx:Canvas label="Cost Centres" width="100%" height="100%" backgroundColor="#F2F2F2">
+			<mx:Canvas x="10" y="10" width="352" height="114" backgroundColor="#cacaff" backgroundAlpha=".25" borderStyle="outset">
+				<mx:Label x="10" y="12" text="Publication " fontWeight="bold"/>
+				<mx:ComboBox x="146.5" y="10" id="comboPubID"
+					dataProvider="{publications}"
+					change="loadScreen()"
+				    labelField="label"></mx:ComboBox>
+				<mx:Label x="10" y="53" text="Cost Centre Range" fontWeight="bold" id="labelCCRange"/>
+				<ns1:TextInputPlus 
+					x="146.5" y="51" 
+					width="84" 
+					id="txtCostCentreFrom" 
+					enter="getData()"
+					listHeight="350"
+					listWidth="300"
+					recentEntries="{costCentres}"
+					/>
+				<ns1:TextInputPlus 
+					x="238.5" y="51" 
+					width="84" id="txtCostCentreTo" 
+					listHeight="350"
+					listWidth="300"
+					enter="getData()"
+					recentEntries="{costCentres}"
+					/>
+			</mx:Canvas>
+			<mx:Canvas x="370" y="10" width="453" height="114" backgroundColor="#cacaff" backgroundAlpha=".25" borderStyle="outset">
+				<mx:Label x="10" y="10" text="OR select from list:" fontWeight="bold" id="labelFomList"/>
+				<mx:Image x="132" y="10" source="@Embed('images/sell_all.gif')" 
+					click="selAllListItems(true,lstCostCentres,costCentres)"
+					useHandCursor="true" buttonMode="true"/>
+				<mx:Image x="156" y="10" source="@Embed('images/desel_all.gif')" 
+					click="selAllListItems(false,lstCostCentres,costCentres)"
+					useHandCursor="true" buttonMode="true"/>
+				<mx:List x="180" y="5" width="252" height="100"
+					id="lstCostCentres"
+				    selectable="true"
+				    allowMultipleSelection="true"
+					dataProvider="{costCentres}"
+				    labelField="label"></mx:List>
+			</mx:Canvas>
+			<mx:Button x="927" y="54" label="Run Report" styleName="button" click="getData()"/>
+		</mx:Canvas>
+	</mx:TabNavigator> 
+	<mx:Canvas x="0" y="168" width="100%" height="{itemAreaHeight}" id="pnlItemsArea"
+		verticalScrollPolicy="off">
+		<mx:DataGrid x="0" y="0" id="dgPaymentsViewer" styleName="variantDataGrid"
+			dataProvider="{dp}" 
+		    doubleClickEnabled="true"
+		    itemDoubleClick="gridDoubleClick(event)"
+			selectable="false"
+			
+			width="100%" height="100%" horizontalScrollPolicy="on" >
+			<mx:columns>
+				<mx:DataGridColumn 
+					headerText="Status" dataField="STATUS"
+					width="60"
+					itemRenderer="ecs.gridFields.StatusRenderer"/>
+				<mx:DataGridColumn headerText="CCtr" dataField="costCentre"
+					showDataTips="true"
+					dataTipField="costCentreDescription"
+					width="50"/>
+				<mx:DataGridColumn headerText="Batch no" dataField="batch" width="90"/>
+				<mx:DataGridColumn headerText="CPR Reference" dataField="cpr"
+					width="90" 
+					itemRenderer="ecs.approval.approvalGridFields.LinkToCPR"/>
+				<mx:DataGridColumn headerText="Pub. Date" dataField="publicationDate" width="75"/>								
+				<mx:DataGridColumn headerText="Contributor" dataField="contributor" width="70"/>
+				<mx:DataGridColumn headerText="Contributor Name" dataField="contributorName" 
+					wordWrap="false"
+					dataTipField="contributorName"
+					showDataTips="true"
+					width="200"/>
+				<mx:DataGridColumn headerText="Story" dataField="story"
+					width="240"
+					showDataTips="true"
+					dataTipField="story"/>
+				<mx:DataGridColumn headerText="Amount" dataField="amount" width="75"/>					
+				<mx:DataGridColumn headerText="Curr." dataField="currency" width="40"/>
+				<mx:DataGridColumn headerText="Urgent" dataField="urgent"
+					itemRenderer="ecs.approval.approvalGridFields.urgentDisplay"
+					width="50"
+					textAlign="center"/>
+				<mx:DataGridColumn headerText="Entered By" dataField="enteredBy" width="110"
+					dataTipField="enteredBy"
+					showDataTips="true"/>
+				<mx:DataGridColumn headerText="Held" dataField="held" width="40"
+					itemRenderer="ecs.approval.approvalGridFields.heldDisplay"
+					textAlign="center"/>
+				<mx:DataGridColumn headerText="Last Changed By" dataField="changedBy" width="105"/>
+				<mx:DataGridColumn headerText="Entered" dataField="enteredDate" />
+					
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Canvas>
+	 
+</mx:Application>

@@ -1,0 +1,29 @@
+<mvc:View height="100%" controllerName="nuk.sap.timesheet.controller.Launchpad" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+  <Page enableScrolling="false">
+
+    <customHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.PageHeader" type="XML" />
+    </customHeader>
+
+    <content>
+      <TileContainer
+        id="tileContainer"
+        tiles="{tiles>/TileCollection}">
+        <StandardTile
+          icon="sap-icon://{tiles>icon}"
+          type="{tiles>type}"
+          number="{tiles>number}"
+          numberUnit="{tiles>numberUnit}"
+          title="{tiles>title}"
+          info="{tiles>info}"
+          infoState="{tiles>infoState}"
+          press="onPressTile"
+          visible="{tiles>visible}"
+          app:index="{tiles>index}"
+          app:target="{tiles>target}"
+          app:key="{tiles>key}"
+        />
+      </TileContainer>
+    </content>
+ </Page>
+</mvc:View>

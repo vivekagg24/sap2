@@ -1,0 +1,106 @@
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         width="100%" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         verticalScrollPolicy="off" >
+         
+	<mx:Script source="../scripts/Common.as"></mx:Script>
+	    
+    <mx:Script>
+        <![CDATA[
+
+        import mx.controls.dataGridClasses.DataGridColumn;
+        	
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+        private var retData:Object;
+        
+        public var RowID:int;
+        
+        [Bindable]
+        private var aDataProvider:Array;
+        	
+     
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+				    	aDataProvider = value.VALID_WAGE_TYPES;
+
+						comboBox.executeBindings();
+				    	
+						comboBox.selectedIndex = SetComboBoxValue(value.LGART);
+
+						RowID = value.ROW_NUMBER;
+
+						if(value.ZZAPPROVAL == cRejectStatus || value.ZZAPPROVAL == cApproved){
+
+							comboBox.enabled = false;					
+						}else{
+							
+							comboBox.enabled = true;												
+						}
+						
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+						
+			return retData;
+		}
+
+
+		private function SetComboBoxValue(ComboValue:String):int{
+
+			var i:int;
+			
+			if(aDataProvider == null) return -1;
+			
+            for (i = 0; i < aDataProvider.length; i++)
+            {
+               if(ComboValue == aDataProvider[i].data)
+               {
+					return i;
+               }
+			}
+			return -1;
+    	}
+
+
+		private function ComboBoxChange():void{
+	
+			var i:int;
+			var newValue:String;
+				
+            for (i = 0; i < aDataProvider.length; i++)
+            {
+               if(comboBox.selectedIndex == i)
+               {
+					newValue = aDataProvider[i].data;
+					
+					parentDocument.WageTypeChange(newValue, RowID);
+					
+					return;
+
+               }
+			}
+		}
+
+        ]]>
+    </mx:Script>
+   
+    <mx:ComboBox id="comboBox"
+                 dataProvider="{aDataProvider}"
+                 change="ComboBoxChange()"
+                 prompt="{cPrompt}"
+                 width = "150"
+                 labelField="label"
+                 textAlign="left" />      
+
+</mx:HBox>

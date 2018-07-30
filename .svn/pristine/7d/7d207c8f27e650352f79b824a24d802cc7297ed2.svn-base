@@ -1,0 +1,443 @@
+sap.ui.define([
+  "nuk/sap/timesheet/controller/BaseController",
+  "sap/ui/model/SimpleType",
+  "sap/ui/model/ValidateException",
+  "nuk/sap/timesheet/util/Message",
+  "nuk/sap/timesheet/util/TimesheetAPI",
+  "nuk/sap/timesheet/util/Formatter",
+  "sap/m/MessageBox"
+  ], function (Controller, SimpleType, ValidateException, Message, TimesheetAPI, Formatter, MessageBox) {
+  "use strict";
+  return Controller.extend("nuk.sap.timesheet.controller.Timesheet", {
+    _timesheetLoaded: false,
+
+    onInit: function () {
+      var that = this;
+      var oView = this.getView();
+      var oRouter = this.getRouter();
+      oRouter.getRoute("timesheet").attachMatched(this._onRouteMatched, this);
+      this._setModels();
+      this.setValidationHandlers();
+
+
+      oView.addEventDelegate({
+        onAfterHide: function() {
+          that._onAfterHide();
+        }
+      }, that);
+
+      var oTable = oView.byId("tblTimesheet");
+      oTable.addEventDelegate({
+        onAfterRendering: that._onAfterRenderingTable
+      }, that);
+    },
+
+    _onAfterHide: function(oEvent) {
+      var oModel = this.getView().getModel("timesheet");
+      if (oModel) {
+        oModel.destroy();     // prevent any old data hanging around
+      }
+    },
+
+    _onAfterRenderingTable: function(oEvent) {
+      var oView = this.getView();
+      var oTable = oView.byId("tblTimesheet");
+      var oModel = oTable.getModel("timesheet");
+      if (!oModel) {
+        return;
+      }
+      var oTimeWorked = oModel.getProperty("/timesheets/0/time_worked");
+
+      // Disable the edit input field in the combo box dropdown
+      // eg, '__xmlview4--selProject-__xmlview4--tblTimesheet-1-inner' for the second row in the table
+      for (var i = 0; i < oTimeWorked.length; i++) {
+        var sId = oView.byId('selProject').getId() + '-' + oTable.getId() + '-' + i + '-inner';
+        document.getElementById(sId).disabled = true;
+      }
+    },
+
+
+    _onRouteMatched: function (oEvent) {
+      var oArgs = oEvent.getParameter("arguments");
+      var oView = this.getView();
+
+      // model may not yet be bound
+      if (!oView.getModel("timesheetList")) {
+        var oModel = sap.ui.getCore().getModel("timesheetList");
+        oView.setModel(oModel, "timesheetList");
+      }
+
+      var iIndex = this.getIndexById(oArgs.id);
+      if (iIndex < 0) {
+        return;
+      }
+//      var iIndex = oArgs.index;
+
+      // create a new 'timesheet' model for this timesheet
+      var oTimesheetModel = new sap.ui.model.json.JSONModel(this.getTimesheetById(iIndex));
+      oView.setModel(oTimesheetModel, "timesheet");
+
+      // clear any messages
+      Message.clearMessages(oView);
+
+
+      oView.bindElement({
+        //path : "/timesheets/" + oArgs.id + "timesheet",
+        //path : "timesheets>/timesheets/" + iIndex,
+        path: "timesheet>/timesheets/0",
+        events: {
+          change: this._onBindingChange.bind(this),
+          dataRequested: function (oEvent) {
+            oView.setBusy(true);
+          },
+          dataReceived: function (oEvent) {
+            oView.setBusy(false);
+           //this.byId("selProject").bindProperty("selectedKey", "{timesheets>project}");
+          }
+        }
+      });
+
+      // If editing, add a blank line at the top (so that any bank holidays etc are at the bottom)
+      var bIsEditable = oTimesheetModel.getProperty("/timesheets/0/is_editable");
+      var sStatus = oTimesheetModel.getProperty("/timesheets/0/status");
+      if (bIsEditable === 'true') {
+        this._addRow(true);
+      }
+      this.recalcTotal();
+    },
+
+    _onBindingChange: function (oEvent) {
+      var oElementBinding = this.getView().getElementBinding();
+      // No data for the binding
+      if (oElementBinding && !oElementBinding.getBoundContext()) {
+        this.getRouter().getTargets().display("notfound");
+      }
+    },
+
+    getIndexById: function(iId) {
+      var oTimesheets;
+      var iIndex = -1;
+      var oModel = sap.ui.getCore().getModel("timesheetList");
+      if (oModel) {
+        oTimesheets = oModel.getProperty("/timesheets");
+      }
+
+      if (!oTimesheets) {
+        return iIndex;
+      }
+
+      for (var i = 0; i < oTimesheets.length; i++)  {
+        if (oTimesheets[i].id == iId) {
+          iIndex = i;
+        }
+      }
+      return iIndex;
+    },
+
+    /**
+     * Return clone of a timesheet for editing purposes
+     * @param  {Number} iIndex Timesheet index
+     * @return {Object}        Timesheet
+     */
+    getTimesheetById: function(iIndex) {
+      var oView = this.getView();
+      var oModel = sap.ui.getCore().getModel("timesheetList");
+      var oTimesheetProperty = oModel.getProperty("/timesheets/" + iIndex);
+      var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+      var oTimesheet = JSON.parse(JSON.stringify(oTimesheetProperty));
+
+      // Filter the list of projects
+      var sTsFrom = oTimesheet.date_from;
+      var sTsTo = oTimesheet.date_to;
+      var oAssigned  = JSON.parse(JSON.stringify(oModel.getProperty("/assigned_projects")));
+      var oProjects = {};
+      for (var sProjectId in oAssigned) {
+        var sPrFrom = oAssigned[sProjectId].date_from;
+        var sPrTo = oAssigned[sProjectId].date_to;
+
+        if ((moment(sPrFrom).isBefore(sTsFrom) && moment(sPrTo).isAfter(sTsTo)) ||
+           (moment(sPrFrom).isBefore(sTsFrom) && moment(sPrTo).isAfter(sTsFrom)) ||
+           (moment(sPrFrom).isBefore(sTsTo) && moment(sPrTo).isAfter(sTsTo))) {
+          oProjects[sProjectId] = oAssigned[sProjectId];
+        }
+      }
+
+      var oTimesheetClone = {};
+      oTimesheetClone.auth = JSON.parse(JSON.stringify(oAuth));
+      oTimesheetClone.assigned_projects = oProjects;
+      oTimesheetClone.timesheets = [];
+      oTimesheetClone.timesheets.push(oTimesheet);
+
+      return oTimesheetClone;
+    },
+
+    loadTimesheet: function(sTimesheetId) {
+
+    },
+
+    validateTimesheet: function(oTimesheetToCheck) {
+      var iTotal = 0, iRowTotal;
+      var sMessage;
+      var bValid = true;
+      var bEmptyProject = false;
+
+      var oTimesheet = jQuery.extend({}, oTimesheetToCheck);  // Temp copy
+      var oView = this.getView();
+
+      // We're removing in the loop, so go in reverse order
+      for (var i = oTimesheet.time_worked.length-1; i >=0; i--) {
+        iRowTotal = 0;
+        for (var j = 0; j < oTimesheet.time_worked[i].time.length; j++) {
+          iRowTotal += parseFloat(oTimesheet.time_worked[i].time[j]);
+        }
+        if (iRowTotal === 0) {
+          oTimesheet.time_worked.splice(i, 1);
+        } else {
+          // empty project?
+          if (oTimesheet.time_worked[i].project_id === '') {
+            bEmptyProject = true;
+          }
+        }
+        iTotal += iRowTotal;
+      }
+
+      if (bEmptyProject === true) {
+        sMessage = Message.getText(oView, 'timesheet-table-timesheet-empty-project');
+        sap.m.MessageToast.show(sMessage);
+        bValid = false;
+      }
+
+      // Too many hours for a week
+      if (iTotal > 24*7) {
+        sMessage = Message.getText(oView, 'timesheet-table-timesheet-too-many-hours');
+        sap.m.MessageToast.show(sMessage);
+        bValid = false;
+      }
+
+      if (oTimesheet.time_worked.length === 0) {
+        sMessage = Message.getText(oView, 'timesheet-table-timesheet-empty');
+        sap.m.MessageToast.show(sMessage);
+        bValid = false;
+      }
+
+      return bValid;
+    },
+
+    saveTimesheet: function() {
+      var that = this;
+      var bError = false;
+      var oView = this.getView();
+      var oTable = oView.byId("tblTimesheet");
+      var oModel = oTable.getModel("timesheet");
+      var oTimesheet = oModel.getData(); //getProperty(oTable.getBindingContext("timesheet").sPath);
+
+      if (!this.validateTimesheet(oTimesheet.timesheets[0])) {
+        return;
+      } else {
+
+        var oBusyDialog = new sap.m.BusyDialog({
+          text: Message.getText(oView, "timesheet-saving-dialog-text")
+        });
+        oBusyDialog.open();
+
+        Message.clearMessages(oView);
+        TimesheetAPI.saveTimesheet(oTimesheet,
+          function(oResponse) {
+            oBusyDialog.close();
+            bError = false;
+            for (var i = 0; i < oResponse.length; i++) {
+              if (oResponse[i].is_error=== 'true') {
+                bError = true;
+                Message.addMessage(oView, oResponse[i].text, "Error");
+              }
+            }
+            if (!bError) {
+              that.setDataChanged(false);
+              that.toTimesheetList();
+              var sMessage = Message.getText(oView, 'timesheet-submitted-ok');
+              sap.m.MessageToast.show(sMessage);
+            }
+          },
+          function(oXhr, sStatus, sErrorThrown) {
+            oBusyDialog.close();
+            Message.addMessage(oView, sErrorThrown, "Error");
+          }
+        );
+      }
+    },
+
+
+    /**
+     * Custom type for "hours worked"
+     */
+    typeHoursWorked: SimpleType.extend("HoursWorked", {
+      formatValue: function(oValue) {
+        return oValue;
+      },
+      parseValue: function(oValue) {
+        // convert empty to zero
+        if (oValue.length === 0 || oValue.trim() === "")
+          oValue = "0";
+        return oValue;
+      },
+      validateValue: function(oValue) {
+        try {
+          if (oValue < 0 || oValue > 24) {
+            throw new ValidateException("'" + oValue + "' is not a period worked");
+          }
+        } catch (err) {
+          throw new ValidateException("'" + oValue + "' is not a period worked");
+        }
+      }
+    }),
+
+    /**
+     * Recalculate total number of hours in the table footer
+     */
+    recalcTotal: function() {
+      var iTotalBillable = 0;
+      var iTotalNonBillable = 0;
+      var oView = this.getView();
+      var oTable = oView.byId("tblTimesheet");
+      var oModel = oTable.getModel("timesheet");
+      var sTimesheetPath = oTable.getBindingContext("timesheet").sPath;
+      var oProjects = oModel.getProperty("/assigned_projects");
+
+      var aTimeWorked = oModel.getProperty(sTimesheetPath + '/time_worked');
+      for (var i = 0; i < aTimeWorked.length; i++) {
+        var iTotal = 0;
+        for (var j = 0; j < aTimeWorked[i].time.length; j++) {
+          iTotal += Number(aTimeWorked[i].time[j]);
+        }
+        // Billable/non-billable?
+        if (oProjects[aTimeWorked[i].project_id]) {
+          if (oProjects[aTimeWorked[i].project_id].is_billable === "true") {
+            iTotalBillable += iTotal;
+          } else {
+            iTotalNonBillable += iTotal;
+          }
+        } else {
+          iTotalNonBillable += iTotal;    // project not found - assume non-billable
+        }
+      }
+
+      var sRateType = oModel.getProperty(sTimesheetPath + '/submitter_rate_type');
+      oModel.setProperty(sTimesheetPath + '/hours_billable', Formatter.roundBillableHours(sRateType, iTotalBillable));
+      oModel.setProperty(sTimesheetPath + '/hours_nonbillable', iTotalNonBillable);
+      oModel.setProperty(sTimesheetPath + '/hours_total', iTotalBillable + iTotalNonBillable);
+    },
+
+    /**
+     * Hours changed
+     * @param  {[type]} oEvent [description]
+     * @return {[type]}        [description]
+     */
+    onHoursChange: function(oEvent) {
+      this.recalcTotal();
+    },
+
+    onProjectChange: function(oEvent) {
+      this.recalcTotal();
+    },
+
+    onAddRow: function(oEvent) {
+      this._addRow();
+    },
+
+    onDeleteRow: function(oEvent) {
+      var oView = this.getView();
+      var oTable = oView.byId("tblTimesheet");
+      var oModel = oTable.getModel("timesheet");
+      var sPath = oEvent.getParameter("listItem").getBindingContext("timesheet").sPath;
+
+      // We need to delete the row from the time list
+      var iIndex = sPath.slice(sPath.lastIndexOf('/') + 1);
+      var sRowsPath = sPath.slice(0, sPath.lastIndexOf('/'));
+      var aRows = oModel.getProperty(sRowsPath);
+      aRows.splice(iIndex, 1);
+
+      oModel.setProperty(sRowsPath, aRows);
+      this.recalcTotal();
+
+      this.setDataChanged(true);
+    },
+
+    onSubmit: function(oEvent) {
+      this.saveTimesheet() ;
+    },
+
+    onCancel: function(oEvent) {
+      this.toTimesheetList();
+    },
+
+    onWithdraw: function(oEvent) {
+      var that = this;
+      var oView = this.getView();
+      var sMessage = Message.getText(oView, "timesheet-withdraw-warning");
+      var sTitle = Message.getText(oView, "timesheet-withdraw-warning-title");
+
+      MessageBox.show(sMessage, {
+        icon: sap.m.MessageBox.Icon.WARNING,
+        title: sTitle,
+        actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+        onClose: function(oAction) {
+          if (oAction === sap.m.MessageBox.Action.YES) {
+            that._withdrawTimesheet();
+          }
+        }
+      });
+    },
+
+    _addRow: function(bTop) {
+      var EMPTY_ROW = {"project_id":"", "time": [0,0,0,0,0,0,0]};
+      var oView = this.getView();
+      var oTable = oView.byId("tblTimesheet");
+      var oModel = oTable.getModel("timesheet");
+      var sPath = oTable.getBindingContext("timesheet").sPath + "/time_worked";
+      var oTimesheets = oModel.getProperty(sPath);
+      if (!oTimesheets)
+        oTimesheets = [];
+      if (bTop === true) {
+        oTimesheets.unshift(EMPTY_ROW);
+      } else {
+        oTimesheets.push(EMPTY_ROW);
+      }
+      oModel.setProperty(sPath, oTimesheets);
+
+      this.setDataChanged(true);
+    },
+
+    _withdrawTimesheet: function() {
+      var bError;
+      var that = this;
+      var oPayload = {};
+      var oView = this.getView();
+
+      // Build the payload
+      var oTimesheet = oView.getModel("timesheet").getData();
+      oTimesheet.timesheets[0].action = 'withdraw';       // only a single timesheet
+
+      TimesheetAPI.withdrawTimesheet(oTimesheet,
+        function(oResponse) {
+          bError = false;
+          for (var i = 0; i < oResponse.length; i++) {
+            if (oResponse[i].is_error === 'true') {
+              bError = true;
+              Message.addMessage(oView, oResponse[i].text, "Error");
+            }
+          }
+          if (!bError) {
+            sap.m.MessageToast.show(Message.getText(oView, 'timesheet-withdraw-successful'));
+            that.toTimesheetList();
+          }
+        },
+        function(oXhr, sStatus, sErrorThrown) {
+          Message.addMessage(oView, sErrorThrown, "Error");
+        }
+      );
+    },
+
+  });
+
+});

@@ -1,0 +1,212 @@
+<mvc:View controllerName="nuk.sap.timesheet.controller.TimesheetList" displayBlock="true" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+  <Page
+    title="{i18n>timesheets-title}"
+    enableScrolling="true"
+    class="sapUiResponsiveContentPadding"
+    >
+    <customHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.PageHeader" type="XML" />
+    </customHeader>
+
+    <subHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.Navigation" type="XML" />
+    </subHeader>
+
+    <content>
+      <Panel>
+        <content>
+           <OverflowToolbar>
+            <Title text="{i18n>timesheetlist-table-date-selection}" level="H2"/>
+            <Button
+              icon="sap-icon://slim-arrow-left"
+              press="onAdjustFromDate"
+              class="sapUiSmallMarginBegin"
+              tooltip="{i18n>timesheetlist-table-month-earlier}"/>
+            <DatePicker
+              id="dateFrom"
+              value="{timesheetFilter>/date_from}"
+              width="8rem"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+              change="onListFilterChange"
+              class="sapUiSmallMarginEnd"
+              fieldGroupIds="dateFilter"
+              validateFieldGroup="onListFilterDateValidate"
+              valueStateText="{i18n>timesheetlist-table-invalid-date-from}"/>
+            <Title text="{i18n>timesheetlist-table-date-to}" level="H2"/>
+            <DatePicker
+              id="dateTo"
+              value="{timesheetFilter>/date_to}"
+              width="8rem"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+              change="onListFilterChange"
+              class="sapUiSmallMarginBegin"
+              fieldGroupIds="dateFilter"
+              validateFieldGroup="onListFilterDateValidate"
+              valueStateText="{i18n>timesheetlist-table-invalid-date-to}"/>
+            <Button
+              icon="sap-icon://slim-arrow-right"
+              press="onAdjustToDate"
+              tooltip="{i18n>timesheetlist-table-month-later}"/>
+            <Button
+              text="{i18n>timesheetlist-table-this-week}"
+              press="onGotoThisWeek"
+              class="sapUiLargeMarginBegin"
+              tooltip="{i18n>timesheetlist-table-this-week-tooltip}"/>
+            <Button
+              icon="sap-icon://refresh"
+              press="onRefreshTimesheetList"
+              class="sapUiLargeMarginBegin"
+              tooltip="{i18n>timesheetlist-table-refresh-tooltip}"/>
+            <ToolbarSpacer/>
+            <Button icon="sap-icon://download" press="onDownloadTimesheetList" />
+            <Button icon="sap-icon://drop-down-list" press="onDisplaySettings" />
+          </OverflowToolbar>
+
+        </content>
+      </Panel>
+
+
+      <Table
+        id="tblTimesheetList"
+        backgroundDesign="Solid"
+        class="tableZebra"
+        noDataText="{i18n>timesheetlist-table-no-data}"
+        items="{
+          path: 'timesheetList>/timesheets'
+        }">
+        <headerToolbar>
+          <!--
+          <OverflowToolbar>
+            <Title text="{i18n>timesheetlist-table-date-selection}" level="H2"/>
+            <Button icon="sap-icon://slim-arrow-left" press="onDatePreviousPeriod"/>
+            <DatePicker dateValue="{list>date_from}" width="10rem" displayFormat="yyyy-MM-dd" change="onListDateChanged" class="sapUiSmallMarginBeginEnd" />
+            <Title text="{i18n>timesheetlist-table-date-to}" level="H2"/>
+            <DatePicker dateValue="{list>date_to}" width="10rem" displayFormat="yyyy-MM-dd" change="onListDateChanged" class="sapUiSmallMarginBegin sapUiTinyMarginEnd" />
+            <Button icon="sap-icon://slim-arrow-right" press="onDateNextPeriod"/>
+            <ToolbarSpacer/>
+            <Button icon="sap-icon://drop-down-list" press="onDisplaySettings" />
+            <Button icon="sap-icon://download" press="onDownloadTimesheetList" />
+          </OverflowToolbar>
+        -->
+        </headerToolbar>
+
+        <columns>
+          <Column>
+            <Text text="{i18n>timesheetlist-table-timesheet-name}"/>
+          </Column>
+
+          <Column minScreenWidth="Desktop" demandPopin="true" hAlign="Right" width="8rem">
+            <Text text="{i18n>timesheetlist-table-hours-submitted}"/>
+          </Column>
+
+          <Column minScreenWidth="Desktop" demandPopin="true" hAlign="Right" width="6rem">
+            <Text text="{i18n>timesheetlist-table-hours-billable}"/>
+          </Column>
+
+          <Column width="1rem" minScreenWidth="Desktop" hAlign="Right" demandPopin="true"> <!-- comments icon -->
+          </Column>
+
+          <Column minScreenWidth="Desktop" demandPopin="true">
+            <Text text="{i18n>timesheetlist-table-status}"/>
+          </Column>
+
+          <Column minScreenWidth="Desktop" demandPopin="true" hAlign="Right" width="2rem">  <!-- status icon -->
+          </Column>
+
+          <Column minScreenWidth="Desktop" demandPopin="true">
+            <Text text="{i18n>timesheetlist-table-note}"/>
+          </Column>
+
+          <Column minScreenWidth="Desktop" demandPopin="true">
+            <Text text="{i18n>timesheetlist-table-action}"/>
+          </Column>
+
+        </columns>
+
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Link text="{ parts: [
+                    { path: 'timesheetList>date_from' },
+                    { path: 'timesheetList>date_to' }
+                  ],
+                  formatter: 'nuk.sap.timesheet.util.Formatter.formatTimesheetPeriod'
+                }"
+                emphasized="true"
+                press="onGotoTimesheet"/>
+            </cells>
+
+            <cells>
+              <Text text="{
+                parts: [ 'timesheetList>hours_billable', 'timesheetList>hours_nonbillable', 'timesheetList>hours_required' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatTotalHours'}"
+                width="5rem"/>
+            </cells>
+
+            <cells>
+              <Text text="{
+                parts: [ 'timesheetList>hours_billable', 'timesheetList>hours_required' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatTotalHours'}"
+                width="5rem"/>
+            </cells>
+
+            <cells>
+              <Button
+                type="Transparent"
+                icon="sap-icon://notes"
+                press="onDisplayComments"
+                visible="{= ${timesheetList>has_comments} === 'true'}"
+                tooltip="{i18n>common-display-comments-tooltip}"/>
+            </cells>
+
+            <cells>
+              <Text text="{timesheetList>status_text}"/>
+            </cells>
+
+            <cells>
+              <core:Icon
+                src="{
+                  path: 'timesheetList>',
+                  formatter: 'nuk.sap.timesheet.util.Formatter.formatTimesheetStatusIcon'}"
+                tooltip="{
+                  path: 'timesheetList>',
+                  formatter: 'nuk.sap.timesheet.util.Formatter.formatTimesheetStatusTooltip'}"
+                />
+            </cells>
+
+            <cells>
+              <Text text="{timesheetList>info}"/>
+            </cells>
+
+            <cells>
+              <Toolbar design="Auto">
+                <Button
+                  icon="sap-icon://display"
+                  type="Transparent"
+                  press="onGotoTimesheet"
+                  tooltip="{i18n>timesheetlist-display-timesheet-tooltip}"
+                  visible="{= ${timesheetList>is_editable} !== 'true'}"/>
+                <Button
+                  icon="sap-icon://edit"
+                  type="Transparent"
+                  press="onGotoTimesheet"
+                  tooltip="{i18n>timesheetlist-edit-timesheet-tooltip}"
+                  visible="{= ${timesheetList>is_editable} === 'true'}"/>
+                <Button
+                  icon="sap-icon://delete"
+                  type="Reject"
+                  press="onWithdrawTimesheet"
+                  tooltip="{i18n>timesheetlist-withdraw-timesheet-tooltip}"
+                  visible="{= ${timesheetList>is_withdrawable} === 'true'}"/>
+              </Toolbar>
+            </cells>
+          </ColumnListItem>
+
+        </items>
+
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

@@ -1,0 +1,153 @@
+jQuery.sap.declare('nuk.sap.driverportal.util.api');
+
+nuk.sap.driverportal.util.api = {
+
+  /**
+    Get session from backend
+  */
+  getSession: function(username, password) {
+    var API="/nuk/driverportal/api/1/login";
+    var oRequest = {
+      username: username,
+      password: password,
+    };
+    var sPayload = JSON.parse(oRequest);
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      dataType: 'json',
+      data: sPayload,
+      success: function(oData, sStatus, oXhr) {
+        var oResponse = JSON.parse(oData);
+        var sSess = oResponse[session];
+        console.log('Session: ' + sSess);
+
+      },
+      error: function(oData, sStatus, oXhr) {
+
+      }
+    });
+
+  },
+
+  /**
+    Get route data from backend
+  */
+  getRoutes: function(fnDone, fnError) {
+    var API="/nuk/driverportal/api/1/routes";
+
+    jQuery.ajax({
+      url: API,
+      type: 'GET',
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  /**
+    Get drop data from backend
+  */
+  getDrops: function(sRoute, fnDone, fnError) {
+    var API="/nuk/driverportal/api/1/drops";
+
+    if (sRoute)
+      API = API + '/' + sRoute;
+
+    jQuery.ajax({
+      url: API,
+      type: 'GET',
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError){
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  saveRoutes: function(oModel, fnDone, fnError) {
+    var API="/nuk/driverportal/api/1/drops";
+    var sPayload = oModel.getJSON();
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      dataType: 'json',
+      data: sPayload
+    })
+    .done(function() {
+      if (fnDone)
+        fnDone();
+    })
+    .fail(function() {
+      if (fnError)
+        fnError();
+    });
+
+
+  },
+
+  /**
+   * Redirect to login screen
+   */
+  toLogin: function() {
+
+    window.location = '/driverportal';
+  },
+
+  /**
+   * Logout. Adapted from http://scn.sap.com/community/developer-center/front-end/blog/2014/04/20/logofflogout-function-for-a-ui5-apllication
+   */
+  logout: function(fCompleted) {
+    var API='/sap/public/bc/icf/logoff';
+
+    jQuery.ajax({
+      url: API,
+      type: 'GET'
+    })
+    .done(function() {
+      if (!document.execCommand("ClearAuthenticationCache")) {
+        fCompleted();
+        return;
+        var sUrl = (window.location.origin + API).replace('://', '://logout@');
+        //"ClearAuthenticationCache" will work only for IE. Below code for other browsers
+        jQuery.ajax({
+          type: "GET",
+          url: sUrl,
+          username: 'dummy',
+          password: 'dummy',
+          statusCode: {
+            401: function() {
+            //This empty handler function will prevent authentication pop-up in chrome/firefox
+              if (fCompleted)
+                fCompleted();
+            }
+          },
+          error: function() {
+          //alert('reached error of wrong username password')
+          }
+        });
+      }
+    })
+    .fail(function() {
+    });
+
+  }
+
+};

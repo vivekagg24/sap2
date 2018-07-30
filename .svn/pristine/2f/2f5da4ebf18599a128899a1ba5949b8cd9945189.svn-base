@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<ExpenseClaimsOutput>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="" />
+					<field width="20" dataField="" type="GovtIcon" columnTitle="" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="40" dataField="KOSTL" type="Label" columnTitle="Cost Centre" /> 
+					<field width="72" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Submission Date" />
+					<field width="65" dataField="CLAIM_NO" type="Label" columnTitle="Claim No." /> 
+					<field width="98" dataField="CLAIMANT" type="Link" columnTitle="Claimant" /> 
+					<field width="72" dataField="FROM_DATE" type="dateLabel" columnTitle="From Date" />
+					<field width="72" dataField="TO_DATE" type="dateLabel" columnTitle="To Date" />
+					<field width="70" dataField="AMOUNT" type="RightLabel" columnTitle="Reimbursement" /> 
+					<field width="33" dataField="CURRENCY" type="Label" columnTitle="Curr" /> 
+					<field width="156" dataField="DESCRIPTION" type="TextArea" columnTitle="Reason for claim" />
+					<field width="98" dataField="LAST_ACTIONED" type="Label" columnTitle="Last Action By" />
+					<field width="71" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="20" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="Approval/Rejection text" />
+					<field width="30" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />					
+				</headerFields>
+				<detailFields>
+					<field width="30" dataField="RECEIPTNO" type="Label" columnTitle="No." />
+					<field width="72" dataField="REC_DATE" type="dateLabel" columnTitle="Receipt Date" />
+					<field width="100" dataField="EXP_TEXT" type="TextArea" columnTitle="Expense Type" /> 
+					<field width="53" dataField="PAPER_RECEIPT" type="LineCheckbox" columnTitle="VAT Receipt" />
+					<field width="145" dataField="DESCRIPT" type="TextArea" columnTitle="Item Description" /> 
+					<field width="145" dataField="BUS_PURPO" type="TextArea" columnTitle="Business Purpose" />
+					<field width="73" dataField="REC_AMOUNT" type="RightLabel" columnTitle="Receipt Amount" /> 
+					<field width="36" dataField="REC_CURR" type="Label" columnTitle="Curr" /> 
+					<field width="65" dataField="REC_RATE" type="RightLabel" columnTitle="Exchange rate" /> 
+					<field width="100" dataField="LOC_AMOUNT" type="RightLabel" columnTitle="Reimbursement" />
+					<field width="75" dataField="ANLN1" type="Label" columnTitle="Project Code" />
+					<field width="22" dataField="NOTES" type="NotesLine" columnTitle="" />
+					<field width="160" dataField="APPREJTEXT" type="rejtextbox" columnTitle="Rejection reason" />
+					<field width="30" dataField="APPREJ" type="checkboxln" columnTitle="Rej" />			
+				</detailFields>				
+				<mileageFields>
+					<field width="30" dataField="KEY_MILE" type="Label" columnTitle="No." />
+					<field width="75" dataField="MIL_DATE" type="dateLabel" columnTitle="Date" />
+					<field width="283" dataField="LOC_FROM" type="Label" columnTitle="Starting and end Location" /> 
+					<field width="283" dataField="LOC_TO" type="Label" columnTitle="Reason for travel" /> 					
+					<field width="61" dataField="M_TOTAL" type="RightLabel" columnTitle="Total Miles" /> 
+					<field width="83" dataField="REC_AMOUNT" type="RightLabel" columnTitle="Value" /> 
+					<field width="36" dataField="REC_CURR" type="Label" columnTitle="Curr" /> 
+					<field width="180" dataField="FZTXT" type="Label" columnTitle="Car Type" /> 
+					<field width="75" dataField="ANLN1" type="Label" columnTitle="Project Code" />
+				</mileageFields>				
+	    	</ExpenseClaimsOutput>
+    	</formatting>

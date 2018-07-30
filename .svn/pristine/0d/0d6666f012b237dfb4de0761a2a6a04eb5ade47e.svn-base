@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	      layout="absolute"
+	      horizontalAlign="center"
+	      verticalGap="5"
+	      width="400" height="258"	 
+	      creationComplete="this.dataProvider = this.dataProvider" 
+	      borderAlpha="1.0"         
+	      enabled="true"
+	      title="Item Under Query"
+	      backgroundColor="#EEF9F8"
+	      showCloseButton="true"
+	      close="doCancel(event)"
+	      >
+	      
+
+<!-- <mx:Style source="../../ECS.css"/> -->	
+<mx:Script >
+	<![CDATA[
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.soap.mxml.Operation;
+		//import ecs.generalClasses.ApprovalTree;
+		import mx.managers.PopUpManager;
+		import mx.controls.Alert;
+		
+		
+		private var _closeFunction:Function;
+		private var _op:Operation;
+		
+		[Bindable]
+		private var _dataProvider:Object;
+		[Bindable]
+		private var onQuery:Boolean;
+		
+		[Bindable]
+		public function set dataProvider(value:Object):void
+		{
+			_dataProvider = value;
+			
+			if (taQueryText)
+			{
+				taQueryText.text = value.queryReason;
+			}
+		}
+		public function get dataProvider():Object
+		{
+			return this._dataProvider;
+		}
+		
+		// Create as popup
+		public static function show(_parent:DisplayObject, _data:Object, webServiceOperation:Operation, functionToCallOnClose:Function = null):QueryPopup
+		{
+			var ref:QueryPopup = PopUpManager.createPopUp(_parent, QueryPopup, true) as QueryPopup;
+			PopUpManager.centerPopUp(ref);
+			ref.dataProvider = _data;	
+			
+			ref._op = webServiceOperation;
+			
+			var title:String;
+			if (_data.hasOwnProperty("story"))
+				title = _data.story;
+			else if (_data.hasOwnProperty("CASUAL_NAME"))
+				title = _data.CASUAL_NAME;
+			else
+				title = "unknown";
+			
+			if (_data.onQuery)
+			{
+				ref.title = "Item Under Query : " + title;
+			}
+			else			
+			{
+				ref.title = "Place Item Under Query? : " + title;
+			}
+						
+			ref.onQuery = _data.onQuery;
+			ref._closeFunction = functionToCallOnClose;
+			
+			return ref;	
+		}
+		
+		
+		public function doSave(event:Event):void
+		{
+			
+			// Prepare to call web service
+			
+			prepareForWebServiceCall();
+			_op.request.IM_ON_QUERY = "X";
+			onQuery = true;
+
+			
+			// Call web service
+			_op.send();
+			
+			// Disable the buttons while save is going on
+			this.enabled = false;
+		}
+		
+		public function doRemoveQuery(event:Event):void
+		{
+			
+			prepareForWebServiceCall();
+			_op.request.IM_ON_QUERY = "";
+			onQuery = false;
+			
+			// Call web service
+			_op.send();
+		}	
+		
+		private function prepareForWebServiceCall():void
+		{
+			// Prepare to call web service
+
+			// ECS Specific variables	
+			addValue("cpr", "IM_BELNR");
+			addValue("year", "IM_GJAHR");
+			
+			// Generic variables
+			addValue("key", "IM_KEY");	
+	
+			// CMS Specific variables
+			addValue("PERNR", "IM_PERNR");
+			addValue("OBJPS", "IM_OBJPS");
+			addValue("ENDDA", "IM_ENDDA");
+			addValue("BEGDA", "IM_BEGDA");
+			addValue("SEQNR", "IM_SEQNR");
+			
+			// Dates -format from dd.mm.yyyy to yyyy-mm-dd
+			var s:String;
+			if (_op.request.IM_BEGDA)
+			{
+				s = _op.request.IM_BEGDA;
+				_op.request.IM_BEGDA = s.substr(6,4) + "-" + s.substr(3,2) + "-" + s.substr(0,2);
+			}
+			
+			if (_op.request.IM_ENDDA)
+			{
+				s = _op.request.IM_ENDDA;
+				_op.request.IM_ENDDA = s.substr(6,4) + "-" + s.substr(3,2) + "-" + s.substr(0,2);
+			}
+					
+/* 			if (_dataProvider.hasOwnProperty("cpr"))
+			{
+				_op.request.IM_BELNR = _dataProvider.cpr;
+			}
+			if (_dataProvider.hasOwnProperty("year"))
+			{
+				_op.request.IM_GJAHR = _dataProvider.year;
+			}
+			if (_dataProvider.hasOwnProperty("key"))
+			{
+				_op.request.IM_KEY = _dataProvider.key;
+			} */
+			
+			
+				
+				
+			
+			_op.request.IM_QUERY_STRING = taQueryText.text;
+			
+			// React to web service result / failure using weak reference to facilitate garbage collection			
+			_op.addEventListener(ResultEvent.RESULT, wsResult, false, 0, true);
+			_op.addEventListener(FaultEvent.FAULT, wsFault, false, 0, true);
+		}	
+			
+		public function doCancel(event:Event):void
+		{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			this.systemManager.removeFocusManager(this);
+		}		
+		
+		
+		// Fault in web service saving query data to SAP
+		protected function wsFault(event:FaultEvent):void
+		{
+			
+			
+			// First remove this listener			
+			(event.target as IEventDispatcher).removeEventListener(FaultEvent.FAULT, wsFault);
+			
+			// Re-enable the popup
+			this.enabled = true;
+			
+			// Display the result
+			Alert.show(event.fault.message);
+
+		}
+		
+		// Result from web service saving query data to SAP
+		protected function wsResult(event:ResultEvent):void
+		{
+			// First remove this listener			
+			(event.target as IEventDispatcher).removeEventListener(ResultEvent.RESULT, wsResult);
+			
+			// Re-enable the popup
+			this.enabled = true;
+			
+			// Display the result
+			var subrc:int = int(event.result.EX_RETURN_CODE);
+			
+			// Close the popup when the user hits ok if the save was successful
+			if (subrc == 0)			
+			{
+				_dataProvider.onQuery = onQuery;
+				_dataProvider.queryReason = taQueryText.text;
+				Alert.show(event.result.EX_RETURN_MESSAGE,"", 4.0, null, doCancel);
+				if (_closeFunction != null)
+				{
+					_closeFunction.call();
+				}
+			}
+			else // Save not successful, so don't close popup
+			{
+				onQuery = _dataProvider.onQuery;
+				Alert.show(event.result.EX_RETURN_MESSAGE,"", 4.0, null, null);
+			}
+				
+
+			
+		}
+		
+		private function addValue(in_var:String, out_var:String):void
+		{	
+			if (_dataProvider.hasOwnProperty(in_var))
+			{
+				_op.request[out_var] = _dataProvider[in_var];
+			}
+		}		
+			
+		
+	]]>
+</mx:Script>
+
+
+	<mx:TextArea x="97" y="9" width="273" height="165" borderStyle="solid"
+		        id="taQueryText"
+		        text="{_dataProvider.queryReason}"/>
+	<mx:Text x="10" y="10" text="Reason item is being held" width="79" />
+
+	<mx:ControlBar horizontalAlign="center" width="100%">
+		<mx:Button  label="Save Changes" fillAlphas="[.39, .39]" fillColors="[#fee960, #fee960]" color="#000000"
+			click="doSave(event)"/>
+		<mx:Button  label="Remove Query" fillAlphas="[.39, .39]" fillColors="[#fee960, #fee960]" color="#000000"
+			click="doRemoveQuery(event)"
+		    includeInLayout="{onQuery}"
+		    visible="{onQuery}"/>
+		<mx:Button  label="Cancel Changes" fillAlphas="[.39, .39]" fillColors="[#fee960, #fee960]" color="#000000"
+			click="doCancel(event)" />	
+	</mx:ControlBar>
+</mx:TitleWindow>

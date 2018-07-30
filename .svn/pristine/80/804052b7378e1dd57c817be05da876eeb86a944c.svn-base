@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center">
+	<mx:Script>
+		<![CDATA[
+			private function doSelectLine(selectLine:Object):void
+			{
+				var x:XML = new XML(selectLine);
+				this.parentApplication.EBELN.text = x.EBELN;
+				this.parentApplication.EBELP.text = x.EBELP;
+				this.parentApplication.LIFNR.text = x.LIFNR;
+				this.parentApplication.MILL.text = x.MILL;
+				this.parentApplication.MATNR.text = x.MATNR;
+				this.parentDocument.doOK();
+			}
+			]]>
+		</mx:Script> 
+	<mx:Image source="@Embed('../images/add.gif')" click="doSelectLine(this.data)" toolTip="Select line"/>
+</mx:HBox>

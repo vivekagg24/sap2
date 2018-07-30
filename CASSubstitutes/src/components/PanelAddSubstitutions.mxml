@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	      width="765" height="68"
+	      headerHeight="15" 
+	      borderThicknessBottom="4"
+	      borderThicknessTop="4"
+	      borderThicknessLeft="4"
+	      borderThicknessRight="4"
+	      dropShadowEnabled="true" 
+	      >
+<mx:Script>
+	<![CDATA[
+		import mx.events.ValidationResultEvent;
+		import mx.controls.Alert;
+		
+	    [Bindable] public var possSubs:XMLList;
+	    
+	    [Bindable] public var filterVal:String;
+	    [Bindable] public var filterValDesc:String;
+	
+		public function myFilter(item:Object):Boolean
+		{
+			if (item.SUBAPPSGRP == filterVal  || item.SUBAPPSGR == "*")
+				return true;
+			else
+				return false;
+			
+		}
+		
+		protected var ro:Object;
+		public function set repeaterObject(o:Object):void
+		{
+			ro  = o;
+			possSubsFiltered.refresh();
+		}
+		
+		public function get repeaterObject():Object
+		{
+			return ro;
+		}
+		
+		// Add this item to the data provider
+		public function onAdd():void
+		{
+			
+			if (!checkValid()) 
+			{
+				return;
+			}
+			
+			
+			var newItem:XML   = new XML("<item/>");
+			newItem.BEGDATUM  = dfBegda.text;
+			newItem.ENDDATUM  = dfEndda.text;
+			newItem.UNAME     = new String(cbSubs.selectedItem.UNAME);
+			newItem.USERNAME  = new String(cbSubs.selectedItem.NAME);
+			newItem.SID       = filterVal;
+			newItem.SUBAPPSGRP = filterVal;
+			newItem.GROUPDESC = filterValDesc; //parentApplication.getSystemName(filterVal);
+			if (cbActive.selectedIndex == 0) // Active
+			{
+				newItem.ACTIVE = 'X';
+				newItem.ACTIVE_TXT = 'Active';
+			}
+			else
+			{
+				newItem.ACTIVE = ' ';
+				newItem.ACTIVE_TXT = 'Passive';				
+			}
+			
+			parentApplication.addSubstitute(newItem);
+			cbSubs.selectedIndex = -1;
+			cbSubs.prompt = 'Select a substitute..';
+			dfBegda.text = '';
+			dfEndda.text = '';
+			cbActive.selectedIndex = 0;			
+			
+		}
+		
+		// Check if all fields are valid
+		protected function checkValid():Boolean
+		{
+			var a:ValidationResultEvent;
+			
+			// Check substitute person is filled in
+			a = vSubs.validate();
+			if (a && a.results && a.results.length > 0 )
+			{
+				Alert.show("Please fill in all required fields (shown in red)");
+				return false;
+			}	
+			
+			if (cbSubs.selectedIndex < 0)
+			{
+				Alert.show("Please select a person to substitute to");
+				return false;
+			}		
+			
+			// Check Start date is valid date
+			a = vBegda.validate();
+			if (a && a.results && a.results.length > 0)
+			{
+				Alert.show("Please fill in all required fields (shown in red)");
+				return false;
+			}
+			
+			// Check End date is valid date
+			a = vEndda.validate();
+			if (a && a.results && a.results.length > 0)
+			{
+				Alert.show("Please fill in all required fields (shown in red)");
+				return false;
+			}		
+			
+			// Check Start date is on or before end date
+			var _begda:Date = new Date(dfBegda.text.substr(6,4), dfBegda.text.substr(3,2), dfBegda.text.substr(0,2));
+			var _endda:Date = new Date(dfEndda.text.substr(6,4), dfEndda.text.substr(3,2), dfEndda.text.substr(0,2));
+			
+			// adjust date down by 1 as 0 = january, 1 = february etc
+			_begda.month = _begda.month - 1;
+			_endda.month = _endda.month - 1;
+			
+			if (_begda > _endda)
+			{
+				Alert.show("Start date must be before end date");
+				return false;
+			}
+
+			// check end date is greater or equal to todays date
+			var today:Date = new Date();
+			today.hours = 0;
+			today.minutes = 0;
+			today.seconds = 0;
+			today.milliseconds = 0;
+			
+			if (_endda < today)
+			{
+				Alert.show("The date range entered is in the past");
+				return false;
+			}
+			return true;
+		}
+		
+	]]>
+</mx:Script>
+
+
+
+<mx:XMLListCollection id="possSubsFiltered"
+	                  source="{this.possSubs.item}"	                   
+	                  filterFunction="myFilter" />
+
+
+	<mx:ComboBox  id="cbSubs" 
+		          dataProvider="{possSubsFiltered}"
+		          labelField="NAME"
+		          prompt="Select a substitute.."	          
+		           x="68" y="12" width="165"/>
+	<mx:Validator id="vSubs" required="true" source="{cbSubs}" property="text" enabled="false" /> 	                    
+
+	<mx:DateField id="dfBegda" x="300" y="12" formatString="DD/MM/YYYY" editable="true" showToday="true" />
+	<mx:DateValidator id="vBegda"  required="true" inputFormat="DD/MM/YYYY" source="{dfBegda}" property="text" triggerEvent=""/>
+	
+	<mx:DateField id="dfEndda"  x="445" y="12" formatString="DD/MM/YYYY" editable="true" />
+	<mx:DateValidator id="vEndda" required="true" inputFormat="DD/MM/YYYY" source="{dfEndda}" property="text" triggerEvent=""/>
+	
+	<mx:Label x="3" y="12" text="Substitute" height="20"/>
+	<mx:Label x="245" y="12" text="Start on"/>
+	<mx:Label x="544" y="12" text="Status" height="26"/>
+	<mx:Label x="398" y="12" text="End on"/>
+	<mx:ComboBox x="587" y="10" width="88"
+		         id="cbActive"
+		         dataProvider="{activeInactive}"
+		         labelField="label">
+
+	</mx:ComboBox>
+
+			<mx:XMLList id="activeInactive">
+					<item>
+						<label>Active</label>
+					</item>	
+					<item>	
+						<label>Passive</label>
+					</item>
+		
+			</mx:XMLList >
+			
+	<mx:Button x="694" y="12" label="Add" click="onAdd()" styleName="add"/>
+
+
+	
+</mx:Panel>

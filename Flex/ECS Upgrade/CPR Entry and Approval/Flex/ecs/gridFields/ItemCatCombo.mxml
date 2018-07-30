@@ -1,0 +1,122 @@
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	ItemCatCombo
+		Item renderer for the item cetegory field on the payment items data grid
+	
+	A straightforward dropdown!!	
+-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         width="100%" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         tabEnabled="false"
+         dataChange="checkLoaded()"
+         verticalScrollPolicy="off" creationComplete="initComponent();">
+    <mx:Script source="../Scripts/Utilities.as"/>
+    <mx:Script>
+        <![CDATA[
+        	import mx.core.Application;
+        
+            import mx.controls.listClasses.ListData;
+            import mx.controls.dataGridClasses.DataGridListData;
+            import mx.controls.listClasses.BaseListData;
+            import mx.controls.DataGrid;
+            import mx.events.FlexEvent;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			            
+            [Bindable]
+            public var itemCategory:String = new String();//Property is returned to data grid after editing
+			//CSS style for the input - e.g. disabled
+            [Bindable]
+            private var cssStyle:String="";
+            //Editable flag
+            [Bindable]
+            private var isEditable:Boolean=true;
+            //Row data returned  by get data to data grid (stops rows being jumbled when reused by the DG)                                      
+            private var retData:Object;
+            
+            private function initComponent():void
+            {
+            	//Listen to GL code change event - reset item category if GL has a different item category
+            	parentApplication.addEventListener("changeGLCode",GLCodeChanged, false, 0, true);
+            }
+            
+              //Called if item renderer is being re-used when scrolling
+            private function checkLoaded():void{
+            	
+            	retData=data;
+            	setSelectedItem(null);
+            }
+            
+            //Return the row to stop the jumbling - occurs because the grid reuses the conponents when  scrolling					
+            override public function get data():Object{
+				return retData;
+			}
+			
+			override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	//The DG jumbles the rows !!! Unless we store the row and return in get data
+						retData=value;
+						//Set the conbobox selected index
+						setSelectedItem(null);
+						//Stylename and editable can depend on whether field is disabled or "held" or "set"
+						cssStyle=value.itemCategoryStyleName;
+						isEditable=value.itemCategoryEditable;
+						(value as CPRItem).itemCategoryRenderer = this;	
+                    }
+        		}
+        	}
+			
+			//Reset the selected item on the combobox when the user has changed the GL account
+			private function GLCodeChanged(event:Event):void{
+				setSelectedItem(null);
+			}
+            private function setSelectedItem(event:Event):void
+            {
+            	try{
+	            	comboItemCat.selectedIndex=0;
+	            	if (parentApplication.itemCategories != null){
+	                	for(var i:Number = 0; i < parentApplication.itemCategories.length; i++)
+	                	{
+	                    	if(parentApplication.itemCategories[i].data == data.itemCategory)
+	                    	{
+	                        	comboItemCat.selectedIndex = i;
+	                    	}
+	                	}
+	                	
+	            	}
+            	}  
+            	catch(err:Error){}
+            }
+            //Combobox change handler
+            private function handleChange():void{
+				itemCategory=comboItemCat.selectedItem.data;
+				if (retData!=null) retData.itemCategory = itemCategory;
+				parentApplication.setDataChanged(true);
+			}
+             
+        ]]>
+    </mx:Script>
+   
+                    
+    <mx:ComboBox id="comboItemCat" 
+                 dataProvider="{parentApplication.itemCategories}"
+                 change="handleChange()"
+                 labelField="label"
+                 styleName="{cssStyle}"
+                 enabled="{isEditable}"
+                 textAlign="left"
+                 tabEnabled="false"
+                 />
+</mx:HBox>

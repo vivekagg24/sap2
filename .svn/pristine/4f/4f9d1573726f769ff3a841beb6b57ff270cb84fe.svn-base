@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Label xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Script>
+		<![CDATA[
+			    override public function set data(value:Object):void
+		    	{
+		    		super.data = value;	
+
+	 				if (this.listData && this.listData.label < '0' ) {		    		    	
+	 					this.setStyle("color", "red");
+					}
+					else {
+						this.setStyle("color", "black");
+					} 
+			    }
+		]]>
+	</mx:Script>
+</mx:Label>
+
+

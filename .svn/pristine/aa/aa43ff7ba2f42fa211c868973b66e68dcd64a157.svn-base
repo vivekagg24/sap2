@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="454" height="240">
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.effects.Glow;
+			import mx.collections.IList;
+			import mx.collections.ICollectionView;
+			import mx.controls.CheckBox;
+			import mx.managers.PopUpManager;
+			import mx.controls.ComboBase;
+			import mx.controls.ComboBox;
+			
+			
+			// Previous payment type, to use if user cancels
+			[Bindable]
+			public var previousPaymentType:String;		
+			
+			// References to visual components on parent screen
+			[Bindable]
+			public var ref_paymentTypeCombo:ComboBox;			
+			[Bindable]
+			public var ref_paymentBlockCombo:ComboBox;
+			
+			protected function cleanClose():void
+			{
+				PopUpManager.removePopUp(this);
+				this.focusManager.deactivate();
+				this.systemManager.removeFocusManager(this);			
+				
+			}
+			
+			public function confirm():void
+			{
+				// Set payment block
+				ref_paymentBlockCombo.selectedIndex = 6;
+				var glow:Glow = new Glow();
+				glow.target = ref_paymentBlockCombo;
+				glow.duration = 2500;
+				glow.play();
+				
+				cleanClose();			
+			}
+			
+			public function cancel():void
+			{
+				// Return to previous payment method	
+				if (previousPaymentType)
+				{
+					try
+					{
+						var done:Boolean;
+						var i2:int;
+						var col:ICollectionView = ref_paymentTypeCombo.dataProvider as ICollectionView;
+						for (var i:String in col)
+						{
+							if (col[i].data.toString() == previousPaymentType)
+							{
+								i2 = new int(i);
+								ref_paymentTypeCombo.selectedIndex = i2;
+								done = true;
+							}
+						}
+						if (done == false)
+						{
+							i2 = new int(i);
+							ref_paymentTypeCombo.selectedIndex = i2;
+						}
+					}
+					catch (e:Error)
+					{
+						ref_paymentTypeCombo.selectedIndex = -1;
+					}
+					
+				}		
+				else
+				{
+					ref_paymentTypeCombo.selectedIndex = -1;
+				}	
+				
+				
+				cleanClose();		
+			}			
+			
+		]]>
+	</mx:Script>
+	<mx:Button label="Confirm" click="confirm()" bottom="10" left="53"/>
+	<mx:Button label="Cancel" click="cancel();" bottom="10" right="53"/>
+	<mx:TextArea height="150" wordWrap="true" editable="false" left="10" right="10" top="10">
+		<mx:text><![CDATA[Payments by cheque are by exception only. If you choose to pay a contributor by cheque, they will be blocked for payment. This means that no payments can be made to this contributor until Contributions in Peterborough have received the appropriate authorisation form from the Managing Editor's office.
+
+Press "Confirm" to pay the contributor by cheque and block the account, or "Cancel" to cancel and use another payment method.
+]]></mx:text>
+	</mx:TextArea>
+	
+</mx:Panel>

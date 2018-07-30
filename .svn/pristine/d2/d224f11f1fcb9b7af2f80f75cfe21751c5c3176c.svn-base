@@ -1,0 +1,65 @@
+/* CSS file */
+.application{
+	fontSize: 11;
+	font-family: arial;
+	background-gradient-colors:#FFFFFF,#408dde;
+	background-alpha:0.9;
+	background-gradient-alphas:1,1;
+	border-color:#FFFFFF;
+	border-thickness:0px;
+}
+.comboDisabled{
+	disabled-color:#000000;
+	font-weight:bold;
+}
+.disabled{
+	background-color:#ededeb;
+	disabled-color:#000000;
+}
+.enabled{
+	background-color:#ffffff;
+	disabled-color:#000000;
+}
+.button {
+	fill-colors:#ffffff,#408DDE;
+}
+.buttonDisabled {
+	fill-colors:#ffffff,#c0c0c0;
+}
+.panel{
+	background-alpha:0.56;
+}
+.dataGrid{
+	header-colors:#ffffff,#408DDE;	
+}
+
+.variantDataGrid{
+	header-colors:#ffffff,#408DDE;
+	hideShowColumns:true;
+	columnHideShowDuration:0;
+	columnShowAfterDuration:0;
+	columnHideShowGradual:false;  /* We've just got too much data and too many complicated renderers */
+	columnHideColor:#fff0f0;
+	columnShowColor:#f0fff0;
+}
+
+.menuBar{
+	background-color:#FFFFFF;
+	alpha:1;	
+}	
+.holdable{
+	borderColor:#ff8040;
+	border-thickness:2;
+	border-style:solid;
+}
+.listFont{
+	font-size:11px;	
+}
+HBox.approvalSelection
+{
+	paddingLeft: 10px;
+	paddingTop: 10px;
+	paddingRight: 10px;
+	paddingBottom: 10px;
+ 	horizontalSpacing: 10px;		
+}

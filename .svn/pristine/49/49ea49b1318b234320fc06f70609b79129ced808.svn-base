@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="72" height="42" autoLayout="true">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+  		 	import mx.managers.PopUpManager;    		 	
+			
+			private function onHoldClick():void
+			{
+  				var message:onHold =  PopUpManager.createPopUp(this, onHold) as onHold;
+  				message.data = this.data;
+			}
+			
+			private function onHistoryClick():void
+			{
+  				//var messagePopup:Notes =  PopUpManager.createPopUp(this, Notes) as Notes;
+  				//messagePopup.notesTab = parentApplication.getNotes(this.data.PARENT_WIID);
+  				var messagePopup:History =  PopUpManager.createPopUp(this, History) as History;
+  				messagePopup.historyTab = parentApplication.getHistory(this.data.CLAIM_NO);
+
+			}
+			
+			private function onFormClick():void
+			{
+
+				//parentApplication.showExpenses(data.CLAIM_NO, data.PERNR);
+				
+				import flash.net.*;
+  				//http://vd11ci.ds.newsint:8000/sap/bc/webdynpro/SAP/zcas_hr_exp_form/ 
+				var expensesSummaryURL:String = this.parentApplication.portalURL + 
+											 "/irj/portal" +
+											 "?NavigationTarget=ROLES://portal_content/com.ni.cis.NIDevelopment" +
+											 "/com.NI.People_management_CAS/com.NI.iViews/com.NI.Expenses_Summary" +
+											 "&NavMode=3" +
+											 "&DynamicParameter=i_reinr%3d" +
+											 this.data.CLAIM_NO +
+											 ";DYNP_OKCODE%3dSHOW&AutoStart=true";
+
+				var summaryURL:URLRequest = new URLRequest(expensesSummaryURL);
+		        navigateToURL(summaryURL,"_blank");  				
+				
+
+			}
+			]]>
+		</mx:Script> 
+		
+	<mx:HBox horizontalGap="2">
+	<!-- view approval history -->
+		<mx:Image source="@Embed('../../HR/images/history_on.gif')" 
+		 resize="false" click="onHistoryClick()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Show approval history"/> 
+	<!-- put item on hold -->
+		<mx:Image source="@Embed('../../HR/images/hold_on.gif')"
+		 resize="false" click="onHoldClick()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Hold/Unhold expense claim"/> 	 
+		<mx:Image source="@Embed('../../HR/images/detail_on.gif')"
+		 resize="false" click="onFormClick()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Display form"/> 	 
+		</mx:HBox>	 
+</mx:Canvas>

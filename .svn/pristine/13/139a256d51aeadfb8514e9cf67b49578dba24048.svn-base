@@ -1,0 +1,399 @@
+jQuery.sap.declare('nuk.sap.timesheet.util.TimesheetAPI');
+
+nuk.sap.timesheet.util.TimesheetAPI = {
+  _TIMEOUT: 3000,  // milliseconds
+//  _PREFIX: "http://vecdci.ds.newsint",      // adjust for testing - should normally be empty
+  _PREFIX: "http://vectci.ds.newsint",      // adjust for testing - should normally be empty
+//  _PREFIX: "",      // adjust for testing - should normally be empty
+
+  login: function(sEmail, sToken, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/login";
+    var oAuth = {
+      user_email: sEmail,
+      token: sToken
+    };
+
+    if (sEmail)
+      API = API + '/' + sEmail;
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oAuth),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+  },
+
+  getOverview: function(sUser, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/overview";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oAuth),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  /**
+   * Get timesheet
+   * @param  {string}   sTimesheet  Timesheet ID
+   * @param  {function} fnDone      Done callback
+   * @param  {function} fnError     Error callback
+   */
+  getTimesheet: function(oParam, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/timesheets";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    if (oParam.timesheet) {
+      API = API + '/' + oParam.timesheet;
+    } else {
+      API = API + '/' + oParam.date_from + '/' + oParam.date_to;
+    }
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oAuth),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+  },
+
+  /**
+   * Save a timesheet
+   * @param  {Object} oTimesheet Timesheet
+   * @param  {function} fnDone     [description]
+   * @param  {[type]} fnError    [description]
+   */
+  saveTimesheet: function(oTimesheet, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/timesheet";
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oTimesheet),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  /**
+   * Reassign a timesheet to another project
+   * @param  {Object} oTimesheet Timesheet
+   * @param  {function} fnDone     [description]
+   * @param  {[type]} fnError    [description]
+   */
+  reassignTimesheet: function(oReassign, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/timesheet/reassign";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    var oRequest = {};
+    oRequest.auth = oAuth;
+    oRequest.reassign = oReassign;
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oRequest),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  /**
+   * Update a timesheet
+   * @param  {Object} oTimesheet Timesheet
+   * @param  {function} fnDone     [description]
+   * @param  {[type]} fnError    [description]
+   */
+  updateTimesheet: function(oTimesheet, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/timesheet/update";
+
+    var oRequest = {};
+    oRequest.auth = oAuth;
+    oRequest.timesheet = oTimesheet;
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oRequest),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+
+  getApproval: function(oParam, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/approvals";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    var oRequest = {};
+    oRequest.auth = oAuth;
+    if (oParam) {
+      oRequest.date_from = oParam.date_from;
+      oRequest.date_to = oParam.date_to;
+      oRequest.status = oParam.status;
+    }
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oRequest),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+  },
+
+  approveRejectTimesheet: function(oTimesheet, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/timesheet/api/1/process";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    var oRequest = {};
+    oRequest.auth = oAuth;
+    oRequest.timesheets = oTimesheet;
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oRequest),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  /**
+   * Withdraw timesheet
+   * @param  {[type]} oTimesheet [description]
+   * @param  {[type]} fnDone     [description]
+   * @param  {[type]} fnError    [description]
+   * @return {[type]}            [description]
+   */
+  withdrawTimesheet: function(oTimesheet, fnDone, fnError) {
+    this.approveRejectTimesheet(oTimesheet, fnDone, fnError);
+  },
+
+  /**
+   * Get project customising (company codes, etc)
+   * @param  {Function} fnDone   Callback called on success
+   * @param  {Function} fnError  Callback called on error
+   */
+  getProjectCustomising: function(fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/project/api/1/customising";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oAuth),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  getProjects: function(fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/project/api/1/projects";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oAuth),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  /**
+   * Update a single project
+   * @param  {Project}  oProject Project
+   * @param  {Function} fnDone   Callback called on success
+   * @param  {Function} fnError  Callback called on error
+   */
+  updateProject: function(oProject, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/project/api/1/project";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    var oPayload = {};
+    oPayload.auth = oAuth;
+    oPayload.project = oProject;
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oPayload),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  getResources: function(sName, sUsername, sDate, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/project/api/1/resources";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    var oSearch = {};
+    oSearch.auth = oAuth;
+    oSearch.name = sName;
+    oSearch.username = sUsername;
+    oSearch.date = sDate;
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oSearch),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  },
+
+  updateResources: function(sProjectId, oResources, fnDone, fnError) {
+    var API=this._PREFIX + "/nuk/project/api/1/resources/update";
+    var oAuth = sap.ui.getCore().getModel("auth").getData();
+
+    var oPayload = {};
+    oPayload.auth = oAuth;
+    oPayload.project_id = sProjectId;
+    oPayload.resources = oResources;
+
+    jQuery.ajax({
+      url: API,
+      type: 'POST',
+      data: JSON.stringify(oPayload),
+      dataType: 'json',
+      success: function(oData, sStatus, oXhr) {
+        if (fnDone) {
+          fnDone(oData);
+        }
+      },
+      error: function(oXhr, sStatus, sErrorThrown) {
+        if (fnError) {
+            fnError(oXhr, sStatus, sErrorThrown);
+        }
+      }
+    });
+
+  }
+
+
+};
+

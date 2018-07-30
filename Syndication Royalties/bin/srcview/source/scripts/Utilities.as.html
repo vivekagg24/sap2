@@ -1,0 +1,104 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Utilities.as</title>
+<link rel="stylesheet" type="text/css" href="../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="asComment">// ActionScript file
+</span><span class="asReserved">import</span> flash.events.Event;
+<span class="asReserved">import</span> HR.generalClasses.<span class="asOperator">*</span>;
+    
+    <span class="asReserved">private</span> <span class="asFunction">function</span> DateToSAPFormat<span class="asBracket">(</span>sDate<span class="asOperator">:</span>String<span class="asBracket">)</span><span class="asOperator">:</span>String<span class="asBracket">{</span>
+        <span class="asVar">var</span> SAPDate<span class="asOperator">:</span>String <span class="asOperator">=</span> sDate.substr<span class="asBracket">(</span>6,4<span class="asBracket">)</span> <span class="asOperator">+</span> sDate.substr<span class="asBracket">(</span>3,2<span class="asBracket">)</span> <span class="asOperator">+</span> sDate.substr<span class="asBracket">(</span>0,2<span class="asBracket">)</span> 
+        <span class="asReserved">return</span> SAPDate;    
+    <span class="asBracket">}</span>
+    
+    <span class="asReserved">private</span> <span class="asFunction">function</span> TimeToSAPFormat<span class="asBracket">(</span>sTime<span class="asOperator">:</span>String<span class="asBracket">)</span><span class="asOperator">:</span>String<span class="asBracket">{</span>
+        <span class="asVar">var</span> SAPTime<span class="asOperator">:</span>String <span class="asOperator">=</span> sTime.substr<span class="asBracket">(</span>0,2<span class="asBracket">)</span> <span class="asOperator">+</span> sTime.substr<span class="asBracket">(</span>3,2<span class="asBracket">)</span> <span class="asOperator">+</span> <span class="asString">&apos;00&apos;</span>;
+        <span class="asReserved">return</span> SAPTime;    
+    <span class="asBracket">}</span>
+    
+    <span class="asReserved">private</span> <span class="asFunction">function</span> SetDefaultDates<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+        <span class="asComment">// Note - the Date class copes with negative values. So if the date is 02.02.2008, 
+</span>        <span class="asComment">// and we tell it to subtract three from the month (i.e. data.month = -1) then it 
+</span>        <span class="asComment">// knows to change to 02.11.2007 (i.e. the previous year).
+</span>        <span class="asReserved">const</span> saturday<span class="asOperator">:</span>uint <span class="asOperator">=</span> 6;
+                <span class="asVar">var</span> Today<span class="asOperator">:</span>Date    <span class="asOperator">=</span> <span class="asReserved">new</span> Date<span class="asBracket">()</span>;        <span class="asVar">var</span> FromDate<span class="asOperator">:</span>Date <span class="asOperator">=</span> <span class="asReserved">new</span> Date<span class="asBracket">()</span>;        <span class="asVar">var</span> previousSaturday<span class="asOperator">:</span>Date <span class="asOperator">=</span> <span class="asReserved">new</span> Date<span class="asBracket">()</span>;
+        
+        <span class="asVar">var</span> daysAferSaturday<span class="asOperator">:</span>int <span class="asOperator">=</span> Today.day <span class="asOperator">-</span> saturday;
+        <span class="asReserved">if</span> <span class="asBracket">(</span>daysAferSaturday <span class="asOperator">&lt;</span> 1<span class="asBracket">)</span> daysAferSaturday <span class="asOperator">+=</span> 7;
+        previousSaturday.date <span class="asOperator">=</span> previousSaturday.date <span class="asOperator">-</span> daysAferSaturday;
+
+        dfPaymentTo.selectedDate <span class="asOperator">=</span> Today;        dfPaymentTo.UpdateSAPDateField<span class="asBracket">()</span>;        FromDate.month <span class="asOperator">=</span> Today.month <span class="asOperator">-</span> 2;        dfPaymentFrom.selectedDate <span class="asOperator">=</span> FromDate;        dfPaymentFrom.UpdateSAPDateField<span class="asBracket">()</span>    <span class="asBracket">}</span>    <span class="asReserved">private</span> <span class="asFunction">function</span> SelectRequestor<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+        <span class="asReserved">for</span> <span class="asBracket">(</span><span class="asVar">var</span> i<span class="asOperator">:</span>int <span class="asOperator">=</span> 0; i<span class="asOperator">&lt;</span> requestors.length; i<span class="asOperator">++</span><span class="asBracket">){</span>              
+            <span class="asReserved">if</span><span class="asBracket">(</span>requestors<span class="asBracket">[</span>i<span class="asBracket">]</span>.data <span class="asOperator">==</span> SelectedRequestor<span class="asBracket">){</span>
+                comboRequestorRequestor.selectedIndex <span class="asOperator">=</span> i;
+                <span class="asReserved">return</span>;
+            <span class="asBracket">}</span>
+        <span class="asBracket">}</span>
+        comboRequestorRequestor.selectedIndex <span class="asOperator">=</span> 0;
+        SelectedRequestor <span class="asOperator">=</span> requestors<span class="asBracket">[</span>0<span class="asBracket">]</span>.data;
+    <span class="asBracket">}</span>
+    
+    <span class="asReserved">private</span> <span class="asFunction">function</span> PopulateRequestor<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+        
+        <span class="asVar">var</span> xmlRequestorLength<span class="asOperator">:</span>int  <span class="asOperator">=</span> xmlalldata.REQUESTOR.item.length<span class="asBracket">()</span>;
+
+        requestors <span class="asOperator">=</span> <span class="asReserved">new</span> Array<span class="asBracket">()</span>;
+
+        <span class="asVar">var</span> i<span class="asOperator">:</span>Number<span class="asOperator">=</span>0;
+
+        <span class="asReserved">for</span> <span class="asBracket">(</span>i<span class="asOperator">=</span>0; i<span class="asOperator">&lt;</span> xmlRequestorLength; i<span class="asOperator">++</span><span class="asBracket">){</span>
+            <span class="asVar">var</span> value<span class="asOperator">:</span>String <span class="asOperator">=</span> xmlalldata.REQUESTOR.item<span class="asBracket">[</span>i<span class="asBracket">]</span>.REQUESTOR.toString<span class="asBracket">()</span>;
+            <span class="asVar">var</span> key<span class="asOperator">:</span>String <span class="asOperator">=</span> xmlalldata.REQUESTOR.item<span class="asBracket">[</span>i<span class="asBracket">]</span>.REQUESTOR.toString<span class="asBracket">()</span>;                         
+            requestors.push<span class="asBracket">({</span>label<span class="asOperator">:</span> value, data<span class="asOperator">:</span> key<span class="asBracket">})</span>;
+        <span class="asBracket">}</span>
+    <span class="asBracket">}</span>
+
+<span class="asOperator">&lt;!--</span>    <span class="asReserved">private</span> <span class="asFunction">function</span> SelectKostl<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+        <span class="asReserved">for</span> <span class="asBracket">(</span><span class="asVar">var</span> i<span class="asOperator">:</span>int <span class="asOperator">=</span> 0; i<span class="asOperator">&lt;</span> costCentres.length; i<span class="asOperator">++</span><span class="asBracket">){</span>              
+            <span class="asReserved">if</span><span class="asBracket">(</span>costCentres<span class="asBracket">[</span>i<span class="asBracket">]</span>.data <span class="asOperator">==</span> SelectedKostl<span class="asBracket">){</span>
+                comboKostlKostl.selectedIndex <span class="asOperator">=</span> i;
+                <span class="asReserved">return</span>;
+            <span class="asBracket">}</span>
+        <span class="asBracket">}</span>
+        comboKostlKostl.selectedIndex <span class="asOperator">=</span> 0;
+        SelectedKostl <span class="asOperator">=</span> costCentres<span class="asBracket">[</span>0<span class="asBracket">]</span>.data;
+    <span class="asBracket">}</span>  <span class="asOperator">--&gt;</span>
+    
+    <span class="asReserved">private</span> <span class="asFunction">function</span> PopulateKostl<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+        
+        <span class="asVar">var</span> xmlcostCentreLength<span class="asOperator">:</span>int  <span class="asOperator">=</span> xmlalldata.COST_CENTRES.item.length<span class="asBracket">()</span>;
+
+        costCentres <span class="asOperator">=</span> <span class="asReserved">new</span> Array<span class="asBracket">()</span>;
+
+        <span class="asVar">var</span> i<span class="asOperator">:</span>Number<span class="asOperator">=</span>0;
+
+        <span class="asReserved">for</span> <span class="asBracket">(</span>i<span class="asOperator">=</span>0; i<span class="asOperator">&lt;</span> xmlcostCentreLength; i<span class="asOperator">++</span><span class="asBracket">){</span>
+            <span class="asVar">var</span> value<span class="asOperator">:</span>String <span class="asOperator">=</span> xmlalldata.COST_CENTRES.item<span class="asBracket">[</span>i<span class="asBracket">]</span>.KOSTL.toString<span class="asBracket">()</span>;
+            <span class="asVar">var</span> key<span class="asOperator">:</span>String <span class="asOperator">=</span> xmlalldata.COST_CENTRES.item<span class="asBracket">[</span>i<span class="asBracket">]</span>.KOSTL.toString<span class="asBracket">()</span>;                         
+            costCentres.push<span class="asBracket">({</span>label<span class="asOperator">:</span> value, data<span class="asOperator">:</span> key<span class="asBracket">})</span>;
+        <span class="asBracket">}</span>
+    <span class="asBracket">}</span> 
+    
+    <span class="asReserved">private</span> <span class="asFunction">function</span> buildDropdownList<span class="asBracket">(</span>list<span class="asOperator">:</span>XMLList,blanks<span class="asOperator">:</span>Boolean<span class="asBracket">)</span><span class="asOperator">:</span>Array<span class="asBracket">{</span>
+        <span class="asVar">var</span> arrayValues<span class="asOperator">:</span>Array <span class="asOperator">=</span> <span class="asReserved">new</span> Array<span class="asBracket">()</span>;
+        <span class="asVar">var</span> currentValue<span class="asOperator">:</span>valueForDropdown;
+        <span class="asVar">var</span> i<span class="asOperator">:</span>int;
+        <span class="asVar">var</span> item<span class="asOperator">:</span>XML;
+        <span class="asReserved">for</span> <span class="asReserved">each</span><span class="asBracket">(</span>item <span class="asReserved">in</span> list.item<span class="asBracket">){</span>
+            currentValue <span class="asOperator">=</span> <span class="asReserved">new</span> valueForDropdown<span class="asBracket">()</span>;
+        
+            currentValue.data  <span class="asOperator">=</span> item.DATA.toString<span class="asBracket">()</span>;
+            currentValue.label <span class="asOperator">=</span> item.LABEL.toString<span class="asBracket">()</span>;
+        
+            <span class="asReserved">if</span> <span class="asBracket">(</span>blanks <span class="asOperator">||</span> currentValue.label<span class="asOperator">!=</span><span class="asString">&quot;&quot;</span><span class="asBracket">)</span> arrayValues<span class="asBracket">[</span>i<span class="asBracket">]</span> <span class="asOperator">=</span> currentValue;
+                i<span class="asOperator">++</span>;
+        <span class="asBracket">}</span>
+        <span class="asReserved">return</span> arrayValues;
+    <span class="asBracket">}</span>
+</pre></body>
+</html>

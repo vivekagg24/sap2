@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="72" height="42" autoLayout="true">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+  		 	import mx.managers.PopUpManager;    		 	
+						
+			private function onHoldClick():void
+			{
+  				var message:onHold =  PopUpManager.createPopUp(this, onHold) as onHold;
+  				message.data = this.data;
+			}
+			
+			private function onHistoryClick():void
+			{
+  				var messagePopup:History =  PopUpManager.createPopUp(this, History) as History;
+  				messagePopup.historyTab = parentApplication.getHistory(this.data.PARENT_WIID);
+			}
+			
+			private function onFormClick():void
+			{
+				import flash.net.*;
+
+/*  					var adobeFormURL:String = this.parentApplication.portalURL + 
+											"/irj/servlet/prt/portal/prteventname/Navigate/prtroot/pcd!3aportal_content" +
+											"!2fcom.morse.portalconfig!2fuk.co.newsint.NI_Desktop!2fframeworkPages!2fuk.co.newsint.portal.frameworkpage!2fcom.sap.portal.innerpage!2fcom.sap.portal.contentarea?" +
+											"NavigationTarget=ROLES%3A%2F" +
+											"%2Fportal_content" +
+											"%2Fcom.sap.pct%2Fspecialist" +
+											"%2Fcom.sap.pct.erp.hradmin.bp_folder" +
+											"%2Fcom.sap.pct.erp.hradmin.11.bp_folder" +
+											"%2Fcom.sap.pct.erp.hradmin.11.roles" +
+											"%2Fcom.sap.pct.erp.hradmin.11.HRAdministrator" +
+											"%2Foverview%2Fcom.sap.pct.erp.hradmin.11.overview" +
+											"%2Fcom.sap.pct.erp.hradmin.11.start_processes" +
+											"&DynamicParameter=WI_ID%3D" + this.data.WIID +
+											"&CurrentWindowId=WID1278491345079" +
+											"&NavMode=1";  */     
+
+				/* 2014-04-03 - MTURNER1 - Disable use of standard P&F preview which doesn't work in Chrome */
+				/*
+				var adobeFormURL:String = this.parentApplication.portalURL + 
+										  "/irj/servlet/prt/portal/prtroot/pcd!3aportal_content!2fcom.morse.portalconfig!2fuk.co.newsint.NI_Desktop!2fframeworkPages!2fuk.co.newsint.portal.frameworkpage!2fcom.sap.portal.headerless_frameworkpage!2fcom.sap.portal.innerpage?" +
+										  "NavigationTarget=ROLES://portal_content/com.morse.portalconfig/uk.co.newsint.custom_ESS_assetts/uk.co.newsint.roles/uk.co.newsint.my_team/com.sap.pct.erp.mss.14.display_form" +
+//										  "NavigationTarget=navurl%3A%2F%2F5f14a2bb90f2c090535506104ba601cf" +
+										  "&dropPRTEvent=OBNEvent" +
+										  "&BOTechnicalName=employee" +
+										  "&BOSystemAlias=SAP_ERP_HumanResources" +
+										  "&Operation=display_form_manager" +
+										  "&isOBN=true" +
+										  "&FORM_SCENARIO_VERSION=00000" +
+										  "&FORM_TITLE=" + this.data.FORM_DESC + "+-+Standard+Step" +
+										  "&ISR_SCENARIO=" + this.data.SCENARIO +
+										  "&STEP_OBJECT_GUID=" + this.data.STEP_GUID +
+										  "&DynamicParameter=FORM_SCENARIO_VERSION%3d00000%26" +
+       		          						  "FORM_TITLE%3d" + this.data.FORM_DESC + "%2b-%2bStandard%2bStep%26" +
+	        	          				  "ISR_SCENARIO%3d" + this.data.SCENARIO + "%26" +
+						                  "STEP_OBJECT_GUID%3d" + this.data.STEP_GUID +
+										  "&CurrentWindowId=WID1282650326890" +
+										  "&NavMode=3";
+				*/
+
+				// 2014-04-03 - MTURNER1 - We now use the custom read-only view of the PDF
+				// The iView referenced below works fine in browsers other than Chrome, which has problems
+				// displaying iViews in new tabs/windows. We therefore now just call the BSP directly (see below)
+				/*
+				var adobeFormURL:String = this.parentApplication.portalURL + 
+										  "/irj/servlet/prt/portal/prtroot/pcd!3aportal_content!2fcom.morse.portalconfig!2fuk.co.newsint.NI_Desktop!2fframeworkPages!2fuk.co.newsint.portal.frameworkpage!2fcom.sap.portal.headerless_frameworkpage!2fcom.sap.portal.innerpage?" +
+										  "NavigationTarget=ROLES://portal_content/com.morse.portalconfig/uk.co.newsint.custom_ESS_assetts/uk.co.newsint.roles/uk.co.newsint.DisplayForm_ReadOnly/uk.co.newsint.DisplayForm_ReadOnly" +
+										  "&FORM_SCENARIO_VERSION=00000" +
+										  "&FORM_TITLE=" + this.data.FORM_DESC + "+-+Standard+Step" +
+										  "&ISR_SCENARIO=" + this.data.SCENARIO +
+										  "&STEP_GUID=" + this.data.STEP_GUID +
+       		          						  "FORM_TITLE%3d" + this.data.FORM_DESC + "%2b-%2bStandard%2bStep%26" +
+										  "&DynamicParameter=FORM_SCENARIO_VERSION%3d00000%26" +
+       		          					  "FORM_TITLE%3d" + this.data.FORM_DESC + "%2b-%2bStandard%2bStep%26" +
+	        	          				  "ISR_SCENARIO%3d" + this.data.SCENARIO + "%26" +
+						                  "STEP_GUID%3d" + this.data.STEP_GUID +
+										  "&CurrentWindowId=WID1282650326890" +
+										  "&NavMode=3";
+				*/
+				
+				// 2014-04-03 - MTURNER1 - Call PDF display BSP directly. Works in all browsers
+				var adobeFormURL:String =  "/sap/bc/bsp/sap/zhr_asr_form/display" +
+										  "?FORM_SCENARIO_VERSION=00000" +
+										  "&FORM_TITLE=" + this.data.FORM_DESC + "+-+Standard+Step" +
+										  "&ISR_SCENARIO=" + this.data.SCENARIO +
+										  "&STEP_GUID=" + this.data.STEP_GUID;
+
+				var formURL:URLRequest = new URLRequest(adobeFormURL);
+		        navigateToURL(formURL,"_blank");										  	        
+			}
+			]]>
+		</mx:Script> 
+		
+	<mx:HBox horizontalGap="2">
+	<!-- view approval history -->
+	<mx:Image source="@Embed('../../HR/images/history_on.gif')"
+	 resize="false" click="onHistoryClick()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Display approval history"/> 
+	<!-- put item on hold -->
+	<mx:Image source="@Embed('../../HR/images/hold_on.gif')"
+	 resize="false" click="onHoldClick()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Hold/Unhold item"/> 	 
+	<!-- view original form -->
+	<mx:Image source="@Embed('../../HR/images/detail_on.gif')"
+	 resize="false" click="onFormClick()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Display form"/> 	 
+	</mx:HBox>	 
+</mx:Canvas>

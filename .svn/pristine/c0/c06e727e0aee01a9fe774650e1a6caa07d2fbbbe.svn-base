@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	label="PO Search"
+   	styleName="titlewindow" 
+	creationComplete="DoInit()" x="50" y="150"
+	width="1200" height="500"
+	 borderAlpha="1"
+	backgroundColor="#dceefc" borderColor="#A7B6EB" layout="absolute" title="PO Search">
+
+	<mx:Script>
+		<![CDATA[
+		 	import mx.managers.PopUpManager; 
+		 	import mx.controls.Alert; 
+			
+		  	private function DoInit():void{
+		    	//parentApplication.doPOSearch();	    	
+		  	}	
+		  	
+			private function handleClose():void{
+				PopUpManager.removePopUp(this);
+				this.focusManager.deactivate();
+				parentApplication.focusManager.activate();
+				if (parentApplication.hasOwnProperty("focusField") &&
+				   parentApplication.focusField!=null)
+				{	
+					parentApplication.focusField.setFocus();
+					trace(parentApplication.focusField.id);
+				}
+				if (parentApplication.hasOwnProperty("focusEvent") && parentApplication.focusEvent!="") 
+				{
+					parentApplication.dispatchEvent(new Event(parentApplication.focusEvent));
+				}
+			}
+			
+			public function doOK():void
+			{
+				//parentApplication.doPOSearch();
+				handleClose();
+			}			
+		]]>
+	</mx:Script>
+
+	<mx:Panel x="10" y="10" title="PO search" backgroundAlpha="0" height="394">
+		<mx:DataGrid id="POSearch" dataProvider="{parentApplication.poSearchList}"
+			editable="true" enabled="true" wordWrap="true" height="349" width="1000">
+			<mx:columns>
+				<mx:DataGridColumn headerText="PO no." dataField="EBELN" width="65" editable="false"/>
+				<mx:DataGridColumn headerText="Line no." dataField="EBELP" width="40" editable="false"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="LIFNR" width="40" editable="false"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="NAME1" width="120" editable="false"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL" width="40" editable="false"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL_NAME" width="120" editable="false"/>				
+				<mx:DataGridColumn headerText="Material" dataField="MATNR" width="45" editable="false"/>
+				<mx:DataGridColumn headerText="Description" dataField="MAKTX" width="160" editable="false"/>
+				<mx:DataGridColumn headerText="Select" dataField="" width="35" itemRenderer="visualComponents.selectIcon" editable="false"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+
+	<mx:Button id="btnCancel" fontWeight="bold" label="Cancel" x="10" y="412" click="handleClose()"/>
+</mx:TitleWindow>
+

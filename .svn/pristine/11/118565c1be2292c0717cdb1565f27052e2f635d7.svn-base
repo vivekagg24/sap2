@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application
+	 xmlns:mx="http://www.adobe.com/2006/mxml"
+	 xmlns:local="*" xmlns:ns1="model.*" xmlns:ns2="VisualComponents.*"
+	 layout="absolute" 
+	 creationComplete="createDataProvider(); orgViewer1.load();" >
+
+	<mx:Script source="scripts/xmlFunctions.as" />
+	<mx:Script source="scripts/handlers.as" />
+	
+	<mx:Script >
+		<![CDATA[
+			import events.ShiftAssignmentEvent;   
+			import mx.events.CollectionEvent;
+			
+			[Bindable] // 
+			public var draftXml:String; 
+		
+		    [Bindable]
+		    public var server_url:String = "http://sapd11.ni.ad.newsint:8000";
+			
+			private function shift_types_add():void
+			{
+				var x:XML = new XML(<shift><name>new</name></shift>);
+				shift_types.addItem(x);
+			}
+			
+			
+			private function shift_types_remove():void
+			{
+				if (dg_shift_types.selectedItem)
+				{
+					shift_types.removeItemAt(dg_shift_types.selectedIndex);
+				}
+			}
+			
+
+			
+		]]>
+	</mx:Script>
+
+	<mx:XMLListCollection id="shift_types">
+		<mx:source>
+			<mx:XMLList xmlns="">
+				<sh>
+					<abbreviation>OFF</abbreviation>
+					<start_time>00:00</start_time>
+					<end_time>00:00</end_time>
+					<duration>00:00</duration>
+					<name>"Day off"</name>
+					<color>13395507</color>
+				</sh>
+				<sh/>
+				<sh/>
+				<sh/>
+				<sh/>
+				<sh/>
+			</mx:XMLList>
+		</mx:source>
+	</mx:XMLListCollection>
+	
+	<mx:XMLListCollection id="dp_rotas" />
+	
+	<mx:XMLListCollection id="shiftAssignment" />
+
+	<mx:TextArea x="227" y="518"/>
+	<mx:Accordion x="10" y="23" width="1210" height="600">
+		<mx:Canvas label="Step 1 - Choose Department" width="100%" height="100%">
+			<ns1:OrgStructure x="10" y="30" height="300" width="400"
+				              id="orgViewer1"
+				              server_url="{server_url}"
+				              org_selected="ws1.ZHR_SHIFTPLAN_EMPLOYEES.send()" >
+			</ns1:OrgStructure>
+			<ns2:OrgDetails x="430" y="30" width="330"
+				            visible="{orgViewer1.orgSelected}"
+				            borderStyle="solid"
+				            org_name="{orgViewer1.name_of_selected_org_unit}"	     
+				            dp="{ws1.ZHR_SHIFTPLAN_EMPLOYEES.lastResult.OBJECTS_FOUND.item}"
+				            >
+			</ns2:OrgDetails>
+		</mx:Canvas>
+		<mx:Canvas label="Step 2 - Create Shifts" width="100%" height="100%">
+			<mx:DataGrid x="32" y="32"
+				         id="dg_shift_types" editable="true"
+				         itemEditEnd="callLater(updateDurations); // We have to use callLater as when itemEditEnd is triggered, the data has yet to be updated"
+				         dataProvider="{shift_types}">
+				<mx:columns>
+					<mx:DataGridColumn headerText="Abreviation" 
+						               dataField="abbreviation" editable="true"
+						               width="80"
+						               />
+					<mx:DataGridColumn headerText="Start Time" width="80"
+						               dataField="start_time" editable="true"
+						               itemRenderer="visual.TimeRenderer"
+						               rendererIsEditor="true"
+						               
+						                />
+					<mx:DataGridColumn headerText="End Time" width="80"
+						               dataField="end_time" editable="true"
+						               itemRenderer="visual.TimeRenderer"
+						               rendererIsEditor="true" />
+					<mx:DataGridColumn headerText="Duration" width="60"
+						               dataField="duration_time" editable="false"
+						               />
+					<mx:DataGridColumn headerText="Description"
+						               dataField="name"
+						               dataTipField="name"
+						               editable="true"
+						               showDataTips="true"
+						               />	               
+					<mx:DataGridColumn headerText="Colour"
+						               dataField="color"
+						               editorDataField="color"						             
+						               dataTipField="color"
+						               editable="true"
+						               showDataTips="true"
+						               itemRenderer="VisualComponents.ColourPickerRenderer"
+						               rendererIsEditor="true"
+						               />	  
+						               					               				
+				</mx:columns>
+			</mx:DataGrid>
+			
+			<mx:Button x="376" y="224" label="Add" click="shift_types_add()"/>
+			<mx:Button x="453" y="224" label="Delete" click="shift_types_remove()"/>
+			<mx:Text x="32" y="226" text="For each shift enter a short abbreviation, a description, and the start and end times. For example, Night Shift 1 could start at 18:00 and finish at 04:00, and could have the abbreviation &quot;N1&quot;. By giving each shift an abbreviation, it makes it easier to see a whole rota at a time. " width="302" height="130"/>
+		</mx:Canvas>
+		<mx:Canvas label="Step 3 - Create Rotas" width="100%" height="100%">
+		<!--	<mx:List  id="liShiftNames" x="10" y="77" width="100" height="386" 
+				      /> -->
+			<local:FastShiftGrid x="110" y="77" width="1055" height="386"
+				              id="sg1"	dataProvider="{dp_rotas}" labelField="val" 
+				              showRowLabel="true"    
+				              colorKey="{shift_types}"      		  
+		                      >
+			</local:FastShiftGrid>		
+		</mx:Canvas>
+		<mx:Canvas label="Step 4 -  Assign Rotas" width="100%" height="100%" show=";" >
+			<mx:Label x="10" y="12" text="Assignment as of"/>
+			<mx:DateField id="dtAssignment" formatString="DD/MM/YYYY"  x="120" y="10"/>
+			<mx:VBox y="40" x="10">
+				<mx:Repeater id="rp1" dataProvider="{ws1.ZHR_SHIFTPLAN_EMPLOYEES.lastResult.OBJECTS_FOUND.item}" >
+					<ns2:ShiftAssignmentSelector employee="{rp1.currentItem}"
+						                         rotas="{dp_rotas}"
+						                         index="{rp1.currentIndex}"
+						                         shiftAssignment="handleShiftAssignmentEvent(event);"
+						                         colorKey="{shift_types}"
+						/>				
+				</mx:Repeater>			
+			</mx:VBox>
+
+		</mx:Canvas>
+		<mx:Canvas label="Step 5 - Save" width="100%" height="100%" >
+			<mx:Button x="10" y="58" label="Save Rotas" click="saveRotas()"/>
+			<mx:Button x="279" y="41" label="Save Rotas as Draft" click="saveRotasDraft()"/>
+			<mx:Button x="439" y="41" label="Load Rotas from Draft" click="loadRotasFromDraft(new XML(taSaveXml.text))"/>
+			
+			<mx:TextArea id="taSaveXml" text="{draftXml}"  x="279" y="71" width="598" height="226"
+				         editable="true" />			
+			<mx:Label x="10" y="20" text="Transport"/>
+			<mx:TextInput x="76" y="18" id="tiTransport"/>
+		</mx:Canvas>
+	</mx:Accordion>
+	
+	
+	
+	<mx:WebService id="ws1" 
+		           wsdl="{server_url + '/sap/bc/soap/wsdl11?SERVICES=ZHR_SHIFTPLAN_EMPLOYEES,ZHR_SAVE_ROTAS'}"
+		           showBusyCursor="true"
+		           >
+		<mx:operation name="ZHR_SHIFTPLAN_EMPLOYEES" concurrency="last" resultFormat="e4x">
+			<mx:request xmlns="">
+				<ROOT_OBJECTS>					
+					<item>
+						<OTYPE>O</OTYPE>
+						<OBJID>
+							{orgViewer1.id_of_selected_org_unit}
+						</OBJID>
+					</item>
+				</ROOT_OBJECTS>
+				<POS_TAB/>
+				<JOB_TAB/>
+				<OBJECTS_FOUND/>
+				<TEMP_ASSIGN_AWAY/>
+				<TEMP_ASSIGN_TOME/>
+			</mx:request>
+		</mx:operation>
+		<mx:operation name="ZHR_SAVE_ROTAS" concurrency="last" resultFormat="e4x"
+			          result="saveRotaResultHandler(event)">
+			<mx:request xmlns="">				
+			</mx:request>
+		</mx:operation>
+	</mx:WebService>
+	<mx:Script>
+	<![CDATA[
+		import mx.collections.XMLListCollection;
+		
+					
+		/** Create the grid data
+		 * 
+		 */
+		protected function createDataProvider():void
+		{
+				
+			var num_rows:uint = 8; // 8 Shift Patterns
+			var num_cols:uint = 50;
+			
+/* 			// Row headers
+			var colH:XMLListCollection = new XMLListCollection();
+			colH.disableAutoUpdate();
+				var head:XML = new XML('<header></header>');
+				head.width = 150;
+				head.val = "";
+				colH.addItem(head);			
+			
+			for (var i_header:int = 0; i_header < num_rows; i_header++)
+			{
+				head = new XML('<header></header>');
+				head.width = 150;
+				head.val = i_header;
+				colH.addItem(head);
+				
+			}
+			colH.enableAutoUpdate();
+			dp_headers = colH; */
+			
+			
+
+			var collection:XMLListCollection =  new XMLListCollection();	
+			collection.disableAutoUpdate();	
+			
+			// Days of week
+			var dow:Array = ["Mon" , "Tue" , "Wed" , "Thu" , "Fri" , "Sat" , "Sun"];
+			var dow2:Array = ["Monday" , "Tuesday" , "Wednesday" , "Thursday" , "Friday" , "Saturday" , "Sunday"];
+			
+		
+		    // Addd the top row
+			var x1:XML = new XML("<top_row></top_row>");	
+			var y:XML = new XML("<col />");
+			y.val = "Shift Name";
+			x1.appendChild(y);
+			
+			// Add the weeks / days	 	
+			for (var i_col:int = 0; i_col < num_cols; i_col++)
+			{
+				y = new XML("<col />");
+				var week:int = (i_col / 7) + 1;
+				var d_int:int = i_col - ( (week - 1) * 7);
+				
+				
+				
+				// Set the text			
+				var day:String = dow[d_int];
+				y.day = day;
+				//*y.val = day;
+				y.val = i_col + 1;
+				
+				// Store the day number
+				y.day_num = i_col + 1;
+				
+				// Hover text - use day week and day number
+				var hover:String = dow2[d_int] + " Week " + new String(week) + " (Day " + new String(i_col + 1) + ")"; 
+				y.hover = hover;
+				
+				
+				// Weekends
+				if (day == "Sun" || day == "Sat")
+				{
+					y.backgroundDisabledColor = "0xCCFFCC";	
+					y.backgroundColor = "0xCCFFCC";			 	
+				}
+				else
+				{
+					y.backgroundDisabledColor = "0xFFFFFF";	
+					y.backgroundColor = "0xFFFFFF";	
+				}
+					
+					
+				
+				
+				x1.appendChild(y);
+
+					
+				
+			}
+			collection.addItem(x1);				    
+	   
+		/* 	// Add the shifts
+			for (var i_row:int = 0; i_row < num_rows; i_row++)
+			{
+				var x:XML = new XML("<row></row>");
+				for (i_col = 0; i_col < num_cols; i_col++)
+				{
+					y = new XML("<col />");
+					y.val = i_col;
+					x.appendChild(y);
+					if (i_col == 5)
+					{
+						y.color = "red";
+						y.backgroundDisabledColor = "blue";
+						
+					}
+						
+					
+				}
+				collection.addItem(x);				
+			} */
+			
+			collection.enableAutoUpdate();
+			dp_rotas = collection;
+			
+		}	
+		
+		/** Make sure we capture all changes made by the user 
+		*
+		*/
+		protected function handleShiftAssignmentEvent(event:ShiftAssignmentEvent):void
+		{
+			if (!shiftAssignment)			
+			{
+				var employees:XMLList = new XMLList(ws1.ZHR_SHIFTPLAN_EMPLOYEES.lastResult.OBJECTS_FOUND.item);								
+				shiftAssignment = new XMLListCollection();
+				for each (var x:String in employees)
+				{
+					shiftAssignment.addItem(new XML(<placeholder />));
+				}
+			} 
+			
+			// The objec that we will insert into our data table
+			var o:XML;
+			
+			// If this employee is already present, we want that object
+			var l_pernr:String = event.target.employee.OBJID_OUT.toString(); // Get employee number
+			var addNewEntry:Boolean = true;			
+			var thatEE:XMLList = shiftAssignment.source.(PERNR==l_pernr);			
+			if (thatEE.length() == 1)
+			{
+				addNewEntry = false;
+				o = thatEE[0];
+			}			
+			else
+			{
+				o = new XML(<item/>);
+			}
+			
+			// Now set the values
+			o.PERNR = l_pernr;
+			o.ROTA_NAME = event.name_of_rota;
+			o.OFFSET = event.start_day_in_rota;
+			
+			if (event.works_bank_holidays)
+			{
+				o.WBH = 'X';
+			}
+			else
+			{
+				o.WBH = " ";
+			}
+				
+			// Only add if its a new employee	
+			if (addNewEntry)	shiftAssignment.addItemAt(o, event.index);
+						
+		}		
+			
+			
+		]]>
+	</mx:Script>
+
+</mx:Application>

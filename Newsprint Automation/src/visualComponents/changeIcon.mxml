@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Box xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center">
+	<mx:Script>
+		<![CDATA[
+		
+		    override public function set data(value:Object):void
+		    {
+		    	super.data = value;	
+
+				if (this.data && this.data.editable) {		    		    	
+	  				var x:String = new String(this.data.editable);
+					if (x == 'X')
+					{
+						changeImage.visible = true;
+						displayImage.visible = false;
+					}
+					else
+					{
+						changeImage.visible = false;
+						displayImage.visible = true;
+					}
+			
+					if (data.editable && data.editable == 'X')
+					{
+		//	 			this.borderColor = 0xFF0000;
+		//				this.border = true;		 
+					}
+					else
+					{
+ 		//				this.border = false;
+		//				this.borderColor = 0xFFFFFF; 
+					}
+				}
+		    }
+		
+			private function onChange(o:Object):void
+			{
+				var x:String = new String(this.data.editable);
+								if (x == 'X')
+				{
+					x = " ";
+					changeImage.visible = true;
+					displayImage.visible = false;
+				}
+				else
+				{
+					x = "X";
+					changeImage.visible = false;
+					displayImage.visible = true;
+				}
+				this.data.editable = x;
+
+			}
+			]]>
+		</mx:Script> 
+	<mx:Image id="changeImage" source="@Embed('../images/Display.gif')" click="onChange(this)" toolTip="Edit line"
+		      includeInLayout="false"/>
+	<mx:Image id="displayImage" source="@Embed('../images/change.gif')" click="onChange(this)" toolTip="Edit line"
+		      includeInLayout="false" visible="false"/>
+</mx:Box>

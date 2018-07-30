@@ -1,0 +1,271 @@
+sap.ui.define([
+  "sap/ui/core/mvc/Controller",
+  "sap/ui/core/routing/History",
+  "nuk/sap/timesheet/util/Auth",
+  "nuk/sap/timesheet/util/Message"
+  ],
+  function (Controller, History, Auth, Message) {
+  "use strict";
+  return Controller.extend("nuk.sap.timesheet.controller.BaseController", {
+    TESTING: true,
+
+    checkAuthenticated: function(fnDone) {
+      var oUserModel = sap.ui.getCore().getModel("user");
+      if (typeof oUserModel === 'undefined') {
+        this.reauthenticate(fnDone);
+      }
+    },
+
+    getRouter: function () {
+      return sap.ui.core.UIComponent.getRouterFor(this);
+    },
+
+    navigateTo: function(sTarget) {
+      var that = this;
+      var sPrev = this.getView().getModel("config").getProperty("/mode"); // save current tab
+
+      if (sTarget === "help") {
+        this.doOpenUserGuide();
+        return;
+      }
+      this.confirmNavigation(function(bCanNavigate) {
+        if (bCanNavigate) {
+          that.setMode(sTarget);
+          that.getRouter().navTo(sTarget, {}, true /*no history*/);
+        } else {
+          // To ensure that the button highlight is restored - weird, I know
+          that.setMode(sPrev);
+        }
+      });
+    },
+
+    confirmNavigation: function(fnDone) {
+      var that = this;
+      var oView = this.getView();
+      if (this.isDataChanged() === true) {
+
+        var oDialog = new sap.m.Dialog({
+          icon: "sap-icon://warning",
+          type: "Message",
+          state: "Warning",
+          title: "{i18n>dialog-unsaved-data-title}",
+          content: new sap.m.Text({
+            text: "{i18n>dialog-unsaved-data-text}",
+          }),
+          beginButton: new sap.m.Button({
+            type: "Accept",
+            text: "{i18n>dialog-button-yes}",
+            press: function() {
+              that.setDataChanged(false);
+              oDialog.destroy();
+              if (fnDone) {
+                fnDone(true);
+              }
+            }
+          }),
+          endButton: new sap.m.Button({
+            type: "Reject",
+            text: "{i18n>dialog-button-no}",
+            press: function() {
+              oDialog.destroy();
+              if (fnDone) {
+                fnDone(false);
+              }
+            }
+          }),
+          afterClose: function(oEvent) {
+            oDialog.destroy();
+          }
+        });
+        oView.addDependent(oDialog);
+        oDialog.open();
+      } else {
+        if (fnDone) {
+          fnDone(true);
+        }
+      }
+    },
+
+    setMode: function(sMode) {
+      var oView = this.getView();
+      var oConfig = oView.getModel("config");
+      oConfig.setProperty("/mode", sMode);
+    },
+
+    onNavBack: function (oEvent) {
+      var oHistory, sPreviousHash;
+      var that = this;
+      var sPrev = this.getView().getModel("config").getProperty("/mode"); // save current tab
+
+      oHistory = History.getInstance();
+      sPreviousHash = oHistory.getPreviousHash();
+
+      that.confirmNavigation(function(bCanNavigate) {
+        if (bCanNavigate) {
+          if (sPreviousHash !== undefined) {
+            window.history.go(-1);
+          } else {
+            that.navigateTo("launchpad");
+          }
+        } else {
+          // To ensure that the button highlight is restored - weird, I know
+          that.setMode(sPrev);
+        }
+      });
+
+    },
+
+    onHeaderNavButtonPress: function(oEvent) {
+      var sKey = oEvent.getSource().getKey();
+      switch (sKey) {
+        case 'approval':
+          this.toApproval();
+          break;
+
+        case 'launchpad':
+          this.toLaunchpad();
+          break;
+
+        case 'projects':
+          this.toProjects();
+          break;
+
+        case 'timesheets':
+          this.toTimesheetList();
+          break;
+
+      }
+
+    },
+
+    toApproval: function(oEvent) {
+      this.navigateTo("approval");
+    },
+
+    toLaunchpad: function(oEvent) {
+      this.navigateTo("launchpad");
+    },
+
+    toLogin: function(oEvent) {
+      this.navigateTo("login");
+    },
+
+    toProjects: function(oEvent) {
+      this.navigateTo("projects");
+    },
+
+    toSubstitutes: function(oEvent) {
+      this.navigateTo("substitutes");
+    },
+
+    toTimesheetList: function(oEvent) {
+      this.navigateTo("timesheets");
+    },
+
+    doHelp: function(oEvent) {
+      var oButton = oEvent.getSource();
+
+      if (!this._actionSheet) {
+        this._actionSheet = sap.ui.xmlfragment(
+          "nuk.sap.timesheet.fragment.HelpActions",
+          this
+        );
+        this.getView().addDependent(this._actionSheet);
+      }
+
+      this._actionSheet.openBy(oButton);
+    },
+
+    doOpenUserGuide: function(oEvent) {
+      var URL="https://docs.google.com/presentation/d/1NYdPKonEGQmqwGHUVZX5KWZjOSAqmZEj6qtqfvbKUOw/edit#slide=id.p";
+      window.open(URL, "_blank");
+    },
+
+    doOpenPmoPortal: function(oEvent) {
+      var URL="https://sites.google.com/a/news.co.uk/techpmoportal/";
+      window.open(URL, "_blank");
+    },
+
+    doContactPmo: function(oEvent) {
+      var oView = this.getView();
+      var sSubject = Message.getText(oView, 'email-pmo-subject');
+      var sBody = Message.getText(oView, 'email-pmo-body');
+      sap.m.URLHelper.triggerEmail("tech.pmo@news.co.uk", sSubject, sBody);
+    },
+
+    /**
+     * Report problem to Service Desk
+     */
+    doReportIssue: function(oEvent)  {
+      var oView = this.getView();
+      var sSubject = Message.getText(oView, 'email-support-subject');
+      var sBody = Message.getText(oView, 'email-support-body');
+      sap.m.URLHelper.triggerEmail("ServiceDesk@news.co.uk", sSubject, sBody);
+    },
+
+
+    doLogout: function(oEvent) {
+      var that = this;
+      var sPrev = this.getView().getModel("config").getProperty("/mode"); // save current tab
+      this.confirmNavigation(function(bCanNavigate) {
+        if (bCanNavigate) {
+          var auth2 = gapi.auth2.getAuthInstance();
+          auth2.signOut().then(function () {
+            jQuery.sap.log.info('User signed out.');
+            that.toLogin();
+          });
+        } else {
+          // To ensure that the button highlight is restored - weird, I know
+          that.setMode(sPrev);
+        }
+      });
+    },
+
+    setDataChanged: function(bChanged) {
+      var sChanged = bChanged === true ? 'true' : 'false';
+      var oModel = this.getView().getModel("config");
+      if (oModel) {
+        oModel.setProperty("/isDataChanged", sChanged);
+      }
+    },
+
+    isDataChanged: function() {
+      var oModel = this.getView().getModel("config");
+      if (oModel && oModel.getProperty("/isDataChanged") === 'true') {
+        return true;
+      } else {
+        return false;
+      }
+    },
+
+    /**
+     * Set validation handlers
+     */
+    setValidationHandlers: function() {
+      var oCore = sap.ui.getCore();
+      oCore.attachValidationError(function (oEvent) {
+        oEvent.getParameter("element").setValueState(sap.ui.core.ValueState.Error);
+      });
+      oCore.attachValidationSuccess(function (oEvent) {
+        oEvent.getParameter("element").setValueState(sap.ui.core.ValueState.None);
+      });
+    },
+
+    /**
+     * Reauthenticate if required
+     * @return {[type]} [description]
+     */
+    reauthenticate: function(fnDone) {
+      Auth.init(this, fnDone);
+    },
+
+    /**
+     * Copy our common core models to the View (so we we can use them in the bindings)
+     */
+    _setModels: function() {
+      var oView = this.getView();
+      oView.setModel(sap.ui.getCore().getModel("user"), "user");
+    }
+
+  });
+});

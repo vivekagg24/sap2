@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	label="Are you sure?"
+   	styleName="titlewindow" 
+    creationComplete="doInit()" x="50" y="150"
+	width="407" height="118"
+	xmlns:HR="HR.Components.*" borderAlpha="1"
+	backgroundColor="#dceefc" borderColor="#A7B6EB" layout="absolute" title="Are you sure?">
+   
+    <mx:Script>
+        <![CDATA[
+		  	import mx.managers.PopUpManager;
+			
+			private function doInit():void {
+				this.move(100, 100); // For some reason, PoUpManager.centre doesn't work very well,
+				this.alpha = 1.0;
+				this.setStyle("borderAlpha", 1.0);
+				btnOK.setFocus();		 
+			}
+		  	
+			private function handleClose():void{
+				PopUpManager.removePopUp(this);
+				this.focusManager.deactivate();
+				parentApplication.focusManager.activate();
+				if (parentApplication.hasOwnProperty("focusField") &&
+				   parentApplication.focusField!=null)
+				{	
+					parentApplication.focusField.setFocus();
+					trace(parentApplication.focusField.id);
+				}
+				if (parentApplication.hasOwnProperty("focusEvent") && parentApplication.focusEvent!="") 
+				{
+					parentApplication.dispatchEvent(new Event(parentApplication.focusEvent));
+				}				
+			}
+			
+			private function doOK():void{	
+				parentApplication.onReverseLine(data);
+				handleClose();
+			}
+        ]]>
+	</mx:Script>
+
+	<mx:Button id="btnCancel" fontWeight="bold" label="Cancel" x="65" y="50" click="handleClose()"/>
+	<mx:Button id="btnOK" enabled="true" label="Yes" fontWeight="bold"  x="10" y="50" click="doOK()"/>
+	<mx:TextArea x="10" y="10" width="364" height="32" text="Are you sure you want to reverse this line?" fontFamily="Arial" fontSize="19" editable="false"/>
+</mx:TitleWindow>
+

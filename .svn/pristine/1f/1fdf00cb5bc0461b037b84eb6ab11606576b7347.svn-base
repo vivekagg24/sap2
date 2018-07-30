@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx         = "http://www.adobe.com/2006/mxml"
+	            layout           = "absolute"
+                creationComplete = "wsTEST.ZHR_VC_TESTER.send()">
+
+<mx:Script>
+
+	<![CDATA[
+
+	import mx.rpc.events.ResultEvent;	
+		
+	public function	serverResponse(event:ResultEvent):void {
+      
+      tiField.text = event.result[0].EX_TEST;
+	}   
+	
+	public function getData():void{
+		wsTEST.ZHR_VC_TESTER.send()
+	}
+		
+	public function clearData():void{
+		tiField.text = "";
+	}	
+	
+	]]>
+
+</mx:Script>
+	
+	<mx:WebService id       = "wsTEST"    
+		       	   wsdl     = "http://saponi.ni.ad.newsint:8080/sap/bc/soap/wsdl11?services=ZHR_VC_TESTER&amp;sap-client=200"	   
+                   useProxy = "false"
+			       result   = "serverResponse(event)">
+	
+		<mx:operation 	name         = "ZHR_VC_TESTER"     	
+				        resultFormat = "e4x"
+				        concurrency  = "last">
+		</mx:operation>
+
+	</mx:WebService>
+	
+
+	<mx:Panel x="10" y="10" width="475" height="400" layout="absolute" title="My Second SAP Flex2 Application">
+
+        <mx:Text x="69.5" y="72" text="This value is read from function module in D11 200" width="316"/>
+
+        <mx:TextInput x="69.5" 
+        	          y="137" 
+        	          id="tiField" />
+
+        <mx:Text x="69.5" y="98" text="FM: ZHR_VC_TESTER var EX_TEST" width="363.5"/>
+
+        <mx:Button x="268" y="137" label="btGetData" id="btgetData" click="getData()"/>
+        <mx:Button x="268" y="185" label="btClearData" id="btclearData" click="clearData()"/>
+
+    </mx:Panel>
+	
+</mx:Application>

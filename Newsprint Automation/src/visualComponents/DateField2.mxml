@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TextInput xmlns:mx="http://www.adobe.com/2006/mxml" borderStyle="none" restrict="0123456789." maxChars="10" alpha="0">
+
+	<mx:Script>
+		<![CDATA[
+		    override public function set data(value:Object):void{
+		 		var sMonth:String;
+				var sYear:String;
+				var sDay:String; 
+				var sDate:String;
+				
+	    		super.data = value;	
+
+ 				if (this.listData) {		    		    	
+			 		if (this.text.substr(4,1) == '-' && this.text.substr(7,1) == '-') {
+					// extract the individual values
+						sYear = this.text.substr(0,4);
+						sMonth = this.text.substr(5,2);
+						sDay = this.text.substr(8,2);
+						this.text = sDay + '.' + sMonth + '.' + sYear;
+						} 
+					}
+			    }
+		]]>
+	</mx:Script>
+</mx:TextInput>
+

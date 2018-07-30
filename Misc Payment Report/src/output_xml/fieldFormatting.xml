@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<MiscPayOutput>
+		 		<headerFields>
+					<field width="73" dataField="ACTION_DATE" type="dateLabel" columnTitle="Date" /> 
+					<field width="58" dataField="ACTION_TIME" type="Label" columnTitle="Time" />
+					<field width="70" dataField="ACTION" type="Label" columnTitle="Action" />	
+					<field width="70" dataField="PROCESS_REFERENCE_NUMBER" type="RightLabel" columnTitle="Reference no." />				
+					<field width="126" dataField="PAYEESNAME" type="TextArea" columnTitle="Payee" /> 
+					<field width="140" dataField="REASONFORREQUEST" type="TextArea" columnTitle="Description" />
+					<field width="50" dataField="COSTCODE1" type="Label" columnTitle="cost centre" /> 
+					<field width="50" dataField="CURRENCY" type="Label" columnTitle="Curr." /> 					
+					<field width="70" dataField="TOTAL" type="RightLabel" columnTitle="Total" />
+					<field width="145" dataField="APPROVER" type="TextArea" columnTitle="Actioned by Substitute" />
+					<field width="145" dataField="SUBSTITUTE_FOR" type="TextArea" columnTitle="As a Substitute for" />
+					<field width="90" dataField="STATUS" type="TextArea" columnTitle="Overall status" />
+					<field width="46" dataField="Action" type="Action" columnTitle="Action" /> 
+				</headerFields>
+	    	</MiscPayOutput>
+    	</formatting>

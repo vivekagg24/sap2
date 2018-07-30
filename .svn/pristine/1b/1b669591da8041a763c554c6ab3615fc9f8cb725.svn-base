@@ -1,0 +1,169 @@
+<mvc:View controllerName="nuk.sap.timesheet.controller.ProjectList" displayBlock="true" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+
+  <Page title="{i18n>project-list-title}" enableScrolling="false">
+    <customHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.PageHeader" type="XML" />
+    </customHeader>
+
+    <subHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.Navigation" type="XML" />
+    </subHeader>
+
+    <content>
+      <SplitContainer id="splitProjectList" initialDetail="detail" initialMaster="master">
+
+        <masterPages>
+          <Page id="master">
+
+            <List id="listProjects"
+              headerText="{i18n>project-list-title}"
+              includeItemInSelection="true"
+              mode="SingleSelectMaster"
+              selectionChange="onDisplayProject"
+              noDataText="{i18n>project-list-no-data}"
+              items="{projectList>/projects}">
+
+              <items>
+                <ObjectListItem
+                  title="{projectList>name}"
+                  type="Active"
+                  description="{projectList>description}"
+                  icon="sap-icon://building"
+                  >
+                  <attributes>
+                    <ObjectAttribute text="{projectList>description}" />
+                  </attributes>
+                </ObjectListItem>
+              </items>
+            </List>
+
+            <footer>
+              <OverflowToolbar design="Solid">
+                <Button
+                  icon="sap-icon://refresh"
+                  press="onRefreshProjectList"
+                  class="sapUiLargeMarginBegin"
+                  tooltip="{i18n>project-list-refresh-tooltip}"/>
+                <ToolbarSpacer/>
+                <Button
+                  text="{i18n>project-list-project-add}"
+                  type="Accept"
+                  icon="sap-icon://add"
+                  press="onAddProject"
+                  tooltip="{i18n>project-list-project-add-tooltip}"/>
+                 <Button
+                  text="{i18n>project-list-project-edit}"
+                  type="Default"
+                  icon="sap-icon://edit"
+                  press="onEditProject"
+                  tooltip="{i18n>project-list-project-edit-tooltip}"/>
+                <!--
+                <Button
+                  text="{i18n>project-list-project-close}"
+                  type="Default"
+                  icon="sap-icon://sys-minus"
+                  press="onCloseProject"
+                  tooltip="{i18n>project-list-project-close-tooltip}"/>
+                -->
+              </OverflowToolbar>
+            </footer>
+
+          </Page>
+        </masterPages>
+
+
+        <detailPages>
+          <Page id="detail" title="" class="sapUiStdPage">
+            <customHeader>
+
+              <OverflowToolbar design="Solid">
+                <ToolbarSpacer/>
+                <Button text="{i18n>project-list-resource-add}" type="Accept" icon="sap-icon://sys-add" press="onAddResource" />
+              </OverflowToolbar>
+
+            </customHeader>
+
+              <Panel
+                width="auto"
+                expandable="true"
+                expanded="{= !${device>/system/phone} }"
+                headerText="{projectList>name}"
+                visible="true">
+                <content>
+                  <HBox>
+                  <VBox>
+                    <Label text="{i18n>project-list-header-description}" design="Bold" class="sapUiSmallMarginEnd" />
+                    <Label text="{i18n>project-list-header-pm-name}" design="Bold" class="sapUiSmallMarginEnd" />
+                    <Label text="{i18n>project-list-header-cost-assignment}" design="Bold" class="sapUiSmallMarginEnd" />
+                    <Label text="{i18n>project-list-header-dates}" design="Bold" class="sapUiSmallMarginEnd" />
+                  </VBox>
+                  <VBox>
+                    <Label text="{projectList>description}" />
+                    <Link text="{projectList>project_manager_name}" href="mailto:{projectList>project_manager_email}"/>
+                    <Label text="{projectList>cost_assignment/description}"/>
+                    <Label
+                      text="{ parts: [
+                          { path: 'projectList>start_date' },
+                          { path: 'projectList>end_date' }
+                        ],
+                        formatter: 'nuk.sap.timesheet.util.Formatter.formatDateRange'
+                      }"
+                      />
+                  </VBox>
+                  </HBox>
+                </content>
+              </Panel>
+            <List id="listResources"
+              mode="SingleSelectMaster"
+              includeItemInSelection="true"
+							noDataText="{i18n>project-list-no-resource-data}"
+							itemPress="onEditResource"
+              items="{projectList>resources}">
+              <items>
+
+                <CustomListItem type="Active">
+                  <HBox fitContainer="true" justifyContent="SpaceBetween">
+                    <HBox>
+                      <VBox justifyContent="SpaceBetween">
+                        <core:Icon size="2rem" src="sap-icon://employee" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom"/>
+                      </VBox>
+                      <VBox class="sapUiSmallMarginTopBottom">
+                        <Label text="{projectList>name}" design="Bold"/>
+                        <Label text="{i18n>project-list-resource-id}: {projectList>personnel_no}" />
+                        <Label
+                          text="{i18n>project-list-resource-assigned}:
+                            { parts: [
+                              { path: 'projectList>start_date' },
+                              { path: 'projectList>end_date' }
+                            ],
+                            formatter: 'nuk.sap.timesheet.util.Formatter.formatDateRange'
+                            }"
+                        />
+                      </VBox>
+                    </HBox>
+                    <VBox alignItems="End" justifyContent="SpaceBetween">
+                      <HBox justifyContent="End" class="sapUiTinyMarginTopBottom">
+                        <Button icon="sap-icon://email" type="Transparent" press="onEmailResource" />
+                      </HBox>
+                      <HBox class="sapUiTinyMarginTopBottom">
+                        <Button icon="sap-icon://edit" type="Transparent" press="onEditResource"/>
+                        <Button icon="sap-icon://sys-cancel" type="Transparent" press="onDeleteResource" />
+                      </HBox>
+                    </VBox>
+                  </HBox>
+
+                </CustomListItem>
+              </items>
+            </List>
+            <core:Fragment fragmentName="nuk.sap.timesheet.fragment.MessageArea" type="XML" />
+          </Page>
+        </detailPages>
+
+
+      </SplitContainer>
+    </content>
+
+
+  </Page>
+
+</mvc:View>

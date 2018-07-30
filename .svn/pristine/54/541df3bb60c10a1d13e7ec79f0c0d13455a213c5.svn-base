@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	ProjectInput.mxml
+		Item renderer for the Project field on the payment items data grid
+	
+	Includes:
+		validation on the entry  - sets error counter in parent application
+		event handlers for focus events - e.g. highlighting an errored field when saving
+		
+	The renderer uses the TextInputPlus component to display a listbox with the user's recent entries
+	There is also a button that launches the popup screen to search proejct codes
+		
+-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         width="100%" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         verticalScrollPolicy="off" 
+         horizontalGap="0"
+         xmlns:Validators="Validators.*" 
+         xmlns:validators="ecs.validators.*"
+         creationComplete="initComponent();" 
+         xmlns:ecs="ecs.components.*"
+         xmlns:ni="ni.components.*">
+    
+    <mx:Script>
+        <![CDATA[
+        	import ecs.popups.LookUpProjectCode;
+        
+        	import mx.core.Application;
+        
+            import mx.controls.listClasses.ListData;
+            import mx.controls.dataGridClasses.DataGridListData;
+            import mx.controls.listClasses.BaseListData;
+            import mx.controls.DataGrid;
+            import mx.events.FlexEvent;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import ecs.generalClasses.CPRItem;
+			import ecs.popups.LookUpGLCode;
+			
+			//CSS style for the input - e.g. disabled
+			[Bindable]
+            private var cssStyle:String="";
+            [Bindable]
+            private var isEditable:Boolean=true;
+            //Lookup for the Project code
+			private var win:LookUpProjectCode;
+			//This is the property returned to the data provider after editing
+			[Bindable]
+            public var project:String = new String();
+            
+            //Row data returned  by get data to data grid (stops rows being jumbled when reused by the DG)     
+            private var retData:Object;
+            //Project code description
+            [Bindable]
+            private var description:String = new String(); 
+            //Flag for invalid input - set by validator  
+            [Bindable]        
+            private var error:Boolean = false;   
+            //Is input valid (used for logic to update invalid project codes counter in parent app)                     
+            private var isValid:Boolean=true;
+            //Previous valid state
+            private var previousValidState:Boolean=true;
+            [Bindable]
+            private var publicationID:String;
+                                   
+            private function initComponent():void
+            {
+            	//Event listener - receive focus if the entry is not valid
+            	parentApplication.addEventListener("ProjectErrorFocus",setErrorFocus, false, 0, true);
+            	
+            }   
+                     
+            //Receive focus if the user is trying to save and there is an error in the project field - parent 
+        	//application raises the ProjectErrorFocus event
+            private function setErrorFocus(event:Event):void{
+            	if (!isValid){
+            		txtProject.setFocus();
+            		//Cancel the event - just stop at the first error
+            		event.stopPropagation();	
+            	} 
+            }
+            
+            private function setPublicationID():void{
+            	publicationID= parentApplication.getPublicationId();
+            }
+            
+            override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	project=String(value.project);  //Grid gets this field to update the data provider
+						txtProject.text=project;
+						//The DG jumbles the rows !!! Unless we store the row and return in get data
+						retData=value;
+						//Validate also gets the project description
+						validateEntry();
+						//Stylename and editable can depend on whether field is disabled or "held" or "set"
+						cssStyle=value.projectStyleName;
+						isEditable=value.projectEditable;	
+						// Validate the field, which also sets the border correclty if using hold data
+						valProject.validate();
+						// Register the renderer for validation
+						(value as CPRItem).projectRenderer = this;						
+                    }
+        		}
+	        }
+	        
+			//Return the row to stop the jumbling - occurs because the grid reuses the conponents when scrolling
+			override public function get data():Object{
+				return retData;
+			}
+			
+			// Set focus to the text input box
+			override public function setFocus():void
+			{
+				if (txtProject)
+					txtProject.setFocus();
+			}
+				
+            
+            //Launch the popup
+            public function launchLookUp():void{
+            	if (!parentApplication.applicationEditable) return;
+        		win = LookUpProjectCode(PopUpManager.createPopUp(this,LookUpProjectCode,true));
+        		win.project = project;
+        		win.trueParentApp = parentApplication;
+        		//Add event listeners to the popup - to retrieve the project code when the popup closes
+        		win["btnOK"].addEventListener("click",getValueFromPopup);
+        		win["btnCancel"].addEventListener("click",setFocusOnInput);
+        		win["dgProjects"].addEventListener("doubleClick",getValueFromPopup);
+        		focusManager.setFocus(txtProject);
+            }
+            
+            private function setFocusOnInput(event:Event):void{
+            	focusManager.setFocus(txtProject);
+            }
+            
+            //When the popup is closing  - get the project code selected
+			private function getValueFromPopup(event:Event):void{
+				this.txtProject.text=win.project;	
+				this.description = win.description;
+				handleChange();		
+				validateEntry();	
+				focusManager.setFocus(txtProject);
+			}
+			
+			//Change handler for text field : update the Project code property and return data structure 
+			private function handleChange():void{
+				this.txtProject.text = this.txtProject.text.toUpperCase(); // Force upper case on project code 
+				project = this.txtProject.text;
+				if (retData!=null) retData.project = project;
+				description="";
+				error=false;;
+				parentApplication.setDataChanged(true);
+			}	
+			
+			//Return from call to validate the project code (and get the description)
+			private function handleWSResults(result:Object):void{
+				error=false;
+				try{
+					description = wsCheck.Z_ECS_CHECK_PROJECT_CODE.lastResult.RE_T_PROJECTS.item[0].LABEL;
+					previousValidState=isValid;
+					isValid=true;
+				}
+				catch(err:Error){
+					description = "Invalid project code";
+					error=true;
+					previousValidState=isValid;
+					isValid=false;
+					valProject.validate(txtProject);
+				}
+				valProject.validate();
+				
+			}		
+			
+			//Launch web service to validate the project code and get the description
+			private function validateEntry():void{
+				if (txtProject.text=="") {
+					previousValidState=isValid;
+					isValid=true;
+					valProject.validate(txtProject);
+					return;
+				}
+				setPublicationID();
+				
+				// Only load the WSDL when we need it
+				if (wsCheck.wsdl == null || wsCheck.wsdl.length == 0)
+					wsCheck.wsdl = parentApplication.wsdlRoot + "Z_ECS_CHECK_PROJECT_CODE";
+					wsCheck.loadWSDL(wsCheck.wsdl);
+					
+				// Send the request	
+				wsCheck.Z_ECS_CHECK_PROJECT_CODE.send();
+			}
+			
+			private function handleKeyUp(event:KeyboardEvent):void{
+				if (event.keyCode == Keyboard.F4) launchLookUp();
+			}
+			
+			private function handleAddToLast20(event:Event):void
+			{
+				// Add the text for the Project code
+				var e:Object = event as Object;
+   	 			e.newItem.label += " " + description;
+		
+			}	
+		
+        ]]>
+    </mx:Script>
+   
+   <validators:ProjectCodeValiditor
+   	id="valProject"
+   	  source="{txtProject}"
+   	  property="text" 
+   	  valid="isValid=true;"
+   	  invalid="isValid=false;"
+   	  error="{error}"
+   	  required="false">
+   	
+   </validators:ProjectCodeValiditor>
+  
+   	
+   	<ni:TextInputPlus
+   	 id="txtProject"
+   	 width="70"
+   	 listWidth="200"
+   	 listHeight="250"
+   	 recentEntries="{parentApplication.recentProjects}"
+   	 change="handleChange()"
+   	 keyUp="handleKeyUp(event)"
+   	 focusOut="validateEntry()"
+   	 committingChange="validateEntry()"
+   	 maxChars="12"
+   	 styleName="{cssStyle}"
+     editable="{isEditable}"
+     tabEnabled="{isEditable}"
+   	 toolTip="{description}"
+   	 objectAddedToLast20="handleAddToLast20(event);">
+   		
+   	</ni:TextInputPlus>
+   	               
+    <mx:Button
+    	icon="@Embed('../../images/helpF4.gif')"
+    	useHandCursor="TRUE"
+    	buttonMode="TRUE"
+    	enabled="{isEditable}"
+    	click="launchLookUp()"
+    	tabEnabled="false"
+    	 width="20"/>
+	<mx:WebService id="wsCheck" 
+	    
+    	
+    	useProxy="false"
+    	result="handleWSResults(event.result)"
+     	showBusyCursor="false">   
+	    <mx:operation name="Z_ECS_CHECK_PROJECT_CODE"  
+	    	 resultFormat="e4x" concurrency="multiple">
+	    	<mx:request>
+	    		<IM_PUBID>{publicationID}</IM_PUBID>
+	    		<IM_PROJECT>{txtProject.text}</IM_PROJECT>
+	    		<RE_T_PROJECTS></RE_T_PROJECTS>
+	    	</mx:request>
+		</mx:operation>
+	</mx:WebService>
+</mx:HBox>
+

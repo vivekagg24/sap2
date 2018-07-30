@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Button xmlns:mx="http://www.adobe.com/2006/mxml"
+    
+	 icon="@Embed('../../images/S_B_DELE.gif')">
+	<mx:Script>
+		<![CDATA[
+			import events.DeleteEvent;
+			override protected function clickHandler(event:MouseEvent):void
+			{
+				super.clickHandler(event);
+				var new_event:DeleteEvent = new DeleteEvent(DeleteEvent.delete_event, this.listData, true);
+				this.dispatchEvent(new_event);
+			}
+		
+		
+		]]>
+	</mx:Script>
+
+
+	
+</mx:Button>

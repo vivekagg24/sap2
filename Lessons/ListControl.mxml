@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+	<mx:Panel x="10" y="10" width="350" height="200" layout="absolute" title="Rate Customer Service">
+
+		<mx:ComboBox x="20" y="20" id="cbxRating" width="112">
+		
+		<mx:dataProvider>
+			<mx:Array>
+<!-- String  -->       
+<!--			<mx:String>Satisfied</mx:String>
+                <mx:String>Neutral</mx:String>
+                <mx:String>Dissatisfied</mx:String>								-->
+
+<!-- or object... -->                
+                <mx:Object label="Satisfied" data="5" />
+                <mx:Object label="Neutral" data="3" />
+                <mx:Object label="Dissatisfied" data="1" />
+
+			</mx:Array>
+				
+		</mx:dataProvider>
+		
+		</mx:ComboBox>
+
+		<mx:Button x="140" y="20" label="Send"/>
+		
+		<mx:Label x="20" y="120" text="{cbxRating.value}" />
+
+	</mx:Panel>
+	
+</mx:Application>

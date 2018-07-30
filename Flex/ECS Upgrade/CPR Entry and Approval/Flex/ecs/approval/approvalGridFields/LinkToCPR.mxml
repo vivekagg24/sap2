@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+LinkToCPR
+Itemrenderer to give a link that will launch the display screen for
+the current payment
+Calls as function showCPR which in turn calls back up to the parent page which uses
+the Enterprise Portal CLient Framework to launch the iView
+-->
+<mx:LinkButton xmlns:mx="http://www.adobe.com/2006/mxml"
+	click="parentApplication.showCPR(this.cpr,this.company,this.year)"
+  
+	>
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.listClasses.BaseListData;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			private var year:String="";
+			private var cpr:String="";
+			private var company:String=""; 
+
+			override public function set data(value:Object):void{
+				if (value != null) {
+					super.data = value;
+				
+				// the parent DataGridColumn is passed as value before the real data arrives
+                	if (!(value is DataGridColumn)) {
+                		label=value.cpr;
+                		this.cpr = value.cpr;
+                		this.company = value.company;
+                		this.year = value.year;
+                		
+                	}
+                	
+    			}
+			}
+		]]>
+	</mx:Script>
+</mx:LinkButton>

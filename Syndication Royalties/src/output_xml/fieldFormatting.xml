@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<ROYPayments>
+		 		<headerFields>		 		   
+					<field width="50"  dataField=""              type="lineImage"  columnTitle="substitute" />
+					<field width="50"  dataField="RESUB"         type="HeldIcon"   columnTitle="" />
+					<field width="125" dataField="BUDAT"         type="dateLabel"  columnTitle="Posting Date" />
+					<field width="150" dataField="BLART"         type="TextArea"   columnTitle="Document Type" /> 
+					<field width="250" dataField="BKTXT"         type="TextArea"   columnTitle="Description" />					
+					<field width="75"  dataField="WAERS"         type="Label"      columnTitle="Curr." /> 								
+					<field width="150" dataField="INIT_APPROVER" type="Label"      columnTitle="Requestor" />
+					<field width="75"  dataField="Action"        type="Action"     columnTitle="Action" /> 
+					<field width="150" dataField="APPREJTEXT"    type="textbox"    columnTitle="App/Rej text" />
+	<!--			<field width="50"  dataField="NOTES"         type="NoteIcon"   columnTitle="Notes" />  -->
+					<field width="50"  dataField="APPREJ"        type="checkbox"   columnTitle="App/Rej" />
+				</headerFields>
+				<detailFields>
+					<field width="200"  dataField="BELNR"         type="Label"      columnTitle="Document No." />
+					<field width="150"  dataField="BUKRS"         type="Label"      columnTitle="Company Code" /> 
+					<field width="150"  dataField="GJAHR"         type="Label"      columnTitle="Fiscal Year" />
+					<field width="150"  dataField="LIFNR"         type="label"      columnTitle="Vendor" />
+					<field width="150"  dataField="NAME"          type="label"      columnTitle="Name" />
+					<field width="150"  dataField="DMBTR"         type="Label"      columnTitle="Total" />				
+				</detailFields>   	
+	    	</ROYPayments>
+    	</formatting>

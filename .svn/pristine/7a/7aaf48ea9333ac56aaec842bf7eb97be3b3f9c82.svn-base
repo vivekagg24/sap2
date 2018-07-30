@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="328" height="234">
+	<mx:Script>
+		<![CDATA[
+		
+			
+		]]>
+	</mx:Script>
+
+	<mx:DataGrid x="10" y="35" dataProvider="{dp}" width="308" height="189">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Payroll No."
+				               dataField="OBJID_OUT"
+				               width="80"/>
+			<mx:DataGridColumn headerText="Employee Name"
+				               dataField="STEXT_OUT"
+				               width="160"
+				               />
+		</mx:columns>
+	</mx:DataGrid>
+	<mx:Label x="10" y="10" text="{this.org_name}" fontStyle="normal" fontWeight="bold" textDecoration="underline"/>
+	
+	<mx:String id="org_name" />
+	<mx:String id="server_url" />
+	<mx:String id="org_id" />
+	<mx:Object id="dp" />
+</mx:Canvas>

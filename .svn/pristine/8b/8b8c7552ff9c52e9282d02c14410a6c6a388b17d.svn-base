@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ECSStatus.mxml
+Itemrenderer to display a traffic light representing the payment's status on ECS.
+If the payment has been validated only then it gets a red light.
+Otherwise is gets a yellow light.
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	  width="100%" height="100%"
+	  implements="mx.controls.listClasses.IDropInListItemRenderer"
+	  horizontalScrollPolicy="off">
+
+	<mx:Script>
+		<![CDATA[		
+		include "../../scripts/dropInImplementor.as";
+		
+		import mx.core.BitmapAsset;
+		import ecs.generalClasses.StringHelper;
+		import mx.utils.StringUtil;
+		import mx.controls.dataGridClasses.DataGridColumn;		
+		
+		[Embed(source="../../../images/redlight.gif")]	
+		private static var _statusTwoIcon:Class;
+		
+		[Embed(source="../../../images/yellowlight.gif")]	
+		private static var _statusOtherIcon:Class;
+		
+		// Override the set method for the data property.
+        override public function set data(value:Object):void {
+            super.data = value;
+       
+			var strHelper:StringHelper = new StringHelper();
+
+			if (value != null) {
+				super.data = value;
+				
+				// the parent DataGridColumn is passed as value before the real data arrives
+                if (!(value is DataGridColumn)) {
+                	//Not a payment line?
+                	if ( value.status==null || strHelper.trim(String(value.status), "") == ""){
+                		imgStatus.visible=false;
+                		imgStatus.toolTip = null;
+                	} 
+                	//Payment has been validated only - show red light
+                	else if (strHelper.trim(String(value.status), "") == "2") {
+                    	imgStatus.source = new _statusTwoIcon() as BitmapAsset;
+                    	imgStatus.visible=true;                    	
+                    	imgStatus.toolTip = 'Not Approved by Deskhead';
+                    //Show yellow liht
+                    } else {
+                    	imgStatus.source = new _statusOtherIcon() as BitmapAsset;
+                    	imgStatus.visible=true;
+                    	imgStatus.toolTip = 'Approved by Deskhead';
+                    }
+                }
+      	
+        		
+        	}
+            super.invalidateDisplayList();
+        }
+		]]>
+	</mx:Script>
+	<mx:Image id="imgStatus" x="3" ></mx:Image>
+	
+</mx:Canvas>

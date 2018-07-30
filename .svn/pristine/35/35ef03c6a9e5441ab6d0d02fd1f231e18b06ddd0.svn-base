@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+					layout="absolute"
+					paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0" 
+				    initialize="init();" minWidth="1000"
+					creationComplete="creationComplete();"				    
+					creationPolicy="all"
+					horizontalScrollPolicy="auto" verticalScrollPolicy="auto" xmlns:ns1="visualComponents.*">
+
+<!-- general functions -->
+	<mx:Script source="scripts/Processing_general.as"/>
+<!-- stock usage specific functions -->
+	<mx:Script source="scripts/Processing_usage.as"/> 
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			public var grammageList1:Array = new Array;	
+		]]>
+	</mx:Script>
+	
+<!-- web service to call into SAP -->
+<!-- get plants -->
+	<mx:WebService id="wsGetPlants"
+ 		wsdl="{wsdl_prefix + 'ZNP_PLANT_AUTH_CHECK'}"
+     	useProxy="false"
+     	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsGetPlants')" 
+		load="forceSecureWSDL(event)"   		 
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PLANT_AUTH_CHECK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_UNAME></I_UNAME>
+				<ET_WERKS></ET_WERKS>	
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- Get list of expectedprint runs and processed print runs -->
+	<mx:WebService id="wsGetUsage"
+ 		wsdl="{wsdl_prefix + 'ZNP_PRINT_RUN_READ'}"
+     	useProxy="false" 
+     	result="showResults(event); Application.application.executeBindings()"
+  		fault="webServiceFault(event,'wsGetUsage')"  
+  		load="forceSecureWSDL(event)"   	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PRINT_RUN_READ"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<PLANNED_PRINT_ORDERS></PLANNED_PRINT_ORDERS>
+				<PROCESSED_PRINT_ORDERS></PROCESSED_PRINT_ORDERS>
+				<PAGINATION></PAGINATION>
+				<PUBLICATION></PUBLICATION>
+				<GRAMMAGE></GRAMMAGE>
+				<ET_PARAMETERS></ET_PARAMETERS>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService> 
+	
+<!-- Add a print run  -->
+	<mx:WebService id="wsAddPrintRun"
+ 		wsdl="{wsdl_prefix + 'ZNP_PRINT_RUN_ADD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'onAddPrintRun')" 
+  		load="forceSecureWSDL(event)"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PRINT_RUN_ADD"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_PRINT_RUN></I_PRINT_RUN>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- Reverse a print run -->
+	<mx:WebService id="wsReversePrintRun"
+ 		wsdl="{wsdl_prefix + 'ZNP_PRINT_RUN_REVERSE'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'onReversePrintRun')"  
+  		load="forceSecureWSDL(event)"   	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PRINT_RUN_REVERSE"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_PRINT_RUN></I_PRINT_RUN>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- title -->	
+	<mx:Panel x="2" width="100%" y="2" height="90" title="Usage" layout="absolute" fontFamily="Arial" fontSize="18" fontWeight="bold" backgroundAlpha="0">
+		<mx:Label x="15" y="10" text="Site:" fontSize="10"/>
+		<mx:ComboBox id="comboPlant" x="70" y="10" width="200" fontSize="10" 
+			dataProvider="{plantsList}" change = "setCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Label x="300" y="10" text="Last posted:" fontSize="10"/>
+		<mx:TextInput id="lastPost" x="393" y="9" width="100" fontSize="10" editable="false"  backgroundColor="0xDCDCDC"/>			
+		<mx:Button x="550" y="10" click="doRefresh()" label="Refresh Screen" fontSize="12"/>
+		<mx:Text x="696" y="-1" text="News UK Newsprint" height="36" fontSize="28" fontFamily="Times"/>	
+	</mx:Panel>
+
+<!-- planned print runs -->
+	<mx:Panel x="2" y="95" height="233" title="Planned Print runs" width="100%" backgroundAlpha="0">
+		<mx:DataGrid x="26.5" y="33" id="Usage1" dataProvider="{wsGetUsage.ZNP_PRINT_RUN_READ.lastResult.PLANNED_PRINT_ORDERS.item}"
+			editable="true" enabled="true" height="189" wordWrap="true" minWidth="875">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Issue Date" dataField="ISSUE_DATE" width="80" labelFunction="dateLabel" editable="false" backgroundColor="0xDCDCDC"/> 
+				<mx:DataGridColumn headerText="Title" dataField="DESCRIPTION" width="200" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Print Date" dataField="PRINT_DATE" width="80" labelFunction="dateLabel" editable="true" />
+				<mx:DataGridColumn headerText="Print Order" dataField="PRINT_ORDER" width="90" editable="true" textAlign="right">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789" maxChars="7"></mx:TextInput>
+						</mx:Component>
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn headerText="Pagination" dataField="PAGINATION" width="90" editable="true">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789" maxChars="3"></mx:TextInput>
+						</mx:Component>
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn headerText="GSM" width="130" itemRenderer="visualComponents.grammageCombo" editable="false">
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="textChange" visible="true" headerText="Text Changes" dataField="TEXT_CHANGES" width="80" editable="{showTextChanges}" textAlign="right" backgroundColor="{showTextColour}">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789" maxChars="2"></mx:TextInput>
+						</mx:Component>
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="colourChange" headerText="Colour Changes" dataField="COLOUR_CHANGES" width="80" editable="{showTextChanges}" textAlign="right" visible="true" backgroundColor="{showTextColour}">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789" maxChars="2"></mx:TextInput>
+						</mx:Component>
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn headerText="Actual usage (Tonnes)" dataField="PAPER_USAGE" width="85" editable="true" textAlign="right">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789." maxChars="13"></mx:TextInput>
+						</mx:Component>
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+<!--gk1-->				
+<!--				<mx:DataGridColumn headerText="User Comment" dataField="USER_COMMENT" width="40" editable="true" textAlign="right">
+					<mx:itemEditor>
+						<mx:Component>
+						<mx:TextInput restrict="textChange" visible="true" width="40"></mx:TextInput>
+						</mx:Component>
+					</mx:itemEditor>					
+				</mx:DataGridColumn>    -->
+				
+				<mx:DataGridColumn headerText="User Comment" dataField="USER_COMMENT" width="80" editable="true" textAlign="right">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput text="" maxChars="80"></mx:TextInput>
+						</mx:Component>
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+<!--gk2-->												
+				<mx:DataGridColumn headerText="Accept" width="50" itemRenderer="visualComponents.acceptIcon" editable="false" rendererIsEditor="true"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+
+<!-- add a print run -->
+	<mx:Panel x="2" y="331" width="100%" height="100" layout="absolute" title="Add Print run" backgroundAlpha="0">
+		<ns1:DateField1 id="ISSUE_DATE" x="16" y="35" width="90" enabled="true" editable="true" formatString="DD.MM.YYYY" restrict="0123456789."/>
+		<mx:ComboBox id="comboPublication" x="114" y="35" width="173" fontSize="10" 
+			dataProvider="{publicationList}" change = "setPublicationCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>	
+		<ns1:DateField1 id="PRINT_DATE" x="295" y="35" width="90" enabled="true" editable="true" formatString="DD.MM.YYYY" restrict="0123456789." />
+		<mx:TextInput id="PRINT_ORDER" x="393" y="35" width="92" restrict="0123456789" maxChars="7"></mx:TextInput>
+		<mx:TextInput id="PAGINATION" x="493" y="35" width="64" restrict="0123456789" maxChars="3"/>
+		<mx:ComboBox id="comboGrammage" x="565" y="35" width="133" fontSize="10" 
+			dataProvider="{grammageList}" change = "setGrammageCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:TextInput id="USAGE" x="706" y="35" width="93" restrict="0123456789." maxChars="13"/>
+		<mx:TextInput id="TEXT" x="807" y="35" width="83" restrict="0123456789" maxChars="2" visible="true" editable="{showTextChanges}"  backgroundColor="{showTextColour}"/>
+		<mx:TextInput id="COLOUR" x="898" y="35" width="94" restrict="0123456789" maxChars="2" visible="true" editable="{showTextChanges}"  backgroundColor="{showTextColour}"/>
+		<mx:Text x="16" y="10" text="Issue date"/>
+		<mx:Text x="114" y="10" text="Publication"/>
+		<mx:Text x="295" y="10" text="Print date"/>
+		<mx:Text x="393" y="10" text="Print Order"/>
+		<mx:Text x="493" y="10" text="Pagination"/>
+		<mx:Text x="565" y="10" text="GSM"/>
+		<mx:Text x="706" y="10" text="Usage"/>
+		<mx:Text x="807" y="10" text="Text Changes" visible="true"/>
+		<mx:Text x="898" y="10" text="Colour Changes" visible="true"/>
+		<mx:Button x="1000" y="35" id="AddLine" label="Add print run"/>
+	</mx:Panel>
+
+<!-- date validator for print date -->
+    <mx:DateValidator id="stringDateV" 
+        source="{PRINT_DATE}" property="text" allowedFormatChars="." trigger="{AddLine}"  
+        inputFormat="dd.mm.yyyy" invalid="Alert.show('Invalid print date');" triggerEvent="click"/> 
+					 
+<!-- date validator for issue out date -->
+    <mx:DateValidator id="stringDateV2" 
+        source="{ISSUE_DATE}" property="text" allowedFormatChars="." trigger="{AddLine}"  
+        inputFormat="dd.mm.yyyy" invalid="Alert.show('Invalid issue date');" triggerEvent="click" 
+        valid="onAdd(PRINT_DATE.text, SelectedPublication, 
+					 ISSUE_DATE.text, PRINT_ORDER.text,
+					 PAGINATION.text, SelectedGrammage,
+					 USAGE.text, TEXT.text, COLOUR.text, SelectedMatkl);"/>					 
+	
+	<mx:Panel x="2" y="434" height="257" title="Actual Print runs" width="100%" backgroundAlpha="0">
+		<mx:DataGrid x="26.5" y="33" id="Usage2" dataProvider="{wsGetUsage.ZNP_PRINT_RUN_READ.lastResult.PROCESSED_PRINT_ORDERS.item}" editable="true" enabled="true" height="215" wordWrap="true">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Issue Date" dataField="ISSUE_DATE" width="75" labelFunction="dateLabel" editable="false"/>
+				<mx:DataGridColumn headerText="Title" dataField="DESCRIPTION" width="170" editable="false"/>
+				<mx:DataGridColumn headerText="Print Date" dataField="PRINT_DATE" width="75" labelFunction="dateLabel" editable="false"/>
+				<mx:DataGridColumn headerText="Print Order" dataField="PRINT_ORDER" width="75" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="Pagination" dataField="PAGINATION" width="80" labelFunction="pages" editable="false"/>
+				<mx:DataGridColumn headerText="Waste Allowance" dataField="WASTE_ALLOWANCE" width="74" labelFunction="percentage" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="GSM" dataField="GSM" width="40" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="GSM" dataField="MATKL" width="75" editable="false"/>
+				<mx:DataGridColumn headerText="Text changes" dataField="TEXT_CHANGES" width="58" editable="false" textAlign="right" visible="true"/>
+				<mx:DataGridColumn headerText="Colour changes" dataField="COLOUR_CHANGES" width="58" editable="false" textAlign="right" visible="true"/>
+				<mx:DataGridColumn headerText="Start up waste" dataField="START_UP" width="65" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="Contractual allowance" dataField="CONTRACT_ALLOW" width="80" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="Allowance for colour changes" dataField="COLOUR_ALLOWANCE" width="75" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="P&amp;A total allowance" dataField="PA_ALLOWANCE" width="75" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="Actual Usage" dataField="PAPER_USAGE" width="75" editable="false" textAlign="right"/>				
+				<mx:DataGridColumn headerText="User Comments" dataField="USER_COMMENT" width="40" editable="false" textAlign="right"/>	
+				<mx:DataGridColumn headerText="Under/over usage" dataField="UNDER_OVER" width="80" editable="false" textAlign="right"/>
+				<mx:DataGridColumn headerText="Cancel" width="50" headerWordWrap="true" itemRenderer="visualComponents.deleteIcon" editable="false"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>			
+ </mx:Application>

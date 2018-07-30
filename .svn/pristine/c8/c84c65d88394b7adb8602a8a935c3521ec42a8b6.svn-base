@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:CheckBox xmlns:mx="http://www.adobe.com/2006/mxml"  buttonMode="true" disabledIcon="@Embed('../images/s_s_locl.gif')">
+	<mx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			import mx.controls.CheckBox;
+			import mx.controls.dataGridClasses.DataGridListData;
+			import mx.core.mx_internal;
+			use namespace mx_internal;
+
+			public var onValue:Object = true;
+			public var offValue:Object = false;
+			private var _value:* = false;
+			
+			public function set value(val:*) :void {
+				_value = val;
+				invalidateProperties();
+			}
+			
+			public function get value():Object  {
+				if (_value == undefined)
+					return _value;
+				else
+					return selected ? onValue:offValue;
+			}
+			
+			override protected function commitProperties():void {
+				if (_value != undefined)
+					selected = (_value == onValue);
+					
+				addEventListener(Event.CHANGE,
+					function(event:Event):void{
+						if (listData) {
+							data[DataGridListData(listData).dataField] = value;
+						}
+					});
+					
+				super.commitProperties();
+			}
+	
+			override public function set data(item:Object):void	{
+				super.data = item;
+				if (item != null) {
+					value = item[DataGridListData(listData).dataField];
+					
+					if(item.IS_LOCKED == 'X' || item.onQuery){
+						enabled = false;
+					}else{
+						enabled = true;		
+					}
+				}
+			}
+	
+			override protected function updateDisplayList(unscaledWidth:Number,unscaledHeight:Number):void {
+				super.updateDisplayList(unscaledWidth, unscaledHeight);
+				if (currentIcon) {
+					var style:String = getStyle("textAlign");
+					if ((!label) && (style == "center" || style == "centre")) {
+						currentIcon.x = (unscaledWidth - currentIcon.measuredWidth)/2;
+					}
+					currentIcon.visible = (_value!=undefined);
+				}
+			}
+			
+			public function set text(val:String):void {
+				value = val;
+			}
+			
+			public function get text():* {
+				return value;
+			}
+			
+		]]>
+	</mx:Script>	
+</mx:CheckBox>

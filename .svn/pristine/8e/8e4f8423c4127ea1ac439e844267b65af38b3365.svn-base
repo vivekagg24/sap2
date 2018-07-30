@@ -1,0 +1,49 @@
+<mvc:View controllerName="nuk.sap.timesheet.controller.Timesheets" displayBlock="true" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+  <Page title="{i18n>timesheets-title}" enableScrolling="false">
+    <customHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.PageHeader" type="XML" />
+    </customHeader>
+
+    <subHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.Navigation" type="XML" />
+    </subHeader>
+
+    <content>
+      <Table
+        backgroundDesign="Solid"
+        items="{
+          path: 'timesheets>/timesheets'
+        }">
+        <headerToolbar>
+          <Toolbar>
+            <Title text="Timesheet {timesheets>start}" level="H2"/>
+            <ToolbarSpacer/>
+          </Toolbar>
+        </headerToolbar>
+
+        <columns>
+          <Column>
+            <Text text="{i18n>timesheets-table-project}"/>
+          </Column>
+
+          <Column>
+            <Text text="{i18n>timesheets-table-activitytype}"/>
+          </Column>
+
+          <Column>
+            <Text text="{i18n>timesheets-table-status}"/>
+          </Column>
+        </columns>
+
+        <items>
+          <ColumnListItem>
+            <cells>
+            </cells>
+          </ColumnListItem>
+
+        </items>
+
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

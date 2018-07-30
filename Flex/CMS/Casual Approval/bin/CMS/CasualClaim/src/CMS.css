@@ -1,0 +1,96 @@
+/* CSS file */
+
+.titlewindow{
+	fontSize: 11;
+	font-family: arial;
+	border-alpha: 0.8;
+	border-gradient-alphas: 0.8,1;
+	border-color:#FFFFFF;
+	border-thickness:0px;
+}
+.application{
+	fontSize: 11;
+	font-family: arial;
+	background-gradient-colors:#FFFFFF,#408dde;
+	background-alpha:0.9;
+	background-gradient-alphas:1,1;
+	border-color:#FFFFFF;
+	border-thickness:0px;
+}
+.required {
+	color:red;
+}
+.disabled{
+	cornerRadius:4;
+	borderStyle:solid;
+	borderColor:#000066;
+	alpha:0.2;
+	border-thickness:1px;
+}
+.disabledImportant{
+	cornerRadius:4;
+	borderStyle:solid;
+	borderColor:#ff0000;
+	alpha:0.2;
+	border-thickness:1px;
+	themeColor:#ff0000; 
+}
+.disabledInfo{
+	cornerRadius:4;
+	borderStyle:solid;
+	borderColor:green;
+	alpha:0.2;
+	border-thickness:1px;
+	themeColor:green; 
+}
+.button {
+	fill-colors:#ffffff,#408DDE;
+}
+.input{
+	cornerRadius:4;
+	borderStyle:solid;
+	borderColor:#000066;
+	alpha:1.0;	
+}
+
+.inputECS{
+	backgroundDisabledColor: #E8E8E8;
+	disabledColor: #000000;
+	color:#000000;
+}
+.comboBoxECS{
+
+
+
+}
+.inputRequired{
+	cornerRadius:4;
+	borderStyle:solid;
+	borderColor:#ff0000;
+	alpha:1.0;
+	border-thickness:1px;
+	themeColor:#ff0000; 
+}
+.inputSearch{
+	cornerRadius:4;
+	borderStyle:solid;
+	borderColor:green;
+	alpha:1.0;	
+}
+.panel{
+	background-alpha:0.56;
+}
+.label{
+	
+}
+.infoLabel{
+	color:#000066;	
+}
+.dataGrid{
+	header-colors:#ffffff,#408DDE;	
+}
+.menuBar{
+	background-color:#FFFFFF;
+	alpha:1;	
+}	
+

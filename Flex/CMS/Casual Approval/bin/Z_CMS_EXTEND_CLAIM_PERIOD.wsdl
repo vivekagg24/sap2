@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:s0="urn:sap-com:document:sap:rfc:functions" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="urn:sap-com:document:sap:rfc:functions">
+  <types>
+    <xsd:schema targetNamespace="urn:sap-com:document:sap:rfc:functions">
+      <xsd:element name="Z_CMS_EXTEND_CLAIM_PERIOD">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="IM_USERNAME">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="12"></xsd:maxLength>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Z_CMS_EXTEND_CLAIM_PERIOD.Response">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="EX_RETCODE" type="xsd:int"></xsd:element>
+            <xsd:element name="EX_RET_MESSAGE" type="xsd:string"></xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </types>
+  <message name="Z_CMS_EXTEND_CLAIM_PERIODInput">
+    <part name="parameters" element="s0:Z_CMS_EXTEND_CLAIM_PERIOD"></part>
+  </message>
+  <message name="Z_CMS_EXTEND_CLAIM_PERIODOutput">
+    <part name="parameters" element="s0:Z_CMS_EXTEND_CLAIM_PERIOD.Response"></part>
+  </message>
+  <portType name="Z_CMS_EXTEND_CLAIM_PERIODPortType">
+    <operation name="Z_CMS_EXTEND_CLAIM_PERIOD">
+      <input message="s0:Z_CMS_EXTEND_CLAIM_PERIODInput"></input>
+      <output message="s0:Z_CMS_EXTEND_CLAIM_PERIODOutput"></output>
+    </operation>
+  </portType>
+  <binding name="Z_CMS_EXTEND_CLAIM_PERIODBinding" type="s0:Z_CMS_EXTEND_CLAIM_PERIODPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <operation name="Z_CMS_EXTEND_CLAIM_PERIOD">
+      <soap:operation soapAction="http://www.sap.com/Z_CMS_EXTEND_CLAIM_PERIOD"></soap:operation>
+      <input>
+        <soap:body use="literal"></soap:body>
+      </input>
+      <output>
+        <soap:body use="literal"></soap:body>
+      </output>
+    </operation>
+  </binding>
+  <service name="Z_CMS_EXTEND_CLAIM_PERIODService">
+    <documentation>SAP Service Z_CMS_EXTEND_CLAIM_PERIOD via SOAP</documentation>
+    <port name="Z_CMS_EXTEND_CLAIM_PERIODPortType" binding="s0:Z_CMS_EXTEND_CLAIM_PERIODBinding">
+      <soap:address location="http://saponi.bis.newsint.com:8080/sap/bc/soap/rfc?sap-client=007"></soap:address>
+    </port>
+  </service>
+</definitions>

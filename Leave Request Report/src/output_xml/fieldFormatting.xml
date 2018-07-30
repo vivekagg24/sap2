@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<LeaveRequestOutput>
+		 		<headerFields>
+					<field width="75" dataField="ACTION_DATE" type="dateLabel" columnTitle="Date" /> 
+					<field width="60" dataField="ACTION_TIME" type="Label" columnTitle="Time" />
+					<field width="120" dataField="REQUESTOR" type="Label" columnTitle="Requestor" /> 
+					<field width="120" dataField="LEAVE_TYPE" type="Label" columnTitle="Type of leave" />
+<!--	 				<field width="75" dataField="START_DATE" type="dateLabel" columnTitle="Start Date" /> 
+					<field width="75" dataField="START_TIME" type="Label" columnTitle="Start Time" /> 
+					<field width="75" dataField="END_DATE" type="dateLabel" columnTitle="End Date" /> 
+					<field width="75" dataField="END_TIME" type="Label" columnTitle="End Time" />  -->
+					<field width="250" dataField="DESCRIPTION" type="Label" columnTitle="Description" />
+					<field width="22" dataField="DEL_FLAG" type="RequestType" columnTitle="" />
+					<field width="80" dataField="DAYS_TAKEN" type="RightLabel" columnTitle="Days taken" /> 
+					<field width="145" dataField="APPROVER" type="RightLabel" columnTitle="Actioned by Substitute" />
+					<field width="145" dataField="SUBSTITUTE_FOR" type="abel" columnTitle="As a Substitute for" />
+					<field width="22" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="75" dataField="ACTION" type="Label" columnTitle="Action" />					
+				</headerFields>
+	    	</LeaveRequestOutput>
+    	</formatting>

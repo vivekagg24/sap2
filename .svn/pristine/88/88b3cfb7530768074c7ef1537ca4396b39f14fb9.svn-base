@@ -1,0 +1,52 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>HeldIcon.mxml</title>
+<link rel="stylesheet" type="text/css" href="../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:Canvas</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot; width=&quot;<span class="mxmlString">18</span>&quot; height=&quot;<span class="mxmlString">42</span>&quot;<span class="mxmlComponent">&gt;</span>
+    <span class="mxmlTag">&lt;mx:Script</span> <span class="mxmlTag">&gt;</span>
+        <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+             <span class="asReserved">import</span> mx.controls.listClasses.BaseListData;
+
+             <span class="asReserved">override</span> <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> data<span class="asBracket">(</span>value<span class="asOperator">:</span>Object<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+             <span class="asBracket">{</span>
+                 <span class="asReserved">super</span>.data <span class="asOperator">=</span> value;
+                 heldIcon.data <span class="asOperator">=</span> value;
+                 heldIcon.enabled <span class="asOperator">=</span> <span class="asReserved">false</span>;
+            
+                <span class="asReserved">if</span> <span class="asBracket">(</span>value <span class="asOperator">&amp;&amp;</span> value.RESUB <span class="asOperator">!=</span> <span class="asString">&quot;&quot;</span><span class="asBracket">){</span>
+                    heldIcon.enabled <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                    heldIcon.visible <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                    heldIcon.toolTip <span class="asOperator">=</span> <span class="asString">&quot;Item on hold until: &quot;</span> <span class="asOperator">+</span> value.RESUB;
+                <span class="asBracket">}</span>
+                <span class="asReserved">else</span> <span class="asBracket">{</span>
+                     heldIcon.enabled <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                    heldIcon.visible <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                <span class="asBracket">}</span>
+             <span class="asBracket">}</span>
+        <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+    <span class="mxmlTag">&lt;/mx:Script&gt;</span>
+        
+    <span class="mxmlComponent">&lt;mx:Image</span> id=&quot;<span class="mxmlString">heldIcon</span>&quot; source=&quot;<span class="mxmlString">@Embed(&apos;../../HR/images/held.gif&apos;)</span>&quot;
+         click=&quot;onHoldClick<span class="asBracket">()</span>&quot; useHandCursor=&quot;<span class="mxmlString">true</span>&quot; buttonMode=&quot;<span class="mxmlString">true</span>&quot; mouseChildren=&quot;<span class="mxmlString">false</span>&quot; resize=&quot;<span class="asReserved">false</span>&quot;<span class="mxmlComponent">&gt;</span> 
+        <span class="mxmlTag">&lt;mx:Script&gt;</span>
+            <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+            <span class="asReserved">import</span> mx.events.DynamicEvent;
+            <span class="asReserved">import</span> mx.controls.Alert;
+               <span class="asReserved">import</span> mx.managers.PopUpManager;                 
+            
+            <span class="asReserved">private</span> <span class="asFunction">function</span> onHoldClick<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+            <span class="asBracket">{</span>
+                  <span class="asVar">var</span> message<span class="asOperator">:</span>onHold <span class="asOperator">=</span>  PopUpManager.createPopUp<span class="asBracket">(</span><span class="asReserved">this</span>, onHold<span class="asBracket">)</span> <span class="asReserved">as</span> onHold;
+                  message.data <span class="asOperator">=</span> <span class="asReserved">this</span>.data;
+            <span class="asBracket">}</span>
+            <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+        <span class="mxmlTag">&lt;/mx:Script&gt;</span> 
+    <span class="mxmlComponent">&lt;/mx:Image&gt;</span>
+<span class="mxmlComponent">&lt;/mx:Canvas&gt;</span></pre></body>
+</html>

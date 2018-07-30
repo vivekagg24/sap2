@@ -1,0 +1,39 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+>
+
+  <Dialog title="{i18n>approval-select-project-dialog-title}" id="dialogProjectSelect">
+    <content>
+      <Panel>
+        <HBox>
+          <VBox alignItems="Begin" justifyContent="SpaceBetween">
+            <HBox alignItems="Center">
+              <Label text="{i18n>common-project}"/>
+
+              <ComboBox
+                id="selProject"
+                selectionChange="onProjectChange"
+                selectedKey="{projectSelect>/new_project_id}"
+                enabled="true"
+                width="100%"
+                class="sapUiSmallMarginBegin"
+                placeholder="{i18n>timesheet-table-project-placeholder}"
+                items="{projectSelect>/projects}">
+                <core:Item key="{projectSelect>project_id}" text="{projectSelect>name}" />
+              </ComboBox>
+
+            </HBox>
+         </VBox>
+        </HBox>
+        <core:Fragment fragmentName="nuk.sap.timesheet.fragment.MessageArea" type="XML" />
+      </Panel>
+    </content>
+    <buttons>
+      <Button text="{i18n>dialog-button-ok}" type="Accept" press="onSelectProjectOk"/>
+      <Button text="{i18n>dialog-button-cancel}" type="Reject" press="onSelectProjectCancel"/>
+    </buttons>
+  </Dialog>
+
+</core:FragmentDefinition>

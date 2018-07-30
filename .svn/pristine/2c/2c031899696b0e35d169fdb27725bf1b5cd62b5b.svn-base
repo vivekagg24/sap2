@@ -1,0 +1,211 @@
+<mvc:View controllerName="nuk.sap.timesheet.controller.Approval" displayBlock="true" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+
+  <Page title="{i18n>approval-title}"
+    enableScrolling="true"
+    showNavButton="true"
+    navButtonPress="onNavBack"
+    inset="false"
+    class="sapUiResponsiveContentPadding">
+    <customHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.PageHeader" type="XML" />
+    </customHeader>
+
+    <subHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.Navigation" type="XML" />
+    </subHeader>
+
+    <content>
+      <Panel>
+        <content>
+          <OverflowToolbar>
+            <Label text="{i18n>approval-table-filter-date}"/>
+            <Button
+              icon="sap-icon://slim-arrow-left"
+              press="onAdjustFromDate"
+              class="sapUiSmallMarginBegin"
+              tooltip="{i18n>timesheetlist-table-month-earlier}"/>
+            <DatePicker
+              id="dateFrom"
+              value="{approvalFilter>/date_from}"
+              width="8rem"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+              change="onListFilterChange"
+              class="sapUiSmallMarginEnd"
+              fieldGroupIds="dateFilter"
+              validateFieldGroup="onListFilterDateValidate"
+              valueStateText="{i18n>common-invalid-date-from}"/>
+            <Title text="{i18n>approval-table-filter-date-to}" level="H2"/>
+            <DatePicker
+              id="dateTo"
+              value="{approvalFilter>/date_to}"
+              width="8rem"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+              change="onListFilterChange"
+              class="sapUiSmallMarginBegin"
+              fieldGroupIds="dateFilter"
+              validateFieldGroup="onListFilterDateValidate"
+              valueStateText="{i18n>common-invalid-date-to}"/>
+             <Button
+              icon="sap-icon://slim-arrow-right"
+              press="onAdjustToDate"
+              tooltip="{i18n>timesheetlist-table-month-later}"/>
+            <Title text="{i18n>approval-table-filter-status}" level="H2" class="sapUiLargeMarginBegin" />
+
+            <Select
+              id="selStatus"
+              change="onListFilterChange"
+              selectedKey="{approvalFilter>/status}"
+              enabled="true"
+              width="auto"
+              class="sapUiSmallMarginBegin"
+              placeholder="{i18n>timesheet-table-project-placeholder}"
+              items="{config>/approval_status_list}"
+              >
+              <core:Item key="{config>id}" text="{config>name}" />
+            </Select>
+            <Button
+              icon="sap-icon://refresh"
+              press="onRefreshApprovalList"
+              class="sapUiLargeMarginBegin"
+              tooltip="{i18n>timesheetlist-table-refresh-tooltip}"/>
+            <ToolbarSpacer/>
+            <Button icon="sap-icon://drop-down-list" press="onDisplaySettings" />
+          </OverflowToolbar>
+        </content>
+      </Panel>
+
+      <Table
+        id="tblApproval"
+        backgroundDesign="Solid"
+        class="tableZebra"
+        mode="None"
+        noDataText="{i18n>approval-table-no-data}"
+        items="{
+          path: 'approval>/timesheets'
+        }">
+
+        <columns>
+          <Column width="1em">
+            <CheckBox id="cbxSelectAll" select="onCheckAll"/>
+          </Column>
+
+          <Column width="auto">
+            <Text text="{i18n>approval-table-header-submitter}"/>
+          </Column>
+
+          <Column width="auto">
+            <Text text="{i18n>approval-table-header-period}"/>
+          </Column>
+
+          <Column width="6rem" minScreenWidth="Desktop" demandPopin="true">
+            <Text text="{i18n>approval-table-header-id}"/>
+          </Column>
+
+          <Column width="auto" minScreenWidth="Desktop" demandPopin="true">
+            <Text text="{i18n>approval-table-header-projects}"/>
+          </Column>
+
+          <Column width="1rem" minScreenWidth="Desktop" hAlign="Right" demandPopin="true"> <!-- edit icon -->
+          </Column>
+
+          <Column width="6rem" minScreenWidth="Desktop" hAlign="Right" demandPopin="true">
+            <Text text="{i18n>approval-table-header-total-billable}"/>
+          </Column>
+
+          <Column width="1rem" minScreenWidth="Desktop" hAlign="Right" demandPopin="true"> <!-- comments icon -->
+          </Column>
+
+          <Column width="auto" minScreenWidth="Desktop" demandPopin="true">
+            <Text text="{i18n>approval-table-header-status}"/>
+          </Column>
+
+          <Column width="auto" minScreenWidth="Desktop" demandPopin="true">
+            <Text text="{i18n>approval-table-header-comment-to-submitter}" />
+          </Column>
+
+        </columns>
+
+        <items>
+          <ColumnListItem>
+            <cells>
+              <CheckBox selected="{approval>selected}" select="onCheckSingle" visible="{= ${approval>status} === 'awaitapp'}"/>
+
+              <ObjectIdentifier
+                title="{approval>submitter_name}"
+                titleActive="true"
+                titlePress="onDisplayResource"
+              />
+
+              <!--
+              <Link text="{approval>submitter_name}" subtle="true" href="mailto:{approval>submitter_email}"/>
+              -->
+
+              <Link text="{ parts: [
+                    { path: 'approval>date_from' },
+                    { path: 'approval>date_to' }
+                  ],
+                  formatter: 'nuk.sap.timesheet.util.Formatter.formatTimesheetPeriod'
+                }"
+                emphasized="true"
+                press="onDisplayTimesheet"/>
+
+              <Text text="{approval>id}"/>
+
+              <Text text="{
+                  parts: [
+                    { path: 'approval>/assigned_projects' },
+                    { path: 'approval>time_worked' }
+                  ],
+                  formatter: 'nuk.sap.timesheet.util.Formatter.formatProjectNames'
+                }"
+               />
+
+              <Button
+                type="Transparent"
+                icon="sap-icon://edit"
+                press="onSelectProject"
+                visible="{= ${approval>has_incorrect_project} === 'true'}"
+                tooltip="{i18n>approval-table-select-other-project-tooltip}"/>
+
+              <Text text="{
+                parts: [ 'approval>hours_billable', 'approval>hours_required' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatTotalHours'}"
+                width="5rem"/>
+
+              <Button
+                type="Transparent"
+                icon="sap-icon://notes"
+                press="onDisplayComments"
+                visible="{= ${approval>has_comments} === 'true'}"
+                tooltip="{i18n>common-display-comments-tooltip}"/>
+
+              <Text text="{approval>status_text}"/>
+
+              <TextArea
+                rows="2"
+                cols="60"
+                value="{approval>approver_comment}"
+                editable="{= ${approval>selected} === true }"
+              />
+
+            </cells>
+          </ColumnListItem>
+        </items>
+
+      </Table>
+
+      <OverflowToolbar design="Solid">
+        <ToolbarSpacer/>
+        <Button text="{i18n>approval-approve}" type="Accept" id="btnApprove" press="onApprove"/>
+        <Button text="{i18n>approval-reject}" type="Reject" id="btnReject" press="onReject"/>
+      </OverflowToolbar>
+
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.MessageArea" type="XML" />
+
+    </content>
+
+  </Page>
+
+</mvc:View>

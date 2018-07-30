@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	label="Rejection text"
+   	styleName="titlewindow" 
+    creationComplete="DoInit()"
+	width="371" height="238"
+	xmlns:HR="HR.Components.*"
+	backgroundColor="#dceefc" borderColor="#A7B6EB" layout="absolute">
+   
+    <mx:Script>
+        <![CDATA[
+  
+		  	import mx.managers.PopUpManager;
+		  	
+		  	public var ClaimIdx:int;
+
+		  	private function DoInit():void{
+		  		
+		  		taRejText.setFocus()
+		  	}	
+		  	
+		  	private function SetSaveButton():void{
+		  		
+		  		if(taRejText.text != ""){
+		  			
+			  		btnSave.enabled = true;		  		
+		  			
+		  		}else{
+		  			
+			  		btnSave.enabled = false;		  			
+		  		}
+		  	}
+          
+        ]]>
+
+ </mx:Script>
+
+	<mx:TextArea fontSize="14" id="taRejText" x="10" y="10"  maxChars="1000" width="331" height="143" change="SetSaveButton()"/>
+
+	<HR:Button1 id="btnCancel" fontWeight="bold" label="Cancel" x="92" y="161"/>
+	<HR:Button1 id="btnSave" enabled="false" label="Save Text" fontWeight="bold"  x="10" y="161"/>
+
+</mx:TitleWindow>
+

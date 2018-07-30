@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-j2ee-engine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ejb-j2ee-engine.xsd">
+      <description>
+      </description>
+      <enterprise-beans>
+            <enterprise-bean>
+                  <ejb-name>SftpCopyIn_PortTypeBean</ejb-name>
+                  <session-props/>
+            </enterprise-bean>
+            <enterprise-bean>
+                  <ejb-name>SftpCopySyncIn_PortTypeBean</ejb-name>
+                  <session-props/>
+            </enterprise-bean>
+      </enterprise-beans>
+</ejb-j2ee-engine>
+

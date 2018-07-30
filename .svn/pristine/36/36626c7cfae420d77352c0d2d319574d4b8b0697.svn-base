@@ -1,0 +1,47 @@
+{
+  "TileCollection" : {
+    "timesheets" : {
+      "key" : "timesheets",
+      "index": "0",
+      "type" : "Create",
+      "icon" : "time-entry-request",
+      "number" : "1",
+      "title" : "View and Submit Timesheets",
+      "info" : "Overdue",
+      "infoState" : "Error",
+      "visible": true,
+      "target" : "timesheets"
+    },
+    "approval" : {
+      "key" : "approval",
+      "index": "1",
+      "type" : "Monitor",
+      "icon" : "employee-approvals",
+      "number" : "0",
+      "title" : "Approve Timesheets",
+      "info" : "Awaiting approval",
+      "infoState" : "Success",
+      "visible": true,
+      "target" : "approval"
+    },
+    "projects" : {
+      "key" : "projects",
+      "index": "2",
+      "icon" : "building",
+      "number" : "0",
+      "numberUnit" : "projects",
+      "title" : "Manage Projects",
+      "info" : "Open",
+      "visible": true,
+      "target" : "projects"
+    },
+    "help" : {
+      "key" : "help",
+      "index": "3",
+      "icon" : "sys-help",
+      "title" : "Help",
+      "visible": true,
+      "info" : "Documentation, Tutorials "
+    }
+  }
+}

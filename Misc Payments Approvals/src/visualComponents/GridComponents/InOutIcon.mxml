@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="20" height="18">
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			inOutIcon.data = value;
+//	 			inOutIcon.enabled = false;
+			
+				if (value && value.IN_OUT == "I"){
+					inOutIcon.toolTip = "Incoming";
+					inOutIcon.source = "HR/images/s_incoob.gif"
+				}
+				else {
+					inOutIcon.toolTip = "Outgoing";
+					inOutIcon.source = "HR/images/s_outobj.gif"
+				}
+	 		}
+		]]>
+	</mx:Script>
+		
+	<mx:Image id="inOutIcon" height="18">
+	</mx:Image>
+</mx:Canvas>

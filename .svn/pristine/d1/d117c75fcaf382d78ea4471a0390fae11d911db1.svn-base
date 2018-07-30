@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:s0="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:sap-com:document:sap:rfc:functions" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema targetNamespace="urn:sap-com:document:sap:rfc:functions">
+      <xsd:element name="Z_PM_GET_STORAGE_LOC">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element minOccurs="0" name="PLANT">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:maxLength value="4" />
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="RETURN">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="s0:ZHANDHELD_LOC" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Z_PM_GET_STORAGE_LOC.Response">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="RETURN">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="item" type="s0:ZHANDHELD_LOC" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:complexType name="ZHANDHELD_LOC">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="PLANT">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="4" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="STOR_LOC">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="4" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="PLANT_TXT">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="30" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element minOccurs="0" name="LOC_TXT">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="16" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </types>
+  <message name="Z_PM_GET_STORAGE_LOCInput">
+    <part name="parameters" element="s0:Z_PM_GET_STORAGE_LOC" />
+  </message>
+  <message name="Z_PM_GET_STORAGE_LOCOutput">
+    <part name="parameters" element="s0:Z_PM_GET_STORAGE_LOC.Response" />
+  </message>
+  <portType name="Z_PM_GET_STORAGE_LOCPortType">
+    <operation name="Z_PM_GET_STORAGE_LOC">
+      <input message="s0:Z_PM_GET_STORAGE_LOCInput" />
+      <output message="s0:Z_PM_GET_STORAGE_LOCOutput" />
+    </operation>
+  </portType>
+  <binding name="Z_PM_GET_STORAGE_LOCBinding" type="s0:Z_PM_GET_STORAGE_LOCPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="Z_PM_GET_STORAGE_LOC">
+      <soap:operation soapAction="http://www.sap.com/Z_PM_GET_STORAGE_LOC" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+  </binding>
+  <service name="Z_PM_GET_STORAGE_LOCService">
+    <documentation>SAP Service Z_PM_GET_STORAGE_LOC via SOAP</documentation>
+    <port name="Z_PM_GET_STORAGE_LOCPortType" binding="s0:Z_PM_GET_STORAGE_LOCBinding">
+      <soap:address location="http://sapr3t.ni.ad.newsint/sap/bc/soap/rfc" />
+    </port>
+  </service>
+</definitions>

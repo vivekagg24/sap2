@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         horizontalScrollPolicy="off"
+         width="100%" 
+         >
+    <mx:Script>
+        <![CDATA[
+        import mx.controls.dataGridClasses.DataGridColumn;
+            
+
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+		public var hourly:String="";
+        private var retData:Object;
+        
+        public function initComponent():void{}
+        
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	hourly=String(value.HRATE);
+						txtHourly.text=hourly;
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+			return retData;
+		}
+		
+		private function handleChange():void{
+			hourly=txtHourly.text;
+			if (retData!=null) retData.amount = txtHourly.text;
+		}
+		
+         ]]>
+    </mx:Script>
+     
+
+   <mx:CurrencyValidator	 
+   	 id="valHourly"
+   	  source="{txtHourly}"
+   	  property="text" 
+   	  required="false"
+   	  allowNegative="false"
+   	  precision="3"
+   	  
+   	   >
+   </mx:CurrencyValidator>
+   <mx:TextInput
+   	 id="txtHourly"
+   	 width="70"
+	 enabled="false"
+	 styleName="inputECS"     
+   	 change="handleChange()"
+   	 maxChars="21">
+   	</mx:TextInput>
+
+   
+</mx:HBox>
+
+

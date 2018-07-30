@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       xmlns:ns1="visualComponents.GridComponents.*"
+	       borderThickness="5" 
+	       initialize="init();" 	
+	       horizontalScrollPolicy="off" 
+	       verticalScrollPolicy="off">
+	       
+
+    <mx:Metadata>
+        [Event(name="userSort", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="showItems", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="displayNotes", type="mx.events.DynamicEvent")]
+    </mx:Metadata>    
+
+	<mx:Script>
+		<![CDATA[
+			import mx.binding.utils.ChangeWatcher;
+			import mx.controls.dataGridClasses.DataGridListData;
+			import visualComponents.GridComponents.Expand;
+			import visualComponents.GridComponents.ShowItemsCanvas;
+			import visualComponents.GridComponents.Selectall;
+			import visualComponents.GridComponents.OutputCheckbox;
+			import visualComponents.GridComponents.RightLabel;
+			import visualComponents.GridComponents.Action;
+			import visualComponents.GridComponents.NoteIcon;
+			import visualComponents.GridComponents.AppRejTextBox;
+			import HR.Components.DateField1;
+			import visualComponents.GridComponents.DateLabel;
+			import visualComponents.GridComponents.ShowItems;
+			import mx.controls.Alert;			
+			import mx.controls.TextInput;
+			import mx.controls.dataGridClasses.DataGridItemRenderer;
+			import mx.controls.Image;
+			import mx.events.DataGridEvent;
+			import mx.controls.TextArea;
+			import mx.controls.Label;
+			import mx.controls.CheckBox;
+			import mx.core.Repeater;
+			import mx.events.DynamicEvent;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import VDG.TipRenderer;
+			
+			private function init():void
+			{
+				this.addEventListener("showItems", onShowItems);
+				
+				// Work out whether we have items every time data binding is triggered on ext_data
+				mx.binding.utils.ChangeWatcher.watch(this, "ext_data",  innerGridBinding);
+				mx.binding.utils.ChangeWatcher.watch(this, "allItems",  innerGridBinding);
+           <!--	DGmain.width = twidth;
+				this.width   = twidth;  -->
+			}
+			
+			public function collapse():void
+			{
+				// Now collapse
+				hb1.visible=false; hb1.includeInLayout = false;
+			}
+			
+			public function expand():void
+			{
+				// firstly, create the grid if it hasn't yet been created
+				if (!dg1)
+				{
+					dg1 = addInnerGrid();	
+				}	
+				else // just set up inner grid
+				{				
+					setUpInnerGrid(dg1);						
+				}			
+				// Now expand
+				hb1.visible=true; hb1.includeInLayout = true; 
+			}
+			
+			public function selectLine():void
+			{
+				if (ext_data)
+				{
+					ext_data.APPREJ = 'X';
+				}
+			}
+
+			public function deSelectLine():void
+			{
+				if (ext_data)
+				{
+					(ext_data as XML).replace("APPREJ", new XML(<x/>));
+					ext_data.APPREJ = ' ';
+				}
+			}			
+			
+			private function onShowItems(event:DynamicEvent):void
+			{
+				if (event.isOpen)
+				{
+					expand(); 
+				}
+				else
+				{
+					collapse(); 
+				}
+			}
+				
+		    [Bindable]
+		    public var twidth:Number;
+		    		
+			// The data item from the external repeater
+			[Bindable]
+			public var ext_data:Object; 
+			
+			// If this data item is in an array, this is the index of the item in the array
+			[Bindable]
+			public var ext_index:int;
+			
+			// Reference to items
+			[Bindable]
+			public var allItems:Object;
+			
+			// Array containing formatting widths
+			[Bindable]
+			public var formatArray:Array;
+			
+			// The data format
+			[Bindable]
+			public var formatXML:XMLList;
+
+			// Display the column header
+			[Bindable]
+			public function displayTitle():Boolean
+			{
+			 	if (ext_index == 0)
+					return true;
+				else 
+					return false;
+			}		
+        
+        	// Set the row height
+        	[Bindable]
+        	public function setHeight():int
+			{
+				if (ext_index == 0)
+					return 82;
+				else
+					return 42;
+			}
+        
+        	public static var openIcon:Class;
+			
+			public function getMyItems(items:Object,  repeaterData:Object):XMLList
+			{
+				// Get the items
+				var l_workflow_id:String = repeaterData.WIID;
+				var l_items:XMLList = new XMLList(items.(WIID==l_workflow_id));
+				
+				// Tell the main datagrid whether to show an expand/collapse button
+				if (l_items.length() == 0)
+				{
+					repeaterData.hasItems = "false";
+		<!--			repeaterData.hasItems = "true";  -->
+				}
+				else
+				{
+					repeaterData.hasItems = "true";
+				}
+				return l_items;
+				
+				
+			}
+			
+			protected function getColumns(format_XML:XMLList):Array
+			{
+				if (!format_XML || (format_XML is XMLList && (format_XML as XMLList).length() == 0))
+					return [];
+					
+				var _cols:Array = new Array();
+				var col:DataGridColumn;
+				var firstLoop:Boolean = true;
+				var inner:XML = new XML(format_XML[0]);
+				
+				for each (var field:XML in inner.field)
+				{
+					var width:int = int(field.@width);
+					var field_name:String = field.@dataField;
+					var field_type:String = field.@type;
+					var column_title:String = field.@columnTitle;
+										
+									//	mx.controls.listClasses.ListBase;
+									//	mx.controls.dataGridClasses.DataGridBase;
+					col = new DataGridColumn();
+					col.dataField = field_name;
+					col.width = width;
+					col.headerText = column_title;
+					col.headerRenderer = createColumnHeaderWithHoverText(column_title);
+					col.wordWrap = true;
+					
+					switch(field_type)
+					{
+					    case "checkbox":
+							col.sortable = false;							
+					    	col.headerRenderer = new ClassFactory(visualComponents.GridComponents.Selectall);
+					       // col.itemRenderer = new ClassFactory(mx.controls.CheckBox);	
+					    	col.itemRenderer = new ClassFactory(visualComponents.GridComponents.EditableCheckboxCanvas);				        
+					        break;
+					    case "OutputCheckbox":
+							col.sortable = false;							
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.OutputCheckboxCanvas);
+					        break;					        
+					    case "LineCheckbox":
+							col.sortable = false;							
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.OutputCheckboxLine);
+					        break;
+					    case "Label":
+					        col.sortable = true;				
+					        col.itemRenderer = new ClassFactory(mx.controls.Label);
+					        break;
+					    case "TextArea":
+					        col.sortable = true;				
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.TextArea1);
+					        break;					        
+					    case "RightLabel":
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.RightLabel);
+					        break;					        
+					    case "textbox":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.AppRejTextBox);
+					        break;
+					    case "image":
+					        col.sortable = false;
+					        col.itemRenderer = new ClassFactory(mx.controls.Image);
+					        break;
+					    case "lineImage":
+					    	col.sortable = false;
+					    	col.headerRenderer = new ClassFactory(visualComponents.GridComponents.Expand);
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.ShowItemsCanvas);
+					        break;
+					    case "lineIm":
+					    	col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.ShowItemsCanvas);
+					        break;
+					    case "dateLabel":
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.DateLabel);
+					        break;
+					    case "NoteIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.NoteIcon);
+					        break;
+					    case "HeldIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.HeldIcon);
+					        break;					        
+					    case "SubIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.DateLabel);
+					        break;					        
+					    case "InOutIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.InOutIcon);
+					        break;		
+					    case "Action":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.Action);
+					        break;					        
+					    default:
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(mx.controls.Label);
+					        break;
+					}
+					
+					_cols.push(col);
+					firstLoop = false;
+				}				
+				return _cols;
+			}		
+			
+			// Remember which column was sorted last
+			protected var _sortColumnIndex:int = -1;
+			
+			// Remember sort order
+			protected var sortOrder:int = 0;
+			
+			// When the user sorts the header grid, we actuall want to sort the dataprovider of the outside repeater
+			protected function onGridSort(event:DataGridEvent):void
+			{
+				var new_event:DynamicEvent = new DynamicEvent("userSort", true);
+				var fXML:XML = formatXML.headerFields[0];
+				var data_field:String = fXML.field[event.columnIndex].@dataField;
+				new_event.field = data_field;
+				
+				// Collapse before sorting (otherwise we get weird stuff happening)
+				var collapseEvent:DynamicEvent = new DynamicEvent("collapseAll", true);	
+				collapseEvent.grid = event.currentTarget;			
+				this.dispatchEvent(collapseEvent);				
+				
+				// Ascending or descending
+				if (event.columnIndex != _sortColumnIndex)
+				{
+					new_event.sortAscending = true;
+					sortOrder = 1;
+				}
+				else 
+				{
+					var col:DataGridColumn = event.currentTarget.columns[event.columnIndex];
+					new_event.sortAscending = col.sortDescending; // We want the opposite of the state before the header was clicked
+					sortOrder = sortOrder * -1;
+					
+				}
+				_sortColumnIndex = event.columnIndex; // Remember for next time
+				new_event.sortOrder = sortOrder;				
+				
+				this.dispatchEvent(new_event);
+			}
+			
+			// The inner data grid
+			protected var dg1:DataGrid;
+			
+			protected function innerGridBinding(event:Event):void
+			{
+				if (allItems && ext_data)
+				{
+					if (dg1)
+					{
+						dg1.dataProvider = getMyItems(allItems, ext_data );
+					}
+					else
+					{
+						getMyItems(allItems, ext_data );
+					}										
+				}
+			}
+			
+			// Create the inner grid
+			protected function addInnerGrid():DataGrid
+			{
+				// Create the component
+				var new_grid:DataGrid = new DataGrid();
+				
+				setUpInnerGrid(new_grid);
+				
+				// Add child to HBox
+				hb1.addChild(new_grid);		
+				
+				// Finalise
+				dg1 = new_grid;
+				return dg1;							
+			}
+			
+	    
+			protected function setUpInnerGrid(grid:DataGrid):void		
+			{
+				var tableReturned:XMLList;
+				var tablelength:int;
+				
+				tableReturned = new XMLList(getMyItems(allItems, ext_data ));
+				tablelength = tableReturned.length();
+
+				if (tablelength != 0) {
+
+					grid.setStyle("paddingTop", 0);
+			        grid.height = (tablelength * 20) + 35;
+			        grid.maxHeight = (tablelength * 20) + 35;
+				
+					var hc:Array = [];
+					hc.push(0x009BE9)
+					hc.push(0x009BE9);
+					grid.setStyle( "headerColors", hc);
+					grid.wordWrap = true;
+					grid.headerHeight = 32;
+					grid.columns = getColumns(formatXML.detailFields);
+					grid.dataProvider = getMyItems(allItems, ext_data );
+	<!--				grid.width = twidth;  -->
+				}
+			}
+			
+			protected function createColumnHeaderWithHoverText(headerText:String):ClassFactory
+			{
+				//var cf:ClassFactory = new ClassFactory(mx.controls.dataGridClasses.DataGridItemRenderer);
+				var cf = new ClassFactory(VDG.TipRenderer)   				
+				cf.properties = { toolTipVDG: headerText };
+				return cf;
+			}
+		]]>
+	</mx:Script>
+<!--  width="{twidth}" -->
+	<mx:VBox verticalGap="0" >  
+		<mx:HBox paddingTop="0" paddingBottom="0" > 
+			<mx:DataGrid  id="DGmain" 
+				          height="{setHeight()}" 					          		         
+						  showHeaders="{displayTitle()}" 
+						  headerColors="[0x009BE9, 0x009BE9]" 
+				          rowCount="1" headerHeight="40" wordWrap="true" 
+				          columns="{getColumns(formatXML.headerFields)}"
+				          dataProvider="{ext_data}"
+				          selectable="false"
+				          headerRelease="onGridSort(event)"
+				          paddingBottom="0"
+				          paddingTop="0"
+				          draggableColumns="false"
+				          resizableColumns="true" 
+				          horizontalScrollPolicy="off" verticalScrollPolicy="off">
+			</mx:DataGrid>
+		</mx:HBox>	 
+		<mx:HBox id="hb1" visible="false" includeInLayout="false">
+			<mx:Spacer width="20" />
+		</mx:HBox>  
+	</mx:VBox>	  
+</mx:Canvas>

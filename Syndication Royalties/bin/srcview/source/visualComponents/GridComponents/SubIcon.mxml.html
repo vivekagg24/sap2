@@ -1,0 +1,34 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>SubIcon.mxml</title>
+<link rel="stylesheet" type="text/css" href="../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:Canvas</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot; width=&quot;<span class="mxmlString">30</span>&quot; height=&quot;<span class="mxmlString">42</span>&quot;<span class="mxmlComponent">&gt;</span>
+    <span class="mxmlComponent">&lt;mx:Image</span> id=&quot;<span class="mxmlString">subIcon</span>&quot; source=&quot;<span class="mxmlString">CMS/images/Notes.gif</span>&quot;
+         click=&quot;onClick<span class="asBracket">()</span>&quot; resize=&quot;<span class="asReserved">false</span>&quot;<span class="mxmlComponent">&gt;</span> 
+        <span class="mxmlTag">&lt;mx:Script&gt;</span>
+            <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+            <span class="asReserved">import</span> mx.events.DynamicEvent;
+            <span class="asReserved">import</span> mx.controls.Alert;
+        
+            <span class="asReserved">private</span> <span class="asFunction">function</span> onClick<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+            <span class="asBracket">{</span>
+                <span class="asComment">// First change the icon, then dispatch the event
+</span>                <span class="asVar">var</span> event<span class="asOperator">:</span>DynamicEvent <span class="asOperator">=</span> <span class="asReserved">new</span> DynamicEvent<span class="asBracket">(</span><span class="asString">&quot;displayNotes&quot;</span>, <span class="asReserved">true</span><span class="asBracket">)</span>;
+            
+                Alert.show<span class="asBracket">(</span><span class="asString">&apos;Display sub name!&apos;</span>, <span class="asString">&apos;Alert Box&apos;</span>, mx.controls.Alert.OK<span class="asBracket">)</span>;            
+                subIcon.dispatchEvent<span class="asBracket">(</span>event<span class="asBracket">)</span>;
+            <span class="asBracket">}</span>
+            <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+        <span class="mxmlTag">&lt;/mx:Script&gt;</span>
+    <span class="mxmlComponent">&lt;/mx:Image&gt;</span>
+<span class="mxmlComment">&lt;!--</span><span class="mxmlComment">    &lt;mx:Metadata&gt;
+        [Event(name=&quot;displayNotes&quot;, type=&quot;mx.events.DynamicEvent&quot;)]
+    &lt;/mx:Metadata&gt; </span><span class="mxmlComment">--&gt;</span>
+<span class="mxmlComponent">&lt;/mx:Canvas&gt;</span></pre></body>
+</html>

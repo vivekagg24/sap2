@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/>
+  <title>News UK Driver Portal</title>
+  <link rel="apple-touch-icon-precomposed" href="/images/logo.png"/>
+  <link rel="apple-touch-icon-precomposed" sizes="48x48" href="/images/logo_48.png"/>
+  <link rel="apple-touch-icon-precomposed" sizes="128x128" href="/images/logo_128.png"/>
+
+  <script id="sap-ui-bootstrap" type="text/javascript"
+    src="https://sapui5.hana.ondemand.com/1.28.21/resources/sap-ui-core.js"
+    data-sap-ui-theme="sap_bluecrystal"
+    data-sap-ui-libs="sap.m"
+    data-sap-ui-debug=true
+    data-sap-ui-loaddbg=true
+    data-sap-ui-xx-bindingSyntax="complex"
+    data-sap-ui-compatVersion="edge"
+    data-sap-ui-resourceroots='{
+      "nuk.sap.driverportal": "./",
+      "nuk.sap.driverportal.util": "./util"
+    }'>
+  </script>
+
+  <script>
+    new sap.m.Shell("Shell", {
+      title: "title",
+      showLogout: true,
+      app: new sap.ui.core.ComponentContainer({
+        name: 'nuk.sap.driverportal',
+        height: '100%'
+      }),
+      appWidthLimited: false
+    }).placeAt('content');
+  </script>
+
+</head>
+
+<body class="sapUiBody" role="application" id="content" height: "100%"/>
+
+</html>

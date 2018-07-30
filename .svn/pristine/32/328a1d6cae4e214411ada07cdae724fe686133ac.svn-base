@@ -1,0 +1,44 @@
+/* CSS file */
+.application{
+	fontSize: 11;
+	font-family: arial;
+	background-alpha:0.9;
+	border-color:#FFFFFF;
+	border-thickness:0px;
+	
+}
+.comboDisabled{
+	disabled-color:#000000;
+	font-weight:bold;
+}
+.disabled{
+	background-color:#ededeb;
+	disabled-color:#000000;
+}
+Button {
+	fill-colors:#ffffff,#408DDE;
+}
+Button.add {
+	fill-colors:#ffffff,#40DD8E;
+}
+Button.save {
+	fill-colors:#ffffff,#D0BD3E;
+}
+
+.buttonDisabled {
+	fill-colors:#ffffff,#c0c0c0;
+}
+Panel{
+	background-alpha:0.1;
+	background-color:#408DDE;
+	border-color: #408DDE;
+	border-alpha:0.2;
+}
+DataGrid{
+	header-colors:#ffffff,#408DDE;	
+}
+.menuBar{
+	background-color:#FFFFFF;
+	alpha:1;	
+}	
+

@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	scroll="true" enabled="true" layout="absolute"
+	width="1190" height="190"	
+	creationComplete="DoInit()" 
+    initialize="Init()"
+	borderAlpha="1.0"
+	title="{Title}"
+	close="ClosePopUp()"
+	backgroundColor="#dceefc" borderColor="#A7B6EB" 	
+	creationPolicy="all" 
+	xmlns:CMS="CMS.Components.*">
+
+	<mx:Style source="CMS.css"/>
+	<mx:Script source="CMS/CasualClaim/scripts/Common.as"></mx:Script>			
+	<mx:Script source="CMS/CasualClaim/scripts/Utilities.as"></mx:Script>		
+	<mx:Script source="CMS/CasualClaim/scripts/GridItemsHandling.as"></mx:Script>	
+	<mx:Script source="CMS/CasualClaim/scripts/ClaimItemHandling.as"></mx:Script>	
+	
+<mx:Script>
+
+
+	<![CDATA[
+
+	private function Init():void{
+
+		SetWSDLs();
+	
+	}
+	 
+	private function SetWSDLs():void{
+
+		// Remote remotely in a BSP
+		if (Security.sandboxType == Security.REMOTE)  
+		
+		      wsdl_prefix = c_wsdl_sicf_prefix + "services=";
+           
+        // Running locally
+		else  
+		      wsdl_prefix = c_dev_server       
+        		          + c_wsdl_sicf_prefix
+                		  + c_sap_client       
+		                  + "services=" ;    
+	}
+	
+	private function DoInit():void{
+
+		CreatePSkey();
+
+		exStartTime = TimeToSAPFormat(ClaimLine.BEGUZ.toString());
+		
+		exCostCentre = ClaimLine.ZZKOSTL;
+
+		SetTitle();
+		
+		ServerRequest(cInitLoad, '',0,null);
+
+	}
+	
+	private function ClosePopUp():void{
+		
+  		PopUpManager.removePopUp(this);
+	}
+	
+	
+//***************************************SERVER REQUEST ************************************************//
+	public function ServerRequest(ID:String, newData:String,RowID:int,Component:UIComponent):void{
+		
+		var oRequestCall:Object;
+		var xShiftRate:String;		
+		var xShiftNo:String;
+		var xHours:String;
+
+		EnableButtons(false);
+
+		switch (ID){
+
+			case cInitLoad:
+
+				oRequestCall = 	ws1.Z_CMS_GET_CLAIM_FOR_EDIT.send();
+
+				break;
+
+			case cWageTypes:
+			
+				oRequestCall = 	ws1.Z_CMS_GET_VALID_WAGE_TYPES.request.IM_GET_ALL_FOR_KOSTL = 'X';					
+				
+				oRequestCall = 	ws1.Z_CMS_GET_VALID_WAGE_TYPES.request.IM_CLAIM_LINE = ClaimItems[RowID];
+								
+				oRequestCall = 	ws1.Z_CMS_GET_VALID_WAGE_TYPES.send();
+				
+	            oRequestCall.Idx = RowID;
+			
+				break;
+			
+			case cDate:
+
+   	            oRequestCall = ws1.Z_CMS_HANDLE_DATE_CHANGE.request.IM_DATE	= newData;
+   	            
+	            oRequestCall = ws1.Z_CMS_HANDLE_DATE_CHANGE.request.IM_INDEX   = RowID;
+   	            
+ 	            oRequestCall = ws1.Z_CMS_HANDLE_DATE_CHANGE.request.IM_T_ITEMS = ClaimItems;
+
+	            oRequestCall = ws1.Z_CMS_HANDLE_DATE_CHANGE.send();
+
+    	        oRequestCall.Date = newData;
+
+	            oRequestCall.Idx = RowID;
+
+				break;
+
+            case cTime:
+
+                oRequestCall = ws1.Z_CMS_HANDLE_TIME_CHANGE.request.IM_ENDTIME   = newData.substr(9,8)
+
+                oRequestCall = ws1.Z_CMS_HANDLE_TIME_CHANGE.request.IM_INDEX  	  = RowID;
+
+                oRequestCall = ws1.Z_CMS_HANDLE_TIME_CHANGE.request.IM_STARTTIME = newData.substr(1,8)
+
+                oRequestCall = ws1.Z_CMS_HANDLE_TIME_CHANGE.request.IM_TIMETYPE  =  newData.substr(0,1)
+
+                oRequestCall = ws1.Z_CMS_HANDLE_TIME_CHANGE.request.IM_T_ITEMS   = ClaimItems;
+
+		        oRequestCall = ws1.Z_CMS_HANDLE_TIME_CHANGE.send();
+		
+		        oRequestCall.Idx = RowID;                                                                                                                                                                                                                                              
+
+                break;
+
+			case cShiftNo:
+
+				xShiftRate = ClaimItems[RowID].RATE;
+				xHours 	   = ClaimItems[RowID].ZZDURATION;
+   	               
+				oRequestCall 		 	= ws1.Z_CMS_HANDLE_RATE_CHANGE.send(xHours, newData, xShiftRate);
+				oRequestCall.ShiftNo 	= newData;
+				oRequestCall.ShiftRate 	= xShiftRate;
+				oRequestCall.Hours	   	= xHours;	        	    
+				oRequestCall.Idx 		= RowID;
+
+				break;
+
+			case cRate:
+	
+                xShiftNo 	= ClaimItems[RowID].ANZHL;
+                xHours 	    = ClaimItems[RowID].ZZDURATION;
+
+				oRequestCall = ws1.Z_CMS_HANDLE_RATE_CHANGE.send(xHours, xShiftNo, newData);
+
+       	      	oRequestCall.ShiftRate  = newData;
+       	      	oRequestCall.ShiftNo    = xShiftNo;
+       	     	oRequestCall.Hours	    = xHours;
+
+                oRequestCall.Idx = RowID;
+
+				break;			
+			
+			case cProjcode:
+
+				ClaimItems[RowID].ZZAUFNR = newData;
+				
+                oRequestCall = ws1.Z_CMS_HANDLE_PROJ_CODE_CHANGE.request.IM_CLAIM_LINE = ClaimItems[RowID];
+
+	            oRequestCall = ws1.Z_CMS_HANDLE_PROJ_CODE_CHANGE.send();
+	
+	            oRequestCall.Idx = RowID;
+
+				break;
+
+			case cSave:
+				
+				oRequestCall = SendMaintainClaims(ID, oRequestCall);
+			
+				break;
+		      
+		}
+
+		oRequestCall.marker    = ID;
+		oRequestCall.Component = Component;
+	}
+
+	private function SendMaintainClaims(Action:String,oReq:Object):Object{
+		
+		oReq = ws1.Z_CMS_MAINTAIN_CLAIM_FOR_EDIT.request.IM_ACTION = Action;
+				
+		oReq = ws1.Z_CMS_MAINTAIN_CLAIM_FOR_EDIT.request.CH_T_ITEMS = ClaimItems;
+		
+		oReq = ws1.Z_CMS_MAINTAIN_CLAIM_FOR_EDIT.request.CH_T_ITEMS_ORIG = OrigClaimItems;		            
+		
+		oReq = ws1.Z_CMS_MAINTAIN_CLAIM_FOR_EDIT.send();					
+		
+		return oReq;
+	}
+
+
+//******************************************SERVER RESPONSE**********************************************//
+	private function ServerResponse(event:ResultEvent):void
+	{
+		var oCallResponse:Object = event.token;
+
+  		var Return_message:String;
+  		var Return_code:int;
+        var RowID:int = oCallResponse.Idx
+
+		switch(oCallResponse.marker)
+		{			
+			case cInitLoad:
+
+		    	itemsXML = new XML(ws1.Z_CMS_GET_CLAIM_FOR_EDIT.lastResult);	
+
+				if (itemsXML.EX_RETURN_CODE != '00' ){
+					
+					ResetGrid();
+
+		            FormatError(btnCancel,itemsXML.EX_RETURN_MESSAGE);
+				  	
+				}else{
+
+					getClaimsCallBack(itemsXML);
+		
+				}
+				break;
+
+			case cWageTypes:
+			
+				var wageTypesXML:XML = new XML(ws1.Z_CMS_GET_VALID_WAGE_TYPES.lastResult.EX_T_WAGETYPES);
+
+				aNewWageTypes = PopulateWageTypes(wageTypesXML);
+				
+				WageTypesChanged(RowID);
+
+		        break;
+
+			case cDate:
+			
+	            xmlday = new XML(ws1.Z_CMS_HANDLE_DATE_CHANGE.lastResult);
+				
+				if (xmlday.EX_RETURN_CODE != 0 ){
+				               	
+                    ClaimItems[RowID].BEGDA = PreSaveClaimItems[RowID].BEGDA;
+                    ClaimItems[RowID].ZDAY  = PreSaveClaimItems[RowID].ZDAY;	                        
+				
+		            FormatError(oCallResponse.Component,xmlday.EX_RETURN_MESSAGE);
+				  	
+				}else{
+	
+                    ClaimItems[RowID].ZDAY = xmlday.EX_LONGDAY.toString();
+
+                    PreSaveClaimItems[RowID].BEGDA = ClaimItems[RowID].BEGDA;
+                    PreSaveClaimItems[RowID].ZDAY  = ClaimItems[RowID].ZDAY;
+
+                    ClaimItems[RowID].UPDATED    	 = 'X';
+                    PreSaveClaimItems[RowID].UPDATED = 'X';	                        
+					
+				}
+
+   	            dgItems.executeBindings();			
+			
+				break;
+
+
+			case cTime:
+
+	            xmltime = new XML(ws1.Z_CMS_HANDLE_TIME_CHANGE.lastResult);
+            
+				if (xmltime.EX_RETURN_CODE != 0 ){
+
+                    ClaimItems[RowID].BEGUZ 	 = PreSaveClaimItems[RowID].BEGUZ;
+                    ClaimItems[RowID].ENDUZ 	 = PreSaveClaimItems[RowID].ENDUZ;	       
+                    ClaimItems[RowID].ZZDURATION = PreSaveClaimItems[RowID].ZZDURATION;
+            
+		            FormatError(oCallResponse.Component,xmltime.EX_RETURN_MESSAGE);					
+
+				}else{
+		               	
+                    ClaimItems[RowID].ZZDURATION = xmltime.EX_HOURS.toString();
+                    
+                    PreSaveClaimItems[RowID].BEGUZ 		= ClaimItems[RowID].BEGUZ;
+                    PreSaveClaimItems[RowID].ENDUZ 		= ClaimItems[RowID].ENDUZ;
+                    PreSaveClaimItems[RowID].ZZDURATION = ClaimItems[RowID].ZZDURATION;
+                    
+                    // Now that the duration has changed, we have to trigger a change to
+                    // the hourly rate
+                    this.ProcessRate(ClaimItems[RowID].RATE , RowID);	                        
+
+                    ClaimItems[RowID].UPDATED     = 'X';
+                    PreSaveClaimItems[RowID].UPDATED = 'X';	                        
+	   			}
+	   			
+	            dgItems.executeBindings();			
+							
+				break;			
+			
+		
+			case cShiftNo:
+			
+			 	xmlshiftno = new XML(ws1.Z_CMS_HANDLE_RATE_CHANGE.lastResult);
+	               	
+ 				ClaimItems[RowID].ANZHL = oCallResponse.ShiftNo               				               				
+                ClaimItems[RowID].BETRG = xmlshiftno.EX_AMOUNT.toString()
+                ClaimItems[RowID].HRATE = xmlshiftno.EX_HOURLY.toString()
+                ClaimItems[RowID].GROSS = xmlshiftno.EX_GROSSAMOUNT.toString()        
+
+ 				PreSaveClaimItems[RowID].ANZHL = oCallResponse.ShiftNo               				               				
+                PreSaveClaimItems[RowID].BETRG = xmlshiftno.EX_AMOUNT.toString()
+                PreSaveClaimItems[RowID].HRATE = xmlshiftno.EX_HOURLY.toString()
+                PreSaveClaimItems[RowID].GROSS = xmlshiftno.EX_GROSSAMOUNT.toString()        
+
+                ClaimItems[RowID].UPDATED     = 'X';
+                PreSaveClaimItems[RowID].UPDATED = 'X';
+
+	            dgItems.executeBindings();
+			
+				break;						
+			
+			case cRate:
+				
+			 	xmlrate = new XML(ws1.Z_CMS_HANDLE_RATE_CHANGE.lastResult);
+	
+ 				ClaimItems[RowID].RATE  = oCallResponse.ShiftRate
+                ClaimItems[RowID].BETRG = xmlrate.EX_AMOUNT.toString()
+                ClaimItems[RowID].HRATE = xmlrate.EX_HOURLY.toString()
+                ClaimItems[RowID].GROSS = xmlrate.EX_GROSSAMOUNT.toString()        
+
+ 				PreSaveClaimItems[RowID].RATE  = oCallResponse.ShiftRate
+                PreSaveClaimItems[RowID].BETRG = xmlrate.EX_AMOUNT.toString()
+                PreSaveClaimItems[RowID].HRATE = xmlrate.EX_HOURLY.toString()
+                PreSaveClaimItems[RowID].GROSS = xmlrate.EX_GROSSAMOUNT.toString()        
+
+                ClaimItems[RowID].UPDATED  	     = 'X';
+                PreSaveClaimItems[RowID].UPDATED = 'X';
+
+	            dgItems.executeBindings();
+
+				break;				
+				
+			case cProjcode:
+				
+			 	xmlprojcode = new XML(ws1.Z_CMS_HANDLE_PROJ_CODE_CHANGE.lastResult);
+	
+		 		if (xmlprojcode.EX_RETURN_CODE != 0){
+
+                    ClaimItems[RowID].ZZAUFNR = PreSaveClaimItems[RowID].ZZAUFNR;                      
+
+		            FormatError(oCallResponse.Component,"Project code / wage type combination is not valid");					
+		            	   		      
+	  			}else{
+	  				
+                    PreSaveClaimItems[RowID].ZZAUFNR = ClaimItems[RowID].ZZAUFNR;                      
+
+                    ClaimItems[RowID].UPDATED        = 'X';
+                    PreSaveClaimItems[RowID].UPDATED = 'X';
+
+ 	                ServerRequest(cWageTypes,null,RowID,null);	
+	  			}
+
+	            dgItems.executeBindings();
+	    	    
+				break;		
+				
+			case cSave:
+
+				ReceiveMaintainClaims();
+
+				break;
+
+		}
+
+		EnableButtons(true);		
+
+	}
+	
+	private function ReceiveMaintainClaims():void{
+		
+		xmlMaintain = new XML(ws1.Z_CMS_MAINTAIN_CLAIM_FOR_EDIT.lastResult);
+		
+		MessageString = FormatMessages(xmlMaintain);
+		
+        FormatError(dgItems,MessageString);		
+
+		if(xmlMaintain.EX_RETCODE == 0){
+			
+			Application.application.getData()
+			
+			ClosePopUp();
+			
+		}else{
+			
+			getClaimsCallBack(xmlMaintain);			
+		}     
+		
+	}
+
+  	private function webServiceFault(e:FaultEvent,PopupTitle:String):void{
+
+		Alert.show(e.fault.faultString,PopupTitle);
+		
+		EnableButtons(true);
+  	}
+	
+	]]>	
+</mx:Script>
+
+	<mx:WebService id="ws1" 
+		useProxy="false"
+    	wsdl="{wsdl_prefix + 'Z_CMS_GET_CLAIM_FOR_EDIT,Z_CMS_HANDLE_DATE_CHANGE,Z_CMS_HANDLE_TIME_CHANGE,Z_CMS_HANDLE_RATE_CHANGE,Z_CMS_HANDLE_PROJ_CODE_CHANGE,Z_CMS_GET_VALID_WAGE_TYPES,Z_CMS_MAINTAIN_CLAIM_FOR_EDIT'}"	
+    	showBusyCursor="true">   
+    	
+	    <mx:operation name="Z_CMS_GET_CLAIM_FOR_EDIT" 	    	 
+	    	 result="ServerResponse(event)"
+  			 fault="webServiceFault(event,'Z_CMS_GET_CLAIM_FOR_EDIT')" 
+	    	 resultFormat="e4x" concurrency="multiple">
+	    	 <mx:request>
+	    		<IM_KOSTL>{exCostCentre}</IM_KOSTL>
+				<IM_STARTTIME>{exStartTime}</IM_STARTTIME>
+				<IM_PSKEY>{PSkey}</IM_PSKEY>
+		        <CH_T_ITEMS></CH_T_ITEMS>
+			</mx:request>		
+		</mx:operation>
+
+	    <mx:operation name="Z_CMS_HANDLE_DATE_CHANGE"  	    	 
+	    	 result="ServerResponse(event)"
+  		     fault="webServiceFault(event,'Z_CMS_HANDLE_DATE_CHANGE')"
+	    	 resultFormat="e4x" concurrency="multiple">
+	    	 <mx:request>
+	    		<IM_DATE> </IM_DATE>
+	    		<IM_INDEX></IM_INDEX>
+	    		<IM_T_ITEMS> </IM_T_ITEMS>
+			</mx:request>		
+		</mx:operation>
+
+	    <mx:operation name="Z_CMS_HANDLE_TIME_CHANGE"	    		
+	    	 	result="ServerResponse(event)"    	
+  			 	fault="webServiceFault(event,'Z_CMS_HANDLE_TIME_CHANGE')"
+	    	 	resultFormat="e4x" concurrency="last">
+	    	 <mx:request> 
+				<IM_ENDTIME></IM_ENDTIME>
+				<IM_INDEX></IM_INDEX>
+				<IM_STARTTIME></IM_STARTTIME>
+				<IM_TIMETYPE></IM_TIMETYPE>
+				<IM_T_ITEMS></IM_T_ITEMS>
+			</mx:request>
+		</mx:operation>
+
+	    <mx:operation name="Z_CMS_HANDLE_RATE_CHANGE"	    	   	
+				result="ServerResponse(event)"
+  				fault="webServiceFault(event,'ws1')"
+	    	 	resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    		<IM_SHIFTRATE></IM_SHIFTRATE>
+	    		<IM_SHIFTNO></IM_SHIFTNO>
+	    		<IM_HOURS></IM_HOURS>
+			</mx:request>
+		</mx:operation>
+
+	    <mx:operation name="Z_CMS_HANDLE_PROJ_CODE_CHANGE"	    	 
+			 result="ServerResponse(event)"
+  			 fault="webServiceFault(event,'Z_CMS_HANDLE_PROJ_CODE_CHANGE')"
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    		<IM_CLAIM_LINE> </IM_CLAIM_LINE>	    				
+	    	 </mx:request>
+		</mx:operation>
+
+	    <mx:operation name="Z_CMS_GET_VALID_WAGE_TYPES"
+	    	 result="ServerResponse(event)"
+  			 fault="webServiceFault(event,'Z_CMS_GET_VALID_WAGE_TYPES')"
+	    	 resultFormat="e4x" concurrency="multiple">
+	    	 <mx:request>
+	    		<IM_CLAIM_LINE> </IM_CLAIM_LINE>	    		
+				<IM_GET_ALL_FOR_KOSTL></IM_GET_ALL_FOR_KOSTL>	    		
+	    	 </mx:request>
+		</mx:operation>
+
+	    <mx:operation name="Z_CMS_MAINTAIN_CLAIM_FOR_EDIT"
+	    	 result="ServerResponse(event)"
+  			 fault="webServiceFault(event,'Z_CMS_MAINTAIN_CLAIM_FOR_EDIT')"
+	    	 resultFormat="e4x" concurrency="single">
+	    	 <mx:request>
+	    	 	<IM_ACTION></IM_ACTION>
+				<CH_T_ITEMS></CH_T_ITEMS>
+				<CH_T_ITEMS_ORIG></CH_T_ITEMS_ORIG>
+	    	 </mx:request>
+		</mx:operation>
+	</mx:WebService>
+
+
+	<mx:DataGrid x="6" y="10" width="1157" height="83"
+				id="dgItems"
+				dataProvider="{ClaimItems}"
+				styleName="dataGrid"
+				editable="false"
+			    selectable="false"
+ 			    sortableColumns="false"
+				enabled="true">
+				
+			<mx:columns>
+				
+					
+					<mx:DataGridColumn headerText="Cost Centre" 
+						id="CostCentre"
+						dataField="costCentre"
+						width="150" 
+						textAlign="left"
+					                sortable="false" 
+					                editable="true"
+					                editorDataField="costCentre" 
+					                rendererIsEditor="true"
+					                itemRenderer="CMS.CasualClaim.gridFields.CostCentreCombo"
+					                  />
+					
+					
+					<mx:DataGridColumn 
+						id="col_Date"
+						width="90"
+						dataField="begda"
+						headerText="Date" 
+						sortable="false" 
+					            	    editable="true"
+					               	itemRenderer="CMS.CasualClaim.gridFields.DateField"
+					                	rendererIsEditor="true"
+					                 >
+					</mx:DataGridColumn>																				
+					
+					
+					<mx:DataGridColumn 
+						id="col_Day"
+						width="64"
+						dataField="zday"
+						headerText="Day" 
+						sortable="false" 
+					                   editable="false"
+					                   itemRenderer="CMS.CasualClaim.gridFields.zday"
+					                   editorDataField="zday"
+					                   rendererIsEditor="true"
+					                 >
+					</mx:DataGridColumn>														
+					
+					
+					<!--starttime -->
+					<mx:DataGridColumn 
+						width="95"
+						dataField="beguz"
+						headerText="Start Time"
+						sortable="false" 
+					                   editable="false"
+					                   itemRenderer="CMS.CasualClaim.gridFields.beguz"
+					                   editorDataField="beguz"
+					                   rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>														
+					
+					
+					<!--endtime -->
+					<mx:DataGridColumn 
+						width="95"
+						dataField="enduz"
+						headerText="End Time"
+						sortable="false" 
+					                editable="false"
+					                itemRenderer="CMS.CasualClaim.gridFields.enduz"
+					                editorDataField="enduz"
+					                rendererIsEditor="true"
+					                  >
+					</mx:DataGridColumn>														
+					
+					
+					<mx:DataGridColumn 
+						width="40"
+						dataField="zzduration"
+						headerText="Hours" 
+						sortable="false"
+					    editable="false"
+					    itemRenderer="CMS.CasualClaim.gridFields.zzduration"
+					    editorDataField="zzduration"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>														
+					
+					
+					<!--WageType and description -->
+					<mx:DataGridColumn 
+						width="150"
+						dataField="lgart"
+						headerText="Duty Code" 
+						sortable="false" 
+					    editable="true"
+					    itemRenderer="CMS.CasualClaim.gridFields.WageTypeCombo"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>														
+					
+					
+					<!--project code -->
+					<mx:DataGridColumn 
+						width="66"
+						dataField="zzaufnr"
+						headerText="Proj Code" 
+						wordWrap="true"
+						sortable="false" 
+					    editable="true"
+					    itemRenderer="CMS.CasualClaim.gridFields.zzaufnr"
+					    editorDataField="zzaufnr"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>														
+					
+					
+					<mx:DataGridColumn
+						id="dgcShifts"
+						width="40"
+						dataField="anzhl"
+						headerText="Shifts" 
+						sortable="false" 
+					    editable="true"
+					    itemRenderer="CMS.CasualClaim.gridFields.anzhl"
+					    editorDataField="anzhl"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>														
+					
+					
+					<mx:DataGridColumn 
+						width="60"
+						id="dgcRate"							
+						dataField="rate"
+						headerText="Shift Rate" 
+						wordWrap="true"							
+						sortable="false" 
+					    editable="true"
+					    itemRenderer="CMS.CasualClaim.gridFields.rate"
+					    editorDataField="rate"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>														
+					
+					
+					<mx:DataGridColumn headerText="Curr" 
+						dataField="waers"
+					    width="35" 
+					    textAlign="center"
+					    sortable="false" 
+					    editable="false"
+					    editorDataField="waers"
+					    rendererIsEditor="true"
+					    itemRenderer="CMS.CasualClaim.gridFields.waers"                                
+						>
+					</mx:DataGridColumn>												                                
+					
+					
+					<mx:DataGridColumn 
+						width="55"
+						dataField="betrg"
+						headerText="Amount" 
+						sortable="false" 
+					    editable="false"
+					    itemRenderer="CMS.CasualClaim.gridFields.betrg"
+					    editorDataField="betrg"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>																				
+					
+					
+					<mx:DataGridColumn 
+						width="50"
+						dataField="hrate"
+						headerText="Hourly" 
+						sortable="false" 
+					    editable="false"
+					    itemRenderer="CMS.CasualClaim.gridFields.hrate"
+					    editorDataField="hrate"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>																				
+					
+					
+					<mx:DataGridColumn 
+						width="50"
+						dataField="gross"
+						headerText="Gross" 
+						sortable="false" 
+					    editable="false"
+					    itemRenderer="CMS.CasualClaim.gridFields.gross"
+					    editorDataField="gross"
+					    rendererIsEditor="true"
+					    >
+					</mx:DataGridColumn>														
+					
+					
+					<mx:DataGridColumn 
+						width="75"
+						dataField="stat_desc"
+						headerText="Status" 
+						sortable="false" 
+					    editable="false"
+					    itemRenderer="CMS.CasualClaim.gridFields.stat_desc"
+					    editorDataField="stat_desc"
+					    rendererIsEditor="true"
+					                      >
+					</mx:DataGridColumn>																				
+				
+				</mx:columns>						
+	</mx:DataGrid>
+	<CMS:Button1 x="7" y="101" id="btnSave" label="Update Claim" click="SaveItem()" enabled="{bEnableButtons}"/>
+	<CMS:Button1 x="108" y="101" id="btnCancel" label="Cancel" click="ClosePopUp()" enabled="{bEnableButtons}"/>
+	
+</mx:TitleWindow>

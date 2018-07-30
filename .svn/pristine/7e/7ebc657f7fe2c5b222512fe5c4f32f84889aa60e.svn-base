@@ -1,0 +1,46 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>ECS.css</title>
+<link rel="stylesheet" type="text/css" href="../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="cssComment">/* CSS file */</span>
+<span class="cssSelector">.application</span><span class="cssSymbol">{</span>
+    <span class="cssPropName">fontSize</span><span class="cssSymbol">:</span> <span class="cssPropValue">11</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">font-family</span><span class="cssSymbol">:</span> <span class="cssPropValue">arial</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">background-gradient-colors</span><span class="cssSymbol">:</span><span class="cssPropValue">#FFFFFF,#408dde</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">background-alpha</span><span class="cssSymbol">:</span><span class="cssPropValue">0.9</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">background-gradient-alphas</span><span class="cssSymbol">:</span><span class="cssPropValue">1,1</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">border-color</span><span class="cssSymbol">:</span><span class="cssPropValue">#FFFFFF</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">border-thickness</span><span class="cssSymbol">:</span><span class="cssPropValue">0px</span><span class="cssSymbol">;</span>
+<span class="cssSymbol">}</span>
+<span class="cssSelector">.comboDisabled</span><span class="cssSymbol">{</span>
+    <span class="cssPropName">disabled-color</span><span class="cssSymbol">:</span><span class="cssPropValue">#000000</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">font-weight</span><span class="cssSymbol">:</span><span class="cssPropValue">bold</span><span class="cssSymbol">;</span>
+<span class="cssSymbol">}</span>
+<span class="cssSelector">.disabled</span><span class="cssSymbol">{</span>
+    <span class="cssPropName">background-color</span><span class="cssSymbol">:</span><span class="cssPropValue">#ededeb</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">disabled-color</span><span class="cssSymbol">:</span><span class="cssPropValue">#000000</span><span class="cssSymbol">;</span>
+<span class="cssSymbol">}</span>
+<span class="cssSelector">.button </span><span class="cssSymbol">{</span>
+    <span class="cssPropName">fill-colors</span><span class="cssSymbol">:</span><span class="cssPropValue">#ffffff,#408DDE</span><span class="cssSymbol">;</span>
+<span class="cssSymbol">}</span>
+<span class="cssSelector">.buttonDisabled </span><span class="cssSymbol">{</span>
+    <span class="cssPropName">fill-colors</span><span class="cssSymbol">:</span><span class="cssPropValue">#ffffff,#c0c0c0</span><span class="cssSymbol">;</span>
+<span class="cssSymbol">}</span>
+<span class="cssSelector">.panel</span><span class="cssSymbol">{</span>
+    <span class="cssPropName">background-alpha</span><span class="cssSymbol">:</span><span class="cssPropValue">0.56</span><span class="cssSymbol">;</span>
+<span class="cssSymbol">}</span>
+<span class="cssSelector">.dataGrid</span><span class="cssSymbol">{</span>
+    <span class="cssPropName">header-colors</span><span class="cssSymbol">:</span><span class="cssPropValue">#ffffff,#408DDE</span><span class="cssSymbol">;</span>    
+<span class="cssSymbol">}</span>
+<span class="cssSelector">.menuBar</span><span class="cssSymbol">{</span>
+    <span class="cssPropName">background-color</span><span class="cssSymbol">:</span><span class="cssPropValue">#FFFFFF</span><span class="cssSymbol">;</span>
+    <span class="cssPropName">alpha</span><span class="cssSymbol">:</span><span class="cssPropValue">1</span><span class="cssSymbol">;</span>    
+<span class="cssSymbol">}</span>    
+
+</pre></body>
+</html>

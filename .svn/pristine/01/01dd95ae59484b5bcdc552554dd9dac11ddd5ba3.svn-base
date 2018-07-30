@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:HBox x="25" y="15">
+	<mx:Image id="helpIcon" source="HR/images/help.gif" toolTip = "CAS help"
+		 click="onClick()" resize="false" useHandCursor="true" buttonMode="true" mouseChildren="false" > 
+		<mx:Script>
+			<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+			
+			private function onClick():void
+			{ 
+				var help_URL:String = this.parentApplication.helpURL;					
+				var formURL:URLRequest = new URLRequest(help_URL);
+				if (help_URL && help_URL != "") {
+		   	    	navigateToURL(formURL,"_blank");
+				}
+				else {
+	            	var alert_text:String = 'Help not available';
+    	        	Alert.show(alert_text);					
+				}
+		 	}
+			]]>
+		</mx:Script> 
+	</mx:Image>
+	</mx:HBox>	 
+</mx:Canvas>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         horizontalScrollPolicy="off"
+         width="100%" 
+         >
+    <mx:Script>
+        <![CDATA[
+        import mx.controls.dataGridClasses.DataGridColumn;
+   
+		import mx.controls.Alert;      	       
+		
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+		public var day:String="";
+        private var retData:Object;
+        
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	day=String(value.ZDAY);
+						txtDay.text=day;
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+			return retData;
+		}
+		
+
+         ]]>
+    </mx:Script>
+   
+
+   <mx:TextInput
+   	 id="txtDay"
+   	 width="60"
+	 enabled="false"
+	 styleName="inputECS"
+	 editable="false"     
+   	 maxChars="21">
+   	</mx:TextInput>
+
+
+</mx:HBox>
+
+

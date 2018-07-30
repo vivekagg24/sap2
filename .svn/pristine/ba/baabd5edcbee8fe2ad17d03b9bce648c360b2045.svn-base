@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	PaymentListDataGrid.mxml
+		Datagrid for displaying recent payments for the contributor
+-->
+
+<mx:DataGrid xmlns:mx   = "http://www.adobe.com/2006/mxml" 
+	         width      = "850" height="431" x="10" y="36"
+			 selectable = "false" 
+			 styleName  = "dataGrid">
+			 
+  <mx:columns>
+
+    <mx:DataGridColumn headerText = "CPR" 
+    	               dataField  = "CPR" 
+					   width      = "80">
+    </mx:DataGridColumn>
+
+    <mx:DataGridColumn width      = "200" 
+    	               headerText = "Story" 
+    	               dataField  = "STORY"/>
+
+    <mx:DataGridColumn width      = "80" 
+    	               headerText = "Amount" 
+    	               dataField  = "AMOUNT">
+    	               
+		<mx:itemRenderer>
+			<mx:Component>                                 		
+          		<mx:Text text="{date}">
+          			<mx:Script>
+          			<![CDATA[              
+          				import mx.controls.dataGridClasses.DataGridColumn;
+          				import mx.formatters.NumberFormatter;
+          				[Bindable]
+          				private var date:String;
+          				override public function set data(value:Object):void {	
+          					var format:NumberFormatter = new NumberFormatter;
+          					var currency:String;
+          					if (value)
+          					{
+          						currency = value.CURRENCY;
+          						format.precision = int(parentApplication.initXml.CH_T_CURRENCIES.item.(DATA==currency).DECIMALS);
+          					
+          					}
+          					
+          					format.useThousandsSeparator=true;
+          					
+			                if(value != null)
+			                {
+			                    super.data = value;									                   
+			                    if(!(value is DataGridColumn))
+			                    {
+			                    	date=format.format(value.AMOUNT.toString());
+			                    }
+			        		}
+			        	}
+          			]]>
+          		</mx:Script>
+          		</mx:Text>
+        	</mx:Component>
+  		</mx:itemRenderer>
+  		
+  	</mx:DataGridColumn>
+  	
+	<mx:DataGridColumn width      = "80" 
+		               headerText = "Publication Date" 
+		               dataField  = "PUBDATE">
+		
+		<mx:itemRenderer>
+			<mx:Component>                                 		
+          		<mx:Text text="{date}">
+          			<mx:Script>
+          			<![CDATA[              
+          				import mx.controls.dataGridClasses.DataGridColumn;
+          				import mx.formatters.DateFormatter;
+          				[Bindable]
+          				private var date:String;
+          				override public function set data(value:Object):void {	
+          					var format:DateFormatter = new DateFormatter;
+          					format.formatString="DD.MM.YYYY";
+          					
+			                if(value != null)
+			                {
+			                    super.data = value;									                   
+			                    if(!(value is DataGridColumn))
+			                    {
+			                    	date=format.format(value.PUBDATE.toString());
+			                    }
+			        		}
+			        	}
+          			]]>
+          		</mx:Script>
+          		</mx:Text>
+        	</mx:Component>
+  		</mx:itemRenderer>
+  		
+	</mx:DataGridColumn>
+
+	<mx:DataGridColumn width      = "80" 
+		               headerText = "Page Numbers" 
+		               dataField  = "PAGENOS"/>
+
+	<mx:DataGridColumn width      = "80" 
+		               headerText = "Contributor Reference" 
+		               dataField  = "REFERENCE"/>
+
+	<mx:DataGridColumn width      = "70" 
+		               headerText = "Payment Date"
+		               dataField  = "PAYMENT_DATE">
+		
+		<mx:itemRenderer>
+			<mx:Component>                                 		
+          		<mx:Text text="{date}">
+          			<mx:Script>
+          			<![CDATA[              
+          				import mx.controls.dataGridClasses.DataGridColumn;
+          				import mx.formatters.DateFormatter;
+          				[Bindable]
+          				private var date:String;
+          				override public function set data(value:Object):void {	
+          					var format:DateFormatter = new DateFormatter;
+          					format.formatString="DD.MM.YYYY";
+          					
+			                if(value != null)
+			                {
+			                    super.data = value;									                   
+			                    if(!(value is DataGridColumn))
+			                    {
+			                    	date=format.format(value.PAYMENT_DATE.toString());
+			                    }
+			        		}
+			        	}
+          			]]>
+          		</mx:Script>
+          		</mx:Text>
+        	</mx:Component>
+  		</mx:itemRenderer>
+  		
+  	</mx:DataGridColumn>	
+
+	<mx:DataGridColumn width        = "50" 
+		               headerText   = "Status" 
+		               dataField    = "STATUS"
+		               itemRenderer = "ecs.gridFields.StatusRenderer"/>
+
+	<mx:DataGridColumn width      = "60" 
+		               headerText = "Cost Centre" 
+		               dataField  = "COST_CENTRE"/>
+
+  </mx:columns>
+  
+</mx:DataGrid>
+

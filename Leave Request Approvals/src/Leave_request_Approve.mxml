@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>	
+<mx:Application    xmlns:mx="http://www.adobe.com/2006/mxml" 
+					backgroundColor="#D4D4D4"
+					layout="vertical" paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0"
+			    	initialize="init();"
+					creationComplete="creationComplete();"
+					xmlns:ns1="*"
+					creationPolicy="all"
+					xmlns:HR="HR.Components.*" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
+					xmlns:VDG="VDG.*" xmlns:containers="com.arc90.flexlib.containers.*" xmlns:ns2="visualComponents.*">  
+	<mx:Style source="ECS.css"/>
+	<mx:SetStyle name="backgroundColor" value="#D4D4D4"/>
+
+	<mx:Script source="scripts/Processing.as"/> 
+	<mx:Script source="scripts/TabHandling.as"/>
+	<mx:Script source="scripts/Utilities.as"/>
+	
+	<!-- Local version of wsGetItemsToApprove.Z_CAS_LEAVE_GET_ITEMS.lastResult -->
+    <mx:XML id="fieldFormatting" source="/output_xml/fieldFormatting.xml"/> 
+
+    <mx:Metadata>
+        [Event(name="expandAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="collapseAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>        
+    <mx:Metadata>
+        [Event(name="selectAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="selectAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+	
+	<mx:Script>
+        <![CDATA[
+        	import mx.controls.ToolTip;
+        	import mx.controls.TextInput;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import mx.rpc.events.ResultEvent;
+            import flash.events.MouseEvent;
+            import mx.events.CloseEvent;
+            import flash.external.ExternalInterface;
+            import flash.system.Security;
+            import mx.collections.ICollectionView;
+            import mx.events.DynamicEvent;
+            import com.arc90.flexlib.containers.CollapsiblePanel;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import HR.generalClasses.*;
+
+            // The Variant DataGrid classes are in the VDG_Library project. You need to import this project
+  			// into your workspace in order to run this program, otehrwise you will see messages telling you 
+   			// that Flex cannot find the class VariantdataGrid.
+		    //import VDG.*;
+//			include "DataGridColumnSortFunctions.as";
+		    public const c_test_server:String = "http://sapr3t.ni.ad.newsint:8001";
+			public const c_dev_server:String = "http://sapd11.ni.ad.newsint:8000";
+			public const c_sap_client:String = "sap-client=007&";
+			public const c_wsdl_sicf_prefix:String = "/sap/bc/soap/wsdl11?"; 
+		
+			[Bindable]
+			public var wsdl_prefix:String;
+            			
+			// CAS workflow tasks
+            [Bindable]
+            protected var workflow_tasks:XMLList;
+
+            // Table of leave requests
+            [Bindable]
+            public var tableReturned:XMLList;  // Contracts returned from SAP
+            [Bindable]
+            public var table:XMLList;          // Contracts in the current tab
+            
+            // Table of selected leave
+            [Bindable]
+            public var table_selected:Array;
+            [Bindable]
+            public var table_selected_XMLList:XMLList;
+                        
+			[Bindable]
+			public var bEnableButtons:Boolean = true;
+			[Bindable]
+			public var xmlalldata: XML;
+			
+			
+			//  values for hold/unhold
+			[Bindable]
+			public var holdWIID:String;
+			[Bindable]
+			public var holdReason:String;
+			[Bindable]
+			public var holdDate:String;
+			
+			// value for PORTAL url
+			[Bindable]
+			public var portalURL:String;
+
+			// help url 
+			[Bindable]
+			public var helpURL:String;
+			
+			// Does user have Shift Planning
+			[Bindable]
+			public var hasShiftPlanning:Boolean;
+			
+			// org unit
+			[Bindable]
+			public var orgUnit:String;			
+			
+			// Array of result messages
+			private var resultMessages:Array;
+			private var errorMessages:Array;
+
+			// messages
+			[Bindable]
+			public var xmlmessages: XML;
+				
+			public function init():void {
+				// Called at the "init" event of the application
+				// We need to tell the web services where to get their WSDls from.
+				
+				if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    			wsdl_prefix = c_wsdl_sicf_prefix + "services=";
+				else  // Running locally
+			 	   wsdl_prefix = c_dev_server       // Which SAP server should we connect to?
+			              	    + c_wsdl_sicf_prefix
+			             	    + c_sap_client       // Which SAP client should we connect to?
+			            	    + "services=" ;   	
+  				this.addEventListener("expandAll", onExpandAll);
+				this.addEventListener("collapseAll", onCollapseAll);
+  				this.addEventListener("selectAll", onSelectAll);
+				this.addEventListener("deselectAll", onDeselectAll);				
+	    	}
+			
+			public function creationComplete():void {		
+				// Called at the "creationComplete" event of the application
+				// Set everything up visually and go get data.				
+				registerPortalFunctions();
+				getLeaveItems();
+				
+				// Hide approval & rejection button unless running locally
+				if (Security.sandboxType == Security.REMOTE)
+				{
+					buttonReject.visible = false;
+					buttonApprove.visible = false;
+				}
+				else  // Show "Shift Planning" button if not in BSP
+				{   
+					hasShiftPlanning = true;
+				}
+				
+				// Work out if the user has access to Shift Planning to know whether to show the Shift Planning button
+				var access:String = ExternalInterface.call("getShiftPlanAccess");
+				if (access == 'X')
+				{
+					hasShiftPlanning = true;
+				}
+				else
+				{
+					hasShiftPlanning = false;
+				}
+					
+			}
+			
+            public function getLeaveItems():void {
+	            // Gets the HR items that this user can approve
+    	        // This function is run when the application is first opened	
+            	wsGetItemsToApprove.Z_CAS_LEAVE_GET_ITEMS.send();
+          
+	          	// clear the output messages
+    		   	resultMessages = new Array();
+             	errorMessages = new Array();
+            }
+            
+            private function registerPortalFunctions():void {
+				if (ExternalInterface.available) {
+					ExternalInterface.addCallback("Approve", doApprove);
+					ExternalInterface.addCallback("Reject", doReject);
+					ExternalInterface.addCallback("Refresh", doRefresh);
+					Security.allowDomain("*");
+				}				
+			}
+			
+			public function doRefresh():void
+			{
+				// Clear data
+				table = new XMLList;
+				table_selected_XMLList = new XMLList;
+				table_selected = new Array;
+				// Refresh display
+				currentState = '';
+				// Get leave items
+				getLeaveItems();
+				// Rerfresh messages
+				resultMessages = new Array();
+                errorMessages = new Array();
+			}
+            
+			public function showCalendar():void
+			{
+				import flash.net.*;
+
+				var teamCalendarURL:String = portalURL + 
+											 "/irj/servlet/prt/portal/prtroot/com.sap.portal.pagebuilder.IviewModeProxy?" +
+											 "iview_id=pcd%3Aportal_content%2Fcom.morse.portalconfig%2Fcom.sap.pct.erp.mss.bp_folder" +
+											 "%2Fcom.sap.pct.erp.mss.14.bp_folder%2Fcom.sap.pct.erp.mss.14.roles" +
+											 "%2Fcom.sap.pct.erp.mss.manager_self_service%2Fcom.sap.pct.erp.mss.manager" +
+											 "%2Foverview%2Fcom.sap.pct.erp.mss.team%2Fcom.sap.pct.erp.mss.team" +
+											 "%2Fcom.sap.pct.erp.mss.teamcalendar_page%2Fcom.sap.pct.erp.mss.teamcalendar" +
+											 "&iview_mode=default&DynamicParameter=";
+				
+				var calendarURL:URLRequest = new URLRequest(teamCalendarURL);
+		        navigateToURL(calendarURL,"_blank");
+
+			}
+
+			public function showShift():void
+			{
+				import flash.net.*;
+
+				var shiftPlanningURL:String = portalURL + 
+											 "/irj/portal" +
+											 "?NavigationTarget=ROLES://portal_content/com.ni.cis.NIDevelopment" +
+											 "/com.NI.People_management_CAS/com.NI.iViews/uk.co.NI.Shift_planning" +
+											 "&NavMode=3" +
+											 "&DynamicParameter=PDPLA-ORGEH%3d" +
+											 this.orgUnit +
+											 ";DYNP_OKCODE%3dSHOW&AutoStart=true";
+				var shiftURL:URLRequest = new URLRequest(shiftPlanningURL);
+		        navigateToURL(shiftURL,"_blank");
+
+			}
+						            
+            public function showResults(event:ResultEvent):void {
+            	// This is the result of the webservice called by getHRItems();
+            	// Show the items that a user can approve          	
+            	var result:XML = new XML(event.result[0]);
+            	var tablelength:int;
+            	
+				// set the panel title including number of items and set to panel to collapsed/expanded
+				set_pannel_title(XMLList(result.HEADERS.item), "Leave Requests", cp1);
+				xmlalldata = new XML(wsGetItemsToApprove.Z_CAS_LEAVE_GET_ITEMS.lastResult);
+				portalURL  = XML(result.PORTAL);
+				helpURL = XML(result.HELP_URL);
+				orgUnit = XML(result.ORG_UNIT);
+            }
+            
+			protected function set_pannel_title(tableReturned:XMLList, title:String, cpPanel:CollapsiblePanel):void {
+				// sets tilte and collapsed/expanded status of panel
+            	var tablelength:int;
+            	var item:String;
+            	
+				// get the number of items in the table
+				tablelength = tableReturned.length();
+				//if no items, set the title to say no items and collapse the panel
+             	if (tablelength == 0) {
+            		cpPanel.title = title + " - no items";
+            		cpPanel.collapsed = true;
+            	} 
+            	else
+            	{
+            		if (tablelength == 1) {
+            			item = " item";
+            		}
+            		else {
+            			item = " items";	
+            		}
+            		cpPanel.title = title + " - " + tablelength + item;
+            		cpPanel.collapsed = false;
+            	}
+			}
+			
+            public function webServiceFault(event:Event,service:String):void {
+            	var alert_text:String = 'Error with web service ' + service;
+            	Alert.show(alert_text);
+            }      
+            	
+			protected function doSort(event:DynamicEvent, dataProvider:Object):void
+			{
+				var f:ICollectionView;
+				var l_field:String = event.field; 
+								
+				if (dataProvider is ICollectionView)
+				{
+					var sort:Sort = new Sort();
+					var sortField:SortField = new SortField(l_field);
+					if (event.sortOrder == 1)
+					{
+						sortField.descending = false;
+					}
+					else
+					{
+						sortField.descending = true;
+					}
+					//sortField.descending = !(event.sortAscending);					
+					sort.fields = new Array();
+					sort.fields.push(sortField);
+					// Now sort by workflow id to make sure we have a definite sort order
+					sortField = new SortField("WIID");
+					sortField.descending = true;
+					sort.fields.push(sortField);
+					
+					(dataProvider as ICollectionView).sort = sort;
+					(dataProvider as ICollectionView).refresh();
+				}
+			}			
+        ]]>
+	</mx:Script>
+
+	<mx:WebService id="wsGetItemsToApprove"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_LEAVE_GET_ITEMS'}"
+     	useProxy="false" 
+    	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetItemsToApprove')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_LEAVE_GET_ITEMS"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<UNAME></UNAME>
+				<ACT_OTYPE></ACT_OTYPE>
+				<ORG_REQUESTOR></ORG_REQUESTOR>
+				<DATE_FROM></DATE_FROM>
+				<DATE_TO></DATE_TO>		
+				<PORTAL></PORTAL>
+				<HELP_URL></HELP_URL>
+				<ORG_UNIT></ORG_UNIT>
+				<HEADERS></HEADERS>
+				<ITEMS></ITEMS>
+				<REQUESTOR></REQUESTOR>
+				<LEAVE_NOTES></LEAVE_NOTES>
+				<HR_HISTORY></HR_HISTORY>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WebService id="wsDoApprove"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_LEAVE_APPROVE'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doReject')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_LEAVE_APPROVE"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    	 	<ITEMS/>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+	<mx:WebService id="wsDoReject"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_LEAVE_REJECT'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doReject')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_LEAVE_REJECT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    	 	<ITEMS/>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>	
+
+	<mx:WebService id="wsDoHold"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_LEAVE_HOLD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doHold')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_LEAVE_HOLD"  
+	    	 resultFormat="e4x" concurrency="last">
+	   	     <mx:request>
+				<WIID>{holdWIID}</WIID>
+	    	 	<REASON>{holdReason}</REASON>
+	    	 	<ENDDA>{DateToSAPFormat(holdDate)}</ENDDA>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WebService id="wsDoUnHold"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_LEAVE_UNHOLD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doUnHold')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_LEAVE_UNHOLD"  
+	    	 resultFormat="e4x" concurrency="last">
+	   	     <mx:request>
+				<WIID>{holdWIID}</WIID>
+	    	 	<REASON></REASON>
+	    	 	<ENDDA></ENDDA>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WipeRight id="textEffect" duration="150"/> 
+	<mx:Canvas id="outerCanvas"  >
+		<mx:TabNavigator x="0" y="0" width="1180" height="116" fillColors="[#D4D4D4, #D4D4D4]"
+			 id="tabSelection" creationPolicy="all" change="handleTabSelect()" enabled="true" includeInLayout="true">
+			<mx:Canvas label="Leave Requests" width="1180" height="74" backgroundColor="#F2F2F2" id="tabStrip" focusEnabled="false">
+				<HR:Button1 x="722" y="10" label="Team Calendar" click="showCalendar();" id="buttonCalendar" enabled="true"/>
+				<HR:Button1 x="599" y="10" label="Shift Planning" click="showShift();" id="buttonShift" enabled="true"
+					        visible="{this.hasShiftPlanning}"/>
+				<HR:Button1 x="850" y="10" label="Refresh" click="doRefresh();" id="buttonRefresh" enabled="true"/>
+				<ns1:HelpIcon id="help" x="945" width="100" height="56"  backgroundImage="@Embed('HR/images/help_bg2.gif')"/>
+				<mx:Image source="@Embed('HR/images/Logo_bgr.gif')" id="image1" x="1045" y="0"/>
+			</mx:Canvas>
+		</mx:TabNavigator>
+
+		<mx:Canvas y="120" id="innerCanvas" minWidth="1200" width="1190" height="560">
+			<!-- These buttons are only shown when we run the flex app locally.
+			   If we run in Portal or a BSP they won't be displayed -->
+			<HR:Button1 y="0" click="doReject();" label="Reject" id="buttonReject" left="856"/>
+			<HR:Button1 x="927" y="0" click="doApprove();" label="Approve" id="buttonApprove"/>
+	
+			<mx:VBox verticalAlign="top" x="0" y="30">
+			<containers:CollapsiblePanel id="cp1" width="1166" title="Leave Requests" x="0">
+					<mx:VBox verticalGap="0">
+						<mx:Repeater id="rpLeaverRequest" 
+							         dataProvider="{wsGetItemsToApprove.Z_CAS_LEAVE_GET_ITEMS.lastResult.HEADERS.item}"
+							         recycleChildren="true">
+							<ns2:TableOutput ext_data="{rpLeaverRequest.currentItem}"
+								            ext_index="{rpLeaverRequest.currentIndex}"
+								            allItems="{wsGetItemsToApprove.Z_CAS_LEAVE_GET_ITEMS.lastResult.ITEMS.item}"								            
+								            formatXML="{fieldFormatting.LeaveRequestOutput}"
+								            userSort="doSort(event, rpLeaverRequest.dataProvider);">
+							</ns2:TableOutput>
+						</mx:Repeater>
+					</mx:VBox>
+			</containers:CollapsiblePanel>
+			</mx:VBox>
+		</mx:Canvas>
+	</mx:Canvas>
+</mx:Application>

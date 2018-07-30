@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:ComboBox xmlns:mx="http://www.adobe.com/2006/mxml" >
+
+	<mx:Script>
+
+		<![CDATA[
+
+/* This has been created to help...                */
+// Look at the combobox in the source of the mxml file
+/* ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.CONTRIB_TYPE.toString()}" dataProviderFromSAP="{xmlInitData.EX_T_CONTRIB_TYPES.item} */
+
+			import mx.collections.ArrayCollection;
+			import mx.core.Application;
+    		
+	   		private var _oValue:Object;
+		    private var _oDataProvider:Object;
+		    private var _bCompareToKey:Boolean = true;
+
+		    private function selectValue(oValue:Object, bCompareToText:Boolean = false):void {
+        		if ((oValue != null) && (dataProvider != null)) {
+                	for (var i : int = 0; i < dataProvider.length; i++) {
+                		if (bCompareToText || !_bCompareToKey) {
+                			if (oValue == dataProvider[i].label) {
+        			            selectedIndex = i;
+    	            		    return;
+					        }
+                		} else {
+                			
+                			if (oValue == dataProvider[i].data) {
+	        		            selectedIndex = i;
+    	            		    return;
+                			}
+                		}		                
+        			}    
+        		}
+        		selectedIndex = -1;
+		    }    
+
+			[Bindable("ComboBoxChange")]
+			public function get ChosenValue():Object {
+				
+				var item:Object = selectedItem;
+				
+				if (item == null || typeof(item) != "object")
+					return item;
+				
+				return "data" in item ? item.data : item.label;
+			} 
+
+
+		    public function set ChosenValue(oValue:Object)  : void {
+		        _oValue = oValue;
+				selectValue(_oValue)
+        // Dispatch the event to trigger data binding. 
+	            dispatchEvent(new Event("ComboBoxChange"));
+				
+		    }
+	    
+		    
+		    public function set dataProviderFromSAP(oDataProvider:Object):void {
+		    	var acDataProvider:ArrayCollection = new ArrayCollection();
+		    	for each(var item:* in oDataProvider) {
+
+		    		acDataProvider.addItem({data:item.DATA, label:item.LABEL});
+		    	}
+		    	this.dataProvider = acDataProvider;
+		    }
+		    
+
+			public function set compareToKey(bCompareToKey:Boolean):void {
+				_bCompareToKey = bCompareToKey;
+			}
+		    
+	    ]]>
+	</mx:Script>
+</mx:ComboBox>

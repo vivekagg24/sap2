@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<HRRequestOutput>
+		 		<headerFields>
+					<field width="73" dataField="ACTION_DATE" type="dateLabel" columnTitle="Date" /> 
+					<field width="58" dataField="ACTION_TIME" type="Label" columnTitle="Time" />
+					<field width="70" dataField="ACTION" type="Label" columnTitle="Action" />					
+					<field width="126" dataField="FORM_DESC" type="TextArea" columnTitle="Request type" /> 
+					<field width="200" dataField="DEPARTMENT" type="TextArea" columnTitle="Department" />
+					<field width="200" dataField="DESCRIPTION" type="TextArea" columnTitle="Position/Person" />
+					<field width="145" dataField="APPROVER" type="TextArea" columnTitle="Actioned by Substitute" />
+					<field width="145" dataField="SUBSTITUTE_FOR" type="TextArea" columnTitle="As a Substitute for" />
+					<field width="90" dataField="STATUS" type="TextArea" columnTitle="Overall status" />
+					<field width="46" dataField="Action" type="Action" columnTitle="Action" /> 
+				</headerFields>
+	    	</HRRequestOutput>
+    	</formatting>

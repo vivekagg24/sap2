@@ -1,0 +1,61 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+
+  <Dialog title="{i18n>dialog-add-resource-title}" id="dialogResourceAdd">
+    <content>
+      <Panel>
+        <VBox alignItems="Start">
+        <HBox alignItems="Center">
+          <Label text="{i18n>dialog-add-resource-name}"/>
+          <SearchField
+            width="100%"
+            class="sapUiSmallMarginBegin"
+            placeholder="{i18n>dialog-add-resource-name-placeholder}"
+            value="{resourceAdd>/searchName}"
+            search="onResourceSearch"/>
+        </HBox>
+        <HBox alignItems="Center">
+          <Label text="{i18n>dialog-add-resource-username}"/>
+          <SearchField
+            width="100%"
+            class="sapUiSmallMarginBegin"
+            placeholder="{i18n>dialog-add-resource-username-placeholder}"
+            value="{resourceAdd>/searchUsername}"
+            search="onResourceSearch"/>
+        </HBox>
+      </VBox>
+      </Panel>
+
+      <List id="listMatchingResources"
+        includeItemInSelection="true"
+        mode="MultiSelect"
+        noDataText="{i18n>project-add-resource-no-data}"
+        items="{resourceAdd>/searchResults}">
+
+        <items>
+          <ObjectListItem
+            title="{resourceAdd>display_name}"
+            type="Active"
+            description="{resourceAdd>department}">
+            <attributes>
+              <ObjectAttribute title="{i18n>project-add-resource-position}" text="{resourceAdd>position_name}" />
+              <ObjectAttribute title="{i18n>project-add-resource-department}" text="{resourceAdd>department}" />
+              <ObjectAttribute title="{i18n>project-add-resource-personnel-id}" text="{resourceAdd>personnel_no}" />
+            </attributes>
+          </ObjectListItem>
+        </items>
+      </List>
+
+      <VerticalLayout xmlns="sap.ui.layout" id="messageContainerResourceAdd" width="100%" class="sapUiSmallMarginTopBottom">
+      </VerticalLayout>
+
+    </content>
+
+    <buttons>
+      <Button text="{i18n>dialog-button-ok}" type="Accept" press="onAddResourceOk"/>
+      <Button text="{i18n>dialog-button-cancel}" type="Reject" press="onAddResourceCancel"/>
+    </buttons>
+  </Dialog>
+
+</core:FragmentDefinition>

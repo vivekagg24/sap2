@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx         = "http://www.adobe.com/2006/mxml"
+	            xmlns:VDG        = "http://newsint.co.uk"
+	            xmlns:CMS        = "CMS.Components.*"	
+			    xmlns:ni         = "ni.components.*"
+			    xmlns:hr         = "nihr.*"
+	            backgroundColor  = "#D4D4D4"
+	            scroll           = "true" 
+	            enabled          = "true" 
+	            layout           = "absolute"
+            	width            = "100%" 
+            	height           = "100%"	
+             	creationComplete = "startApp()" 
+				initialize       = "Init()"
+				creationPolicy   = "all" 
+			    resize           = "onResize(event)"
+			    horizontalScrollPolicy="off"
+	 			verticalScrollPolicy="off" >
+
+	<mx:Style source="CMS.css"/>
+	
+	<mx:Script source="CMS/scripts/Common.as" />
+			
+	<mx:Script source="CMS/scripts/ButtonFunctions.as"></mx:Script>				
+	<mx:Script source="CMS/scripts/Utilities.as"></mx:Script>		
+	<mx:Script source="CMS/scripts/Validation.as"></mx:Script>		
+	<mx:Script source="CMS/scripts/ApprovalScripts.as"></mx:Script>	
+		
+<mx:Script>
+
+	<![CDATA[
+		
+			import mx.rpc.events.ResultEvent;
+		
+
+/*    
+	-----------------------------------------
+    FUNCTIONS 
+   	-----------------------------------------
+		Init
+		SetWSDLs
+		loadScreen
+		getData
+		setValidatorFlags
+		ServerRequest
+		SendMaintainClaims
+		ServerResponse
+		ReceiveMaintainClaims
+		webServiceFault
+ */
+	 
+	private function Init():void{
+
+		SetWSDLs();
+    	
+	}
+	 
+	private function SetWSDLs():void{
+
+		// Remote remotely in a BSP
+		if (Security.sandboxType == Security.REMOTE)  
+		
+		      wsdl_prefix = c_wsdl_sicf_prefix + "services=";
+           
+        // Running locally
+		else  
+		      wsdl_prefix = c_dev_server       
+        		          + c_wsdl_sicf_prefix
+                		  + c_sap_client       
+		                  + "services=" ;    
+	}
+	 
+	private function loadScreen():void{
+
+		InitialiseData();
+		
+		ServerRequest(cInitLoad, '',0,null);		
+	}
+	
+	
+	public function getData(supressMessages:Boolean = false):void{
+
+   // called from ServerResponse - case cInitLoad
+
+		if(ValidateDataOnSubmit()){
+		
+		    suppressMessageOnGetClaims = supressMessages;
+		
+			setMEandDHflags();
+	
+			if (deskhead){
+				setValidatorFlags();				
+			} 
+			
+			ServerRequest(cSubmit,'',0,null);
+		}
+	}
+
+	private function setValidatorFlags():void{
+		
+		if (rbdhboth.selected){  	// both "interim" and "deskhead" claims on radio button
+			dhonlySel = "";      	//	 		
+			dhbothSel = "X";     	// BOTH :                to be sent to function module Z_CMS_GET_CLAIMS_FOR_APPROVAL
+ 		} else {					// 
+			dhonlySel = "X";  		// ONLY "deskhead items" to be sent to function module Z_CMS_GET_CLAIMS_FOR_APPROVAL
+			dhbothSel = "";  		// 
+		}
+		
+	}
+		
+//***************************************SERVER REQUEST ************************************************//
+	public function ServerRequest(ID:String, newData:String,RowID:int,Component:UIComponent):void{
+		
+		var oRequestCall:Object;
+		var xShiftRate:String;		
+		var xShiftNo:String;
+		var xHours:String;
+
+		EnableButtons(false);
+
+		switch (ID){
+
+			case cExtend:
+
+				oRequestCall = 	wsExtendCasual.Z_CMS_EXTEND_CLAIM_PERIOD.send(XtendCasPopup.tiUsername.text);
+						
+				break;
+					
+			case cInitLoad:
+
+				oRequestCall = 	wsGetInitialData.Z_CMS_GET_APPROVAL_INITDATA.send();
+
+				break;
+
+			case cApprove:
+
+				oRequestCall = SendApproveClaims(ID, oRequestCall);																		
+				
+				break;		      
+		
+			case cReject:
+
+				oRequestCall = SendMaintainClaims(ID, oRequestCall);																		
+	
+				break;		      		
+		      
+			case cSubmit:     // Run report button!
+
+				var aCostCentres:Array = GetCostCentresForGetData();		
+				
+				oRequestCall = 	wsGetClaims.Z_CMS_GET_CLAIMS_FOR_APPROVAL.request.IM_T_COST_CENTRES = aCostCentres;
+				oRequestCall = 	wsGetClaims.Z_CMS_GET_CLAIMS_FOR_APPROVAL.send();
+		      
+		}
+
+		oRequestCall.marker    = ID;
+		oRequestCall.Component = Component;
+	}
+
+	private function SendMaintainClaims(Action:String,oReq:Object):Object{
+
+		var aCostCentres:Array = GetCostCentresForGetData();
+		
+		oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.IM_T_COST_CENTRES = aCostCentres;
+		oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.IM_ACTION         = Action;
+		oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.CH_T_ITEMS        = ClaimItems;
+		oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.send();					
+		
+		return oReq;
+	}
+
+	private function SendApproveClaims(Action:String,oReq:Object):Object{
+
+		var aCostCentres:Array = GetCostCentresForGetData();
+		var iterativeApproval:Boolean = true; 	 // Set this to true once its fully tested
+		var iterativeApprovalThreshold:int = 10; // If there less than this many items, just approve as normal
+		
+		if (iterativeApproval && ClaimItems.length >= iterativeApprovalThreshold)
+		{
+			oReq = wsApproveClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.IM_T_COST_CENTRES = aCostCentres;
+			oReq = wsApproveClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.IM_ACTION         = Action;
+			
+			oReq = ioApproveClaims.request.CH_T_ITEMS  = ClaimItems;
+			
+			ioApproveClaims.progressText = "Approving";
+			oReq = ioApproveClaims.send();	
+			
+		}		
+		else
+		{
+			oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.IM_T_COST_CENTRES = aCostCentres;
+			oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.IM_ACTION         = Action;
+			oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.request.CH_T_ITEMS        = ClaimItems;
+			oReq = wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.send();	
+		}	
+		// oReq = 			
+		
+		return oReq;
+	}
+
+
+//******************************************SERVER RESPONSE**********************************************//
+	private function ServerResponse(event:ResultEvent):void
+	{
+		var oCallResponse:Object = event.token;
+
+  		var Return_message:String;
+  		var Return_code:int;
+        var RowID:int = oCallResponse.Idx
+
+		switch(oCallResponse.marker)
+		{			
+			case cInitLoad: 
+
+			 	xmlalldata = new XML(wsGetInitialData.Z_CMS_GET_APPROVAL_INITDATA.lastResult);
+		
+		        PopulateCostCenters();
+		        
+		        PopulatePublications();
+
+				SelectPublication();
+				
+				// Set up default valus
+				var defaults:XML = new XML(wsGetInitialData.Z_CMS_GET_APPROVAL_INITDATA.lastResult.EX_USER_DEFAULTS);
+				if (defaults && defaults.toString().length > 0)
+				{
+					setDefaultsOnScreen(defaults);
+				}
+
+				if (passedCCs == "") {
+					selAllCostCentres(true);
+					
+				} else {
+
+					selSpecificCostCentres();
+				}
+
+				if(xmlalldata.EX_USER_IS_MANED.toString() == 'X'){   // MAN ED see function module Z_CMS_GET_APPROVAL_INITDATA
+
+					managingEditor = true;					
+
+				}else{
+					
+					managingEditor = false;	      		// Not a managing editor, therefore...
+					deskhead       = true;        		// ...we have a validator (deskhead or interim deskhead)
+					initialiseDeskheadSettings(); 		// default selection is deskhead only items 
+					                                    // (i.e. nothing awaiting interim valdation where relevant)
+
+				}
+
+				setUpGridColumns();
+				dg.columns=columns;	
+
+				getData();
+			
+				break;
+
+			case cExtend:
+
+				var xmlExtend:XML = new XML(wsExtendCasual.Z_CMS_EXTEND_CLAIM_PERIOD.lastResult);
+
+		  		if(xmlExtend.EX_RETCODE == 0){
+		
+					XtendCasPopup.Close();  			
+	
+		            FormatError(comboPubID,xmlExtend.EX_RET_MESSAGE);					
+		  			
+		  		}else{
+		  			
+	            	FormatError(XtendCasPopup.tiUsername,xmlExtend.EX_RET_MESSAGE);
+	            		  			
+		  		}
+
+				EnableButtons(true);		
+		
+				break;
+		        
+			case cSubmit:
+ 					
+		    	itemsXML = new XML(wsGetClaims.Z_CMS_GET_CLAIMS_FOR_APPROVAL.lastResult);	
+
+				if (itemsXML.EX_RETURN_CODE != 0 ){
+					
+					DataProviderManager.ResetGrid();
+
+		            if (!suppressMessageOnGetClaims)
+		            	FormatError(btnSubmit,itemsXML.EX_RETURN_MESSAGE);		
+		            
+		            EnableButtons(true);			
+				  	
+				}else{
+
+					dg.addEventListener("updateComplete",DataGridUpdated);
+					
+					dp = DataProviderManager.getClaimsCallBack(dp,itemsXML,managingEditor);
+
+				}
+
+				break;
+		
+			case cApprove:
+
+				ReceiveMaintainClaims(event);
+				
+				break;
+
+			case cReject:
+
+				ReceiveMaintainClaims(event);
+							 					
+				break;
+		}
+	}
+
+	private function initialiseDeskheadSettings():void{
+ 
+	 if (xmlalldata.EX_USER_IS_INTERIMVALIDATOR.toString() == 'X'){  // "pure" interim validator => shut done part of the selection 
+	 
+		rbdhboth.selected = true;  			                        // default radio button is for interim and deskhead items
+		                                                            //  (deskhead items will be hidden for "pure" interim validators
+	 	dhonlySel         = "";           	                        // default is claims for the deskhead only
+		dhbothSel         = "X";            	                    // default is claims for the deskhead only (so NOT BOTH interim and deakhad claims)
+		
+		deskhead = false;
+
+	 } else {	
+		
+		rbdhonly.selected = true;  									// default radio button is for deskhead only
+		
+		dhonlySel         = "X";           							// default is claims for the deskhead only
+		dhbothSel         = "";            							// default is claims for the deskhead only (so NOT BOTH interim and deakhad claims)
+		
+	 }
+	 
+	}	
+	
+	private function ReceiveMaintainClaims(event:ResultEvent):void{
+	
+		// Combine aggregated results from IterativeOperation
+		var x:XML;
+		if (event.result is Array)
+		{
+			var count_ok:int;
+			var count_error:int;		
+			
+			// Are we approving or rejecting
+			var mode:String;
+			if (event.token.marker == cApprove) mode = "approved."
+			else if (event.token.marker == cReject) mode ="rejected."
+			else mode = "processed."
+							
+			var l:String; // Message string
+			
+			xmlMaintain = new XML(<stuff><EX_RETURN_MESSAGES/></stuff>);
+			for each (var v:Object in event.result)
+			{
+				count_error += new Number((v.result as XMLList)..EX_TOTAL_ERROR);
+				count_ok += new Number((v.result as XMLList)..EX_TOTAL_OK);
+			}
+			
+			// Build the messages based on the number ok and the number errored		
+			if (count_error > 0)
+			{
+				l = new String(count_error);
+				if (count_error == 1)
+				   l += " record could not be " + mode;
+				else
+				   l += " records could not be " + mode;
+				
+				x = new XML(<item/>);
+				x.MESSAGE = l;
+				xmlMaintain.EX_RETURN_MESSAGES[0].appendChild(x)   
+			}	
+			if (count_ok > 0)
+			{
+				l = new String(count_ok);
+				if (count_ok == 1)
+				   l += " record " + mode;
+				else
+				   l += " records " + mode;
+				
+				x = new XML(<item/>);
+				x.MESSAGE = l;
+				xmlMaintain.EX_RETURN_MESSAGES[0].appendChild(x)   
+			}				
+		}
+			
+		else xmlMaintain = new XML(event.result);
+		//xmlMaintain = new XML(wsMaintainClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR.lastResult);
+		
+		
+		MessageString = FormatMessages(xmlMaintain);
+		
+        FormatError(comboPubID,MessageString);		
+
+		dp = DataProviderManager.getClaimsCallBack(dp,xmlMaintain,managingEditor);
+	}
+
+  	private function webServiceFault(e:FaultEvent,PopupTitle:String):void{
+
+		Alert.show(e.fault.faultString,PopupTitle);
+		
+		EnableButtons(true);
+  	}
+
+	/** Function to refresh the DataGrid
+	*/
+	import mx.events.CollectionEventKind;
+	import mx.events.CollectionEvent;
+	public function refreshGrid():void
+	{
+		var ev:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, true, CollectionEventKind.REFRESH);
+		dp.dispatchEvent(ev);
+		
+	}
+	 
+	]]>	
+</mx:Script>
+
+<!-- 	====================
+		WEB SERVICES 
+		====================
+		ws1
+		wsGetClaims 
+		wsGetInitialData 
+		wsExtendCasual 
+		wsMaintainClaims 
+-->
+
+	<mx:WebService id="ws1"
+	    showBusyCursor="true"
+	    wsdl="{wsdl_prefix}Z_CMS_PUT_ON_QUERY"
+	    >	   
+	    <mx:operation name="Z_CMS_PUT_ON_QUERY" resultFormat="e4x" concurrency="multiple">
+			<mx:request xmlns="">
+	    		<IM_QUERY_STRING></IM_QUERY_STRING>
+			</mx:request>
+		</mx:operation>
+	</mx:WebService>
+
+	<mx:WebService 		id				=	"wsGetClaims" 
+    					wsdl			=	"{wsdl_prefix + 'Z_CMS_GET_CLAIMS_FOR_APPROVAL'}"				
+    					useProxy		=	"false"
+	   					result			=	"ServerResponse(event)"
+  						fault			=	"webServiceFault(event,'wsGetClaims')"
+     					showBusyCursor	=	"true">   
+	    <mx:operation 	name			=	"Z_CMS_GET_CLAIMS_FOR_APPROVAL"  
+	    	 			resultFormat	=	"e4x"
+	    	 			concurrency		=	"multiple">
+	    	 <mx:request>
+				<IM_T_COST_CENTRES></IM_T_COST_CENTRES>
+	    		<IM_DESK_HEAD>{deskHeadSel}</IM_DESK_HEAD>
+	    		<IM_MAN_EDITOR>{manEdSel}</IM_MAN_EDITOR>
+	    		<IM_DATE_LOW>{dfClaimFrom.SAPDateField}</IM_DATE_LOW>
+	    		<IM_DATE_HIGH>{dfClaimTo.SAPDateField}</IM_DATE_HIGH>								
+	    		<IM_PERNR_LOW>{tiPernrFrom.text}</IM_PERNR_LOW>
+	    		<IM_PERNR_HIGH>{tiPernrTo.text}</IM_PERNR_HIGH>				
+	    		<IM_AMOUNT>{tiGTAmount.text}</IM_AMOUNT>
+	    		<IM_COST_CENTRE_LOW></IM_COST_CENTRE_LOW>
+	    		<IM_COST_CENTRE_HIGH></IM_COST_CENTRE_HIGH>				
+	    		<IM_DEPT_ID>{SelectedDept}</IM_DEPT_ID>	    		
+			  	<IM_VALIDATOR_ALLUNVALIDATED>{dhbothSel}</IM_VALIDATOR_ALLUNVALIDATED>
+	    		<IM_VALIDATOR_MYOWNLEVEL>{dhonlySel}</IM_VALIDATOR_MYOWNLEVEL>
+	    		<CH_T_ITEMS></CH_T_ITEMS>
+			</mx:request>	    	 
+		</mx:operation>
+	</mx:WebService>
+
+	<mx:WebService 		id              = "wsGetInitialData" 
+    	           		wsdl            = "{wsdl_prefix + 'Z_CMS_GET_APPROVAL_INITDATA'}"				    	
+       	           		useProxy        = "false"
+     	           		result          = "ServerResponse(event)"
+  		           		fault           = "webServiceFault(event,'wsGetInitialData')"
+     	           		showBusyCursor  = "true">   
+		<mx:operation 	name         	= "Z_CMS_GET_APPROVAL_INITDATA"  
+	    	          	resultFormat 	= "e4x" 
+	    	          	concurrency  	= "single">
+			<mx:request>
+	    		<IM_DEPTID>{SelectedDept}</IM_DEPTID>
+			</mx:request>		
+		</mx:operation>
+	</mx:WebService>
+	
+	<mx:WebService 		id				=	"wsExtendCasual"
+    					wsdl			=	"{wsdl_prefix + 'Z_CMS_EXTEND_CLAIM_PERIOD'}"				
+    					useProxy		=	"false"
+						result			=	"ServerResponse(event)"
+  						fault			=	"webServiceFault(event,'wsExtendCasual')"
+    					showBusyCursor	=	"true">
+	    <mx:operation 	name			=	"Z_CMS_EXTEND_CLAIM_PERIOD"
+	    	 			resultFormat	=	"e4x"
+	    	 			concurrency		=	"multiple">
+			<mx:request>
+	 	    	<IM_USERNAME></IM_USERNAME>
+		    </mx:request>	    	 	    	 
+		</mx:operation>
+	</mx:WebService>
+
+	<mx:WebService 		id   			=	"wsMaintainClaims"
+    	           		wsdl 			= 	"{wsdl_prefix + 'Z_CMS_MAINTAIN_CLAIMS_FOR_APPR'}"		
+    					useProxy		=	"false"
+						result			=	"ServerResponse(event)"
+  						fault			=	"webServiceFault(event,'wsMaintainClaims')"
+    					showBusyCursor	=	"true">
+	    <mx:operation 	name			=	"Z_CMS_MAINTAIN_CLAIMS_FOR_APPR"
+	    	 			resultFormat	=	"e4x" 
+	    	 			concurrency		=	"multiple"
+	    	 		    >
+	    	 <mx:request>
+	    	 	<IM_ACTION></IM_ACTION>
+				<IM_T_COST_CENTRES></IM_T_COST_CENTRES>
+	    		<IM_DESK_HEAD>{deskHeadSel}</IM_DESK_HEAD>
+	    		<IM_MAN_EDITOR>{manEdSel}</IM_MAN_EDITOR>
+	    		<IM_DATE_LOW>{dfClaimFrom.SAPDateField}</IM_DATE_LOW>
+	    		<IM_DATE_HIGH>{dfClaimTo.SAPDateField}</IM_DATE_HIGH>								
+	    		<IM_PERNR_LOW>{tiPernrFrom.text}</IM_PERNR_LOW>
+	    		<IM_PERNR_HIGH>{tiPernrTo.text}</IM_PERNR_HIGH>				
+	    		<IM_AMOUNT>{tiGTAmount.text}</IM_AMOUNT>
+	    		<IM_COST_CENTRE_LOW></IM_COST_CENTRE_LOW>
+	    		<IM_COST_CENTRE_HIGH></IM_COST_CENTRE_HIGH>			
+	    		<IM_DEPT_ID>{SelectedDept}</IM_DEPT_ID>	    
+	    		<IM_VALIDATOR_ALLUNVALIDATED>{dhbothSel}</IM_VALIDATOR_ALLUNVALIDATED>
+				<IM_VALIDATOR_MYOWNLEVEL>{dhonlySel}</IM_VALIDATOR_MYOWNLEVEL>
+				<IM_DONT_RUN_REPORT></IM_DONT_RUN_REPORT>		    			
+				<CH_T_ITEMS></CH_T_ITEMS>
+	    	 </mx:request>
+		</mx:operation>
+	</mx:WebService>
+	
+	<mx:WebService 		id   			=	"wsApproveClaims"
+    	           		wsdl 			= 	"{wsdl_prefix + 'Z_CMS_MAINTAIN_CLAIMS_FOR_APPR'}"		
+    					useProxy		=	"false"
+    					showBusyCursor	=	"true">
+	    <mx:operation 	name			=	"Z_CMS_MAINTAIN_CLAIMS_FOR_APPR"
+	    	 			resultFormat	=	"e4x" 
+	    	 			concurrency		=	"multiple"
+	    	 		    >
+	    	 <mx:request>
+	    	 	<IM_ACTION></IM_ACTION>
+				<IM_T_COST_CENTRES></IM_T_COST_CENTRES>
+	    		<IM_DESK_HEAD>{deskHeadSel}</IM_DESK_HEAD>
+	    		<IM_MAN_EDITOR>{manEdSel}</IM_MAN_EDITOR>
+	    		<IM_DATE_LOW>{dfClaimFrom.SAPDateField}</IM_DATE_LOW>
+	    		<IM_DATE_HIGH>{dfClaimTo.SAPDateField}</IM_DATE_HIGH>								
+	    		<IM_PERNR_LOW>{tiPernrFrom.text}</IM_PERNR_LOW>
+	    		<IM_PERNR_HIGH>{tiPernrTo.text}</IM_PERNR_HIGH>				
+	    		<IM_AMOUNT>{tiGTAmount.text}</IM_AMOUNT>
+	    		<IM_COST_CENTRE_LOW></IM_COST_CENTRE_LOW>
+	    		<IM_COST_CENTRE_HIGH></IM_COST_CENTRE_HIGH>			
+	    		<IM_DEPT_ID>{SelectedDept}</IM_DEPT_ID>	    
+	    		<IM_VALIDATOR_ALLUNVALIDATED>{dhbothSel}</IM_VALIDATOR_ALLUNVALIDATED>
+				<IM_VALIDATOR_MYOWNLEVEL>{dhonlySel}</IM_VALIDATOR_MYOWNLEVEL>
+				<IM_DONT_RUN_REPORT>X</IM_DONT_RUN_REPORT>		    			
+				<CH_T_ITEMS></CH_T_ITEMS>
+	    	 </mx:request>
+		</mx:operation>
+	</mx:WebService>
+	<ni:IterativeOperation  id="ioApproveClaims"
+	                        innerOperator="{wsApproveClaims.Z_CMS_MAINTAIN_CLAIMS_FOR_APPR}"
+	                        No_operations_complete="webServiceFault(event,'wsMaintainClaims')"
+	                        All_operations_complete="ServerResponse(event); getData(true); "	
+	                        continueOnError="false"
+	                        Some_operations_complete=";"
+	                        progressFactory="ni.components.NIProgressBar"
+	                        stepSize="10"   
+	                        parallelProcesses="1"                     
+	                        >
+	</ni:IterativeOperation>
+	
+
+	<mx:NumberValidator  id="PerNrFromCheck" source="{tiPernrFrom}" property="text"  required="false"/>
+
+	<mx:NumberValidator  id="PerNrToCheck"   source="{tiPernrTo}"   property="text"  required="false" />
+
+	<CMS:AmountValidator id="AmountCheck"    source="{tiGTAmount}"  property="text"  required="false"  domain="int"/>
+	
+<mx:VBox id="topCanvas" height="100%" width="100%" verticalGap="1" paddingTop="0" paddingBottom="0">
+	
+	<mx:TabNavigator x="1" y="2" height="149" width="100%"
+		             fillColors="[#D4D4D4, #D4D4D4]"
+		             id="tabSelectionCriteria" 
+		             creationPolicy="all">
+
+		<mx:HBox label="SELECTION CRITERIA" 
+			       width="100%" height="116" 
+			       backgroundColor="#F2F2F2"
+			       horizontalScrollPolicy="off" verticalScrollPolicy="off"
+			       horizontalGap="10"
+			       paddingBottom="6"
+			       paddingLeft="6"
+			       paddingRight="6"
+			       paddingTop="6">
+
+			<mx:VBox x="10" y="10" height="103" 
+				       backgroundColor="#cacaff" 
+				       backgroundAlpha=".25" 
+				       borderStyle="outset" 
+				       verticalScrollPolicy="off"
+				       horizontalScrollPolicy="off"
+				       visible="true"
+				       horizontalGap="7"
+				       verticalGap="7"
+				       paddingTop="7"
+				       paddingBottom="7"
+				       paddingLeft="7"
+				       paddingRight="7"
+				       >
+			<mx:HBox width="100%" verticalAlign="middle">
+				<mx:Label x="10" y="12" 
+					      id="lblPub"
+					      text="Publication "
+					      visible="{isGreaterThan(topCanvas.width, 1100)}" 
+					      includeInLayout="{isGreaterThan(topCanvas.width, 1100)}"
+					      fontWeight="bold"/> 
+				
+				<mx:ComboBox 
+					id           = "comboPubID"
+					dataProvider = "{publications}"
+					enabled      = "{bEnableButtons}"
+					change       = "loadScreen()"
+				    labelField   = "label"
+>        
+				</mx:ComboBox>				
+			</mx:HBox>
+
+
+                <!--  Managing editors see this:    -->
+				<mx:RadioButton x="10" y="38" groupName="rbgStatus" id="rbDeskHead"    label="Not validated"                    fontWeight="bold"                 visible="{managingEditor}" includeInLayout="{managingEditor}"/>
+				<mx:RadioButton x="10" y="62" groupName="rbgStatus" id="rbNotDeskHead" label="Validated, awaiting approval"     fontWeight="bold" selected="true" visible="{managingEditor}" includeInLayout="{managingEditor}"/>
+				
+                <!--  Deskhead validators see this: -->
+				<mx:RadioButton x="10" y="38" groupName="rbgStatus" id="rbdhonly"      label="Awaiting Deskhead validation"     fontWeight="bold"                 visible="{deskhead}" includeInLayout="{deskhead}"/>
+				<mx:RadioButton x="10" y="62" groupName="rbgStatus" id="rbdhboth"      label="Awaiting Interim validation"  	fontWeight="bold"                 visible="{deskhead}" includeInLayout="{deskhead}"/>
+				
+				<!--  "pure" interim validators see nothing -->
+				
+		</mx:VBox>
+
+
+			<mx:Canvas x="268" y="10" width="{lstCostCentres.width + 107}" height="103"
+				          backgroundColor="#cacaff" backgroundAlpha=".25" borderStyle="outset"
+				      >
+
+				<mx:Label x="6" y="10" text="Cost Centres" fontWeight="bold" id="labelFomList"/>
+
+				<mx:Image x="41" y="36" source="@Embed('CMS/images/sell_all.gif')" 
+					click="selAllCostCentres(true)"
+				    toolTip="Select All Cost Centres"
+					useHandCursor="true" buttonMode="true"/>
+
+				<mx:Image x="64" y="36" source="@Embed('/CMS/images/desel_all.gif')" 
+					click="selAllCostCentres(false)"
+				    toolTip="Deselect All Cost Centres"
+					useHandCursor="true" buttonMode="true"/>
+
+				<mx:List x="88" y="10" height="83" 
+					id="lstCostCentres"
+				    selectable="true"
+				    allowMultipleSelection="true"
+				    showDataTips="true"
+				    dataTipFunction="tipFunction"
+					dataProvider="{costCentres}"
+				    dataTipField="tip"
+				    paddingRight="10"
+				    labelField="label"></mx:List>
+				    
+			</mx:Canvas>
+			<mx:Canvas width="393" height="102" backgroundColor="#cacaff" backgroundAlpha=".25" borderStyle="outset">
+				
+				<!--
+				<mx:TextInput x="108" y="8" id="tiPernrFrom" width="117" maxChars="8"/>
+				<mx:TextInput x="260" y="8" id="tiPernrTo" width="97" maxChars="8"/>
+				 -->
+				<hr:PersonSearch x="108" y="8" width="115" height="24" 		
+		 			  id="tiPernrFrom"
+		 			  change=";"
+		 			  maxChars="8" 
+		 			  wsdl_prefix="{wsdl_prefix}"
+		 			  personSearchChosen=";"		 			  
+		 			  returnUname="false"
+		 			  only_cms_users="true" />
+		 		<hr:PersonSearch x="260" y="8" width="115" height="24" 		
+		 			  id="tiPernrTo"
+		 			  change=";"
+		 			  maxChars="8" 
+		 			  wsdl_prefix="{wsdl_prefix}"
+		 			  personSearchChosen=";"		 			  
+		 			  returnUname="false"
+		 			  only_cms_users="true" />
+				
+				
+				<CMS:DateField1 x="108" y="39" width="117" id="dfClaimFrom" enabled="true" editable="false" formatString="DD.MM.YYYY"/>
+				<CMS:DateField1 x="260" y="39" width="117" id="dfClaimTo" enabled="true" editable="false" formatString="DD.MM.YYYY"/>				
+				
+				<mx:TextInput x="108" y="68" id="tiGTAmount" width="117" maxChars="4"/>
+				
+				<mx:Label x="8" y="70" 	text="£ Value &gt;" fontWeight="bold"/>
+				<mx:Label x="8" y="11" 	text="Employee Nos" fontWeight="bold" />
+				<mx:Label x="8" y="41" 	text="Claim Dates" 	fontWeight="bold" toolTip="This is the date the claim was made" />
+				<mx:Label x="234.5" y="10" 	text="to" 			fontWeight="bold"/>
+				<mx:Label x="234.5" y="41" 	text="to" 			fontWeight="bold"/>
+				
+			</mx:Canvas>
+			
+		</mx:HBox>
+		
+	</mx:TabNavigator>
+
+	<mx:Canvas id="cnvMenuButtons">
+	<mx:MenuBar x="2" height="22" width="818">
+	</mx:MenuBar>
+	<CMS:Button1 id="btnApprove" 	x="856"  	label="Approve" 			click="Approve()" 			enabled="{bEnableButtons}" visible="{runningStandalone}" includeInLayout="{runningStandalone}"/>
+	<CMS:Button1 id="btnReject"  	x="957"  	label="Reject" 				click="Reject()" 			enabled="{bEnableButtons}" visible="{runningStandalone}" includeInLayout="{runningStandalone}"/>
+	<CMS:Button1 id="btnAudit" 		x="395"  	label="Claim Audit" 		click="ClaimAudit()" 		enabled="{bEnableButtons}" />
+	<CMS:Button1 id="btnView" 		x="294"  	label="View Claims" 		click="ViewClaims()" 		enabled="{bEnableButtons}"/>
+	<CMS:Button1 id="btnExtend" 	x="494"   	label="Extend Claim Period" click="ExtendCasual()" 		enabled="{bEnableButtons}" visible="{managingEditor}" />
+	<CMS:Button1 id="btnCollapse" 	x="41" 	   	toolTip="Collapse Items" 	click="Collapse()" 			enabled="{bEnableButtons}" icon="@Embed('CMS/images/s_b_acom.gif')" buttonMode="true"/>
+	<CMS:Button1 id="btnExpand" 	x="1" 	 	toolTip="Expand Items" 		click="ExpandSelected()" 	enabled="{bEnableButtons}" icon="@Embed('CMS/images/s_b_aexp.gif')" buttonMode="true"/>
+	<CMS:Button1 id="btnSubmit" 	x="89" 	 	label="Run Report" 			click="getData()" 			enabled="{bEnableButtons}" width="127"  />
+	<CMS:Button1 id="btnToggleSelCriteria"  x="642" label="Hide Selection Criteria"
+			       click="toggleHideShowText(tabSelectionCriteria, 'Selection Criteria' , btnToggleSelCriteria); "
+			       width="162"
+			       enabled="{bEnableButtons}"			       
+			       >
+	</CMS:Button1>
+	</mx:Canvas>	
+	
+	<mx:Canvas id="pnlItemsArea" x="0" y="181" height="100%" width="100%" >
+	
+	<CMS:CMSDataGrid 
+		columns				=	"{columns}" 
+		dataProvider		=	"{dp}" 
+		id					=	"dg" 
+		width				=	"100%" 
+		itemClick 			= 	"itemClickEvent(event);" 
+		itemDoubleClick 	= 	"CallClaimEdit(event)"
+		doubleClickEnabled	=	"true"
+		selectable			=	"true"
+		selectionColor		=	"#B6FFB6"
+		rollOverColor		=	"#E6E6E6"
+		x					=	"2" 
+		y					=	"0" 
+		height				=	"99%"
+		lockedColumnCount	=	"4"
+		styleName			=	"dataGrid"
+		verticalScrollPolicy =  "auto"
+		horizontalScrollPolicy = "auto" 
+		
+		/>
+		
+	</mx:Canvas>
+	
+
+		
+	
+</mx:VBox>	
+
+</mx:Application>

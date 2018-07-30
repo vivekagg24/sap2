@@ -1,0 +1,513 @@
+<save_temp>
+  <shift_days>
+    <sh>
+      <abbreviation>off</abbreviation>
+      <duration_time>00:00</duration_time>
+      <start_time>00:00</start_time>
+      <end_time>00:00</end_time>
+      <color>10027059</color>
+      <name/>
+    </sh>
+    <sh>
+      <duration_time>15:00</duration_time>
+      <abbreviation>d1</abbreviation>
+      <start_time>09:00</start_time>
+      <color>13260</color>
+    </sh>
+    <sh>
+      <duration_time>00:00</duration_time>
+      <abbreviation/>
+    </sh>
+    <sh>
+      <duration_time>00:00</duration_time>
+    </sh>
+    <sh>
+      <duration_time>00:00</duration_time>
+    </sh>
+    <sh>
+      <duration_time>00:00</duration_time>
+    </sh>
+  </shift_days>
+  <rotas>
+    <top_row>
+      <col>
+        <val>Shift Name</val>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>1</day_num>
+        <hover>Monday Week 1 (Day 1)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Tue</day>
+        <val>Tue</val>
+        <day_num>2</day_num>
+        <hover>Tuesday Week 1 (Day 2)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Wed</day>
+        <val>Wed</val>
+        <day_num>3</day_num>
+        <hover>Wednesday Week 1 (Day 3)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Thu</day>
+        <val>Thu</val>
+        <day_num>4</day_num>
+        <hover>Thursday Week 1 (Day 4)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Fri</day>
+        <val>Fri</val>
+        <day_num>5</day_num>
+        <hover>Friday Week 1 (Day 5)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Sat</day>
+        <val>Sat</val>
+        <day_num>6</day_num>
+        <hover>Saturday Week 1 (Day 6)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Sun</day>
+        <val>Sun</val>
+        <day_num>7</day_num>
+        <hover>Sunday Week 1 (Day 7)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>8</day_num>
+        <hover>Monday Week 2 (Day 8)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Tue</day>
+        <val>Tue</val>
+        <day_num>9</day_num>
+        <hover>Tuesday Week 2 (Day 9)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Wed</day>
+        <val>Wed</val>
+        <day_num>10</day_num>
+        <hover>Wednesday Week 2 (Day 10)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Thu</day>
+        <val>Thu</val>
+        <day_num>11</day_num>
+        <hover>Thursday Week 2 (Day 11)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Fri</day>
+        <val>Fri</val>
+        <day_num>12</day_num>
+        <hover>Friday Week 2 (Day 12)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Sat</day>
+        <val>Sat</val>
+        <day_num>13</day_num>
+        <hover>Saturday Week 2 (Day 13)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Sun</day>
+        <val>Sun</val>
+        <day_num>14</day_num>
+        <hover>Sunday Week 2 (Day 14)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>15</day_num>
+        <hover>Monday Week 3 (Day 15)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Tue</day>
+        <val>Tue</val>
+        <day_num>16</day_num>
+        <hover>Tuesday Week 3 (Day 16)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Wed</day>
+        <val>Wed</val>
+        <day_num>17</day_num>
+        <hover>Wednesday Week 3 (Day 17)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Thu</day>
+        <val>Thu</val>
+        <day_num>18</day_num>
+        <hover>Thursday Week 3 (Day 18)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Fri</day>
+        <val>Fri</val>
+        <day_num>19</day_num>
+        <hover>Friday Week 3 (Day 19)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Sat</day>
+        <val>Sat</val>
+        <day_num>20</day_num>
+        <hover>Saturday Week 3 (Day 20)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Sun</day>
+        <val>Sun</val>
+        <day_num>21</day_num>
+        <hover>Sunday Week 3 (Day 21)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>22</day_num>
+        <hover>Monday Week 4 (Day 22)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Tue</day>
+        <val>Tue</val>
+        <day_num>23</day_num>
+        <hover>Tuesday Week 4 (Day 23)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Wed</day>
+        <val>Wed</val>
+        <day_num>24</day_num>
+        <hover>Wednesday Week 4 (Day 24)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Thu</day>
+        <val>Thu</val>
+        <day_num>25</day_num>
+        <hover>Thursday Week 4 (Day 25)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Fri</day>
+        <val>Fri</val>
+        <day_num>26</day_num>
+        <hover>Friday Week 4 (Day 26)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Sat</day>
+        <val>Sat</val>
+        <day_num>27</day_num>
+        <hover>Saturday Week 4 (Day 27)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Sun</day>
+        <val>Sun</val>
+        <day_num>28</day_num>
+        <hover>Sunday Week 4 (Day 28)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>29</day_num>
+        <hover>Monday Week 5 (Day 29)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Tue</day>
+        <val>Tue</val>
+        <day_num>30</day_num>
+        <hover>Tuesday Week 5 (Day 30)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Wed</day>
+        <val>Wed</val>
+        <day_num>31</day_num>
+        <hover>Wednesday Week 5 (Day 31)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Thu</day>
+        <val>Thu</val>
+        <day_num>32</day_num>
+        <hover>Thursday Week 5 (Day 32)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Fri</day>
+        <val>Fri</val>
+        <day_num>33</day_num>
+        <hover>Friday Week 5 (Day 33)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Sat</day>
+        <val>Sat</val>
+        <day_num>34</day_num>
+        <hover>Saturday Week 5 (Day 34)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Sun</day>
+        <val>Sun</val>
+        <day_num>35</day_num>
+        <hover>Sunday Week 5 (Day 35)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>36</day_num>
+        <hover>Monday Week 6 (Day 36)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Tue</day>
+        <val>Tue</val>
+        <day_num>37</day_num>
+        <hover>Tuesday Week 6 (Day 37)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Wed</day>
+        <val>Wed</val>
+        <day_num>38</day_num>
+        <hover>Wednesday Week 6 (Day 38)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Thu</day>
+        <val>Thu</val>
+        <day_num>39</day_num>
+        <hover>Thursday Week 6 (Day 39)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Fri</day>
+        <val>Fri</val>
+        <day_num>40</day_num>
+        <hover>Friday Week 6 (Day 40)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Sat</day>
+        <val>Sat</val>
+        <day_num>41</day_num>
+        <hover>Saturday Week 6 (Day 41)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Sun</day>
+        <val>Sun</val>
+        <day_num>42</day_num>
+        <hover>Sunday Week 6 (Day 42)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>43</day_num>
+        <hover>Monday Week 7 (Day 43)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Tue</day>
+        <val>Tue</val>
+        <day_num>44</day_num>
+        <hover>Tuesday Week 7 (Day 44)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Wed</day>
+        <val>Wed</val>
+        <day_num>45</day_num>
+        <hover>Wednesday Week 7 (Day 45)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Thu</day>
+        <val>Thu</val>
+        <day_num>46</day_num>
+        <hover>Thursday Week 7 (Day 46)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Fri</day>
+        <val>Fri</val>
+        <day_num>47</day_num>
+        <hover>Friday Week 7 (Day 47)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+      <col>
+        <day>Sat</day>
+        <val>Sat</val>
+        <day_num>48</day_num>
+        <hover>Saturday Week 7 (Day 48)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Sun</day>
+        <val>Sun</val>
+        <day_num>49</day_num>
+        <hover>Sunday Week 7 (Day 49)</hover>
+        <backgroundDisabledColor>0xCCFFCC</backgroundDisabledColor>
+        <backgroundColor>0xCCFFCC</backgroundColor>
+      </col>
+      <col>
+        <day>Mon</day>
+        <val>Mon</val>
+        <day_num>50</day_num>
+        <hover>Monday Week 8 (Day 50)</hover>
+        <backgroundDisabledColor>0xFFFFFF</backgroundDisabledColor>
+        <backgroundColor>0xFFFFFF</backgroundColor>
+      </col>
+    </top_row>
+    <row>
+      <col>
+        <val>shift1</val>
+      </col>
+      <col>
+        <val>d1</val>
+      </col>
+      <col>
+        <val>d1</val>
+      </col>
+      <col>
+        <val>d1</val>
+      </col>
+      <col>
+        <val>d1</val>
+      </col>
+      <col>
+        <val>d1</val>
+      </col>
+      <col>
+        <val>off</val>
+      </col>
+      <col>
+        <val>off</val>
+      </col>
+    </row>
+    <row>
+      <col>
+        <val/>
+      </col>
+      <col/>
+      <col/>
+      <col>
+        <val/>
+      </col>
+      <col/>
+      <col/>
+      <col>
+        <val/>
+      </col>
+    </row>
+    <row>
+      <col/>
+      <col>
+        <val/>
+      </col>
+      <col>
+        <val/>
+      </col>
+    </row>
+    <row>
+      <col/>
+      <col/>
+      <col/>
+      <col>
+        <val/>
+      </col>
+    </row>
+    <row>
+      <col/>
+      <col/>
+      <col/>
+      <col/>
+      <col/>
+      <col>
+        <val/>
+      </col>
+    </row>
+  </rotas>
+  <assignment/>
+  <item>
+    <PERNR>00800001</PERNR>
+    <ROTA_NAME>shift1</ROTA_NAME>
+    <OFFSET>0</OFFSET>
+  </item>
+  <selected_org>10005276</selected_org>
+</save_temp>

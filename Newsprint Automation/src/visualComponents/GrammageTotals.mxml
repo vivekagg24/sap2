@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	label="Item Search"
+	styleName="titlewindow" 
+	creationComplete="doInit();" x="50" y="150"
+	width="316" height="400"
+	borderAlpha="1"
+	backgroundColor="#dceefc" borderColor="#A7B6EB" layout="absolute" title="Usage Totals">
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.managers.PopUpManager;
+		//import visualComponents.DateLabel;
+	
+		protected var _grammageTab:XMLList;
+		[Bindable]
+		public function set grammageTab(value:XMLList):void
+		{
+			_grammageTab = value;
+			if (Grammage) Grammage.dataProvider = _grammageTab;
+		}
+		public function get grammageTab():XMLList
+		{
+			return _grammageTab;
+		}
+
+		public var error:Boolean;
+	
+		[Bindable]
+		private var textStyle:String="";	
+		
+		private function doInit():void {
+			this.move(100, 100); // For some reason, PoUpManager.centre doesn't work very well,
+			this.alpha = 1.0;
+			this.Grammage.dataProvider = grammageTab;
+			this.Grammage.rowCount = 10;
+			this.Grammage.showHeaders = true;			
+			this.setStyle("borderAlpha", 1.0);
+			btnClose.setFocus();		 
+		}
+		
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			super.updateDisplayList(unscaledWidth, unscaledHeight);		
+		}
+	
+		private function handleClose():void{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			parentApplication.focusManager.activate();
+			if (parentApplication.hasOwnProperty("focusField") &&
+			   parentApplication.focusField!=null)
+			{	
+				parentApplication.focusField.setFocus();
+				trace(parentApplication.focusField.id);
+			}
+			if (parentApplication.hasOwnProperty("focusEvent") && parentApplication.focusEvent!="") 
+			{
+				parentApplication.dispatchEvent(new Event(parentApplication.focusEvent));
+			}
+		}
+		]]>
+	</mx:Script>
+
+	<mx:Panel x="10" y="10" title="Usage Totals by Grammage" backgroundAlpha="0" height="300" width="274">
+		<mx:DataGrid id="Grammage" wordWrap="true" variableRowHeight="true" height="254" horizontalScrollPolicy="off" verticalScrollPolicy="on" width="250">
+			<mx:columns>
+				<mx:DataGridColumn headerText="GSM" dataField="ZNP_GSM" width="50" textAlign="right"/>
+				<mx:DataGridColumn headerText="Mat Group" dataField="MATKL" width="90" />
+				<mx:DataGridColumn headerText="Total weight" dataField="TOTAL_GRAMMAGE" width="80" textAlign="right"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+
+	<mx:Button id="btnClose" fontWeight="bold" label="Close" x="10" y="320" click="handleClose()"/>
+</mx:TitleWindow>

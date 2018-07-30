@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Label xmlns:mx="http://www.adobe.com/2006/mxml" 
+
+	>
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.dataGridClasses.DataGridColumn;
+		
+			override public function set data(value:Object):void{
+				if (value != null) {
+					super.data = value;
+				
+				// the parent DataGridColumn is passed as value before the real data arrives
+                	if (!(value is DataGridColumn)) {
+                		text = value.PERNR;                		
+		
+				        if (value.costCentreLine){
+			
+							setStyle("fontWeight","bold")
+	 	  
+				        }else{
+
+							setStyle("fontWeight","normal")
+				        	
+				        }
+
+                		
+                	}
+                	
+    			}
+			}
+		]]>
+	</mx:Script>
+</mx:Label>

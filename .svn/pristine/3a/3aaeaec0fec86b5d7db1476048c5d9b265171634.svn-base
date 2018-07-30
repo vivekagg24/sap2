@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	MessageDisplay.mxml
+		
+		Display messages from SAP (approval) in data grid
+		
+-->
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	top="100" backgroundGradientAlphas="[0, 0]"
+	 backgroundAlpha="0">
+<mx:Style source="../ECS.css"/>
+	<mx:TitleWindow x="57" y="24" width="491" height="329" layout="absolute"
+		 close="PopUpManager.removePopUp(this)"
+		 creationComplete="doInit()"
+		 showCloseButton="true"
+		 title="{parentApplication.messageTitle}"
+		 backgroundAlpha="1">
+	<mx:Script>
+    <![CDATA[
+
+        import mx.managers.PopUpManager;
+       
+       	[Bindable]
+       	private var gridMessages:XMLList;
+       	
+		private function doInit():void{
+			PopUpManager.centerPopUp(this);
+			gridMessages=parentApplication.messages;
+			dg.setFocus();
+		}
+		  		
+	    ]]>
+	</mx:Script>
+
+	<mx:Panel x="0" y="0" width="471" height="239" layout="absolute" backgroundAlpha="1.0"
+		defaultButton="{btnContinue}">
+		<mx:title>The following messages were returned:</mx:title>
+		<mx:DataGrid 
+			id="dg"
+			x="0" y="0" width="435" height="209" 
+			dataProvider="{gridMessages}"
+			styleName="dataGrid"
+			horizontalScrollPolicy="on" wordWrap="true" variableRowHeight="true">
+			<mx:columns>
+				<mx:DataGridColumn dataField="ERROR" width="40" headerText="" >
+					<mx:itemRenderer>
+						<mx:Component>
+							<mx:Image>
+							<mx:Script>
+								
+								<![CDATA[
+									import mx.controls.dataGridClasses.DataGridColumn;
+									import mx.core.BitmapAsset;
+									[Embed(source="../../images/redlight.gif")]
+									[Bindable]
+									private var redLight:Class;
+									[Embed(source="../../images/yellowlight.gif")]
+									[Bindable]
+									private var yellowLight:Class;
+									[Embed(source="../../images/greenlight.gif")]
+									[Bindable]
+									private var greenLight:Class;
+									
+									
+									override public function set data(value:Object):void {
+							            super.data = value;
+							   
+							
+										if (value != null) {
+											super.data = value;
+											
+											// the parent DataGridColumn is passed as value before the real data arrives
+							                if (!(value is DataGridColumn)) {
+							                	if ( value.MSG_TYPE=="E") // Error
+							                	{
+							                		source = new redLight() as BitmapAsset;
+							                	} 
+							                	else if (value.MSG_TYPE=="W") // Warning
+							                	{
+							                    	source = new yellowLight() as BitmapAsset;
+							                    } else {
+							                    	source = new greenLight() as BitmapAsset;
+							                    }
+							                }							      	
+							        	}
+							            super.invalidateProperties();
+							      }
+								]]>
+							</mx:Script>
+						   </mx:Image>
+						</mx:Component>
+					</mx:itemRenderer>
+				</mx:DataGridColumn>
+				<mx:DataGridColumn headerText="Message" dataField="LINE" width="360" wordWrap="true"  />
+			
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+	<mx:Button x="191.5" y="257" 
+		styleName="save" id="btnContinue" label="Continue" click="PopUpManager.removePopUp(this);" icon="@Embed('../../images/OK.gif')" width="88"/>
+	</mx:TitleWindow>
+</mx:Application>

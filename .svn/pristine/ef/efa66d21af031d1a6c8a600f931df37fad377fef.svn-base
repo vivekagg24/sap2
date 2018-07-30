@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8"?>	
+<mx:Application    xmlns:mx="http://www.adobe.com/2006/mxml" 
+					backgroundColor="#D4D4D4"
+					layout="vertical" paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0"
+			    	initialize="init();"
+					creationComplete="creationComplete();"
+					xmlns:ns1="*"
+					creationPolicy="all"
+					xmlns:HR="HR.Components.*" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
+					xmlns:VDG="VDG.*" xmlns:containers="com.arc90.flexlib.containers.*" xmlns:ns2="visualComponents.*">  
+	<mx:Style source="ECS.css"/>
+	<mx:SetStyle name="backgroundColor" value="#D4D4D4"/>
+
+	<mx:Script source="scripts/Processing.as"/> 
+	<mx:Script source="scripts/TabHandling.as"/>
+	<mx:Script source="scripts/Utilities.as"/>
+	
+    <mx:XML id="fieldFormatting" source="/output_xml/fieldFormatting.xml"/> 
+
+    <mx:Metadata>
+        [Event(name="expandAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="collapseAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>        
+    <mx:Metadata>
+        [Event(name="selectAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="selectAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+	
+	<mx:Script>
+        <![CDATA[
+        	import mx.controls.ToolTip;
+        	import mx.controls.TextInput;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import mx.rpc.events.ResultEvent;
+            import flash.events.MouseEvent;
+            import mx.events.CloseEvent;
+            import flash.external.ExternalInterface;
+            import flash.system.Security;
+            import mx.collections.ICollectionView;
+            import mx.events.DynamicEvent;
+            import com.arc90.flexlib.containers.CollapsiblePanel;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import HR.generalClasses.*;
+			import mx.managers.CursorManager;
+
+            // The Variant DataGrid classes are in the VDG_Library project. You need to import this project
+  			// into your workspace in order to run this program, otehrwise you will see messages telling you 
+   			// that Flex cannot find the class VariantdataGrid.
+		    //import VDG.*;
+//			include "DataGridColumnSortFunctions.as";
+		    public const c_test_server:String = "http://vectci"; //http://sapr3t.ni.ad.newsint:8001";
+			public const c_dev_server:String = "http://vecdci"; //http://sapd11.ni.ad.newsint:8000";
+			public const c_sap_client:String = "sap-client=007&";
+			public const c_wsdl_sicf_prefix:String = "/sap/bc/soap/wsdl11?"; 
+		
+			[Bindable]
+			public var wsdl_prefix:String;
+            			
+			// CAS workflow tasks
+            [Bindable]
+            protected var workflow_tasks:XMLList;
+
+            // Table of expense Claims
+            [Bindable]
+            public var tableReturned:XMLList;  // Contracts returned from SAP
+            [Bindable]
+            public var table:XMLList;          // Contracts in the current tab
+            
+            // Table of selected expense claims
+            [Bindable]
+            public var table_selected:Array;
+            [Bindable]
+            public var table_selected_XMLList:XMLList;
+                        
+			[Bindable]
+			public var bEnableButtons:Boolean = true;
+			[Bindable]
+			public var xmlalldata: XML;
+			
+			//  values for hold/unhold
+			[Bindable]
+			public var holdWIID:String;
+			[Bindable]
+			public var holdReason:String;
+			[Bindable]
+			public var holdDate:String;
+
+			// values for dispalying expense
+			[Bindable]
+			public var expenseClaimNo:String;
+			[Bindable]
+			public var expensePernr:String;			
+			
+			// value for PORTAL url
+			[Bindable]
+			public var portalURL:String;
+
+			// requestor combo box
+			[Bindable]
+			private var requestors:Array;				
+			[Bindable]
+			public var SelectedRequestor:String;
+			public var passedRequestor:String;
+
+			// cost centre combo box
+			[Bindable]
+			private var costCentres:Array;				
+			[Bindable]
+			public var SelectedKostl:String;
+			public var passedKostl:String;
+
+			// help url 
+			[Bindable]
+			public var helpURL:String;
+			
+			// org unit
+			[Bindable]
+			public var orgUnit:String;			
+
+			[Bindable]			
+			public var no_claims:String;
+			
+			// Array of result messages
+			private var resultMessages:Array;
+			private var errorMessages:Array;
+
+			// messages
+			[Bindable]
+			public var xmlmessages: XML;
+				
+			public function init():void {
+				// Called at the "init" event of the application
+				// We need to tell the web services where to get their WSDls from.
+				
+				if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    			wsdl_prefix = c_wsdl_sicf_prefix + "services=";
+				else  // Running locally
+			 	   wsdl_prefix = c_dev_server       // Which SAP server should we connect to?
+			              	    + c_wsdl_sicf_prefix
+			             	    + c_sap_client       // Which SAP client should we connect to?
+			            	    + "services=" ;   	
+  				this.addEventListener("expandAll", onExpandAll);
+				this.addEventListener("collapseAll", onCollapseAll);
+  				this.addEventListener("selectAll", onSelectAll);
+				this.addEventListener("deselectAll", onDeselectAll);				
+	    	}
+			
+			public function setCombo():void {
+				comboRequestorRequestor.setFocus();
+		
+				if(comboRequestorRequestor.selectedItem != null){
+					SelectedRequestor = comboRequestorRequestor.selectedItem.data;						
+				}else{
+					SelectedRequestor = passedRequestor;			
+				}				
+			}
+
+			public function setCombo2():void {			
+				comboKostlKostl.setFocus();
+		
+				if(comboKostlKostl.selectedItem != null){
+					SelectedKostl = comboKostlKostl.selectedItem.data;						
+				}else{
+					SelectedKostl = passedKostl;			
+				}				
+			}
+
+			public function creationComplete():void {		
+				// Called at the "creationComplete" event of the application
+				// Set everything up visually and go get data.				
+				registerPortalFunctions();
+				getClaimItems();
+				
+				// Hide approval & rejection button unless running locally
+				if (Security.sandboxType == Security.REMOTE)
+				{
+					buttonReject.visible = false;
+					buttonApprove.visible = false;
+				}
+			}
+			
+            public function getClaimItems():void {
+	            CursorManager.setBusyCursor();
+	            // Gets the Expense claim items that this user can approve
+    	        // This function is run when the application is first opened	
+            	wsGetItemsToApprove.Z_CAS_EXPENSES_GET_ITEMS.send();
+          
+	          	// clear the output messages
+    		   	resultMessages = new Array();
+             	errorMessages = new Array();
+             	CursorManager.removeBusyCursor();
+            }
+            
+            private function registerPortalFunctions():void {
+				if (ExternalInterface.available) {
+					ExternalInterface.addCallback("Approve", doApprove);
+					ExternalInterface.addCallback("Reject", doReject);
+					ExternalInterface.addCallback("Refresh", doRefresh);
+					Security.allowDomain("*");
+				}				
+			}
+			
+			public function doRefresh():void
+			{
+				CursorManager.setBusyCursor();
+				// Clear data
+				table = new XMLList;
+				table_selected_XMLList = new XMLList;
+				table_selected = new Array;
+				// Refresh display
+				currentState = '';
+				
+				var event:DynamicEvent = new DynamicEvent("collapseAll", true);		
+				this.dispatchEvent(event);
+				
+				// Get expense claims items		
+				getClaimItems();
+				// Rerfresh messages
+				resultMessages = new Array();
+                errorMessages = new Array();
+                CursorManager.removeBusyCursor();
+			}
+            		            
+            public function showResults(event:ResultEvent):void {
+            	CursorManager.setBusyCursor();
+            	// This is the result of the webservice called by getHRItems();
+            	// Show the items that a user can approve          	
+            	var result:XML = new XML(event.result[0]);
+            	var tablelength:int;
+            	no_claims = XML(result.NO_OF_CLAIMS);
+				// set the panel title including number of items and set to panel to collapsed/expanded
+				set_pannel_title(XMLList(result.HEADERS.item), "Expense Claims", cp1);
+				xmlalldata = new XML(wsGetItemsToApprove.Z_CAS_EXPENSES_GET_ITEMS.lastResult);
+				portalURL  = XML(result.PORTAL);
+				helpURL = XML(result.HELP_URL);
+				orgUnit = XML(result.ORG_UNIT);
+				
+		        PopulateRequestor();
+				SelectRequestor();
+		        PopulateKostl();
+				SelectKostl();				
+				CursorManager.removeBusyCursor();
+            }
+            
+			protected function set_pannel_title(tableReturned:XMLList, title:String, cpPanel:CollapsiblePanel):void {
+				// sets tilte and collapsed/expanded status of panel
+            	var tablelength:int;
+            	var item:String;
+            	
+				// get the number of items in the table
+				tablelength = tableReturned.length();
+				//if no items, set the title to say no items and collapse the panel
+             	if (tablelength == 0) {
+            		cpPanel.title = title + " - no items";
+            		cpPanel.collapsed = true;
+            	} 
+            	else
+            	{
+            		if (tablelength == 1) {
+            			item = " item";
+            		}
+            		else {
+            			item = " items of " + no_claims;	
+            		}
+            		cpPanel.title = title + " - " + tablelength + item;
+            		cpPanel.collapsed = false;
+            	}
+			}
+			
+            public function webServiceFault(event:Event,service:String):void {
+            	var alert_text:String = 'Error with web service ' + service;
+            	Alert.show(alert_text);
+            }      
+            	
+			protected function doSort(event:DynamicEvent, dataProvider:Object):void
+			{
+				var f:ICollectionView;
+				var l_field:String = event.field; 
+								
+				if (dataProvider is ICollectionView)
+				{
+					var sort:Sort = new Sort();
+					var sortField:SortField = new SortField(l_field);
+					if (event.sortOrder == 1)
+					{
+						sortField.descending = false;
+					}
+					else
+					{
+						sortField.descending = true;
+					}
+					//sortField.descending = !(event.sortAscending);					
+					sort.fields = new Array();
+					sort.fields.push(sortField);
+					// Now sort by workflow id to make sure we have a definite sort order
+					sortField = new SortField("WIID");
+					sortField.descending = true;
+					sort.fields.push(sortField);
+					
+					(dataProvider as ICollectionView).sort = sort;
+					(dataProvider as ICollectionView).refresh();
+				}
+			}			
+        ]]>
+	</mx:Script>
+
+	<mx:WebService id="wsGetItemsToApprove"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_EXPENSES_GET_ITEMS'}"
+     	useProxy="false" 
+    	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetItemsToApprove')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_EXPENSES_GET_ITEMS"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<UNAME></UNAME>
+				<ACT_OTYPE></ACT_OTYPE>
+				<ORG_REQUESTOR>{SelectedRequestor}</ORG_REQUESTOR>
+				<ORG_CLAIM_NR>{dfClaimNo.text}</ORG_CLAIM_NR>
+				<KOSTL>{SelectedKostl}</KOSTL>
+				<MODE></MODE>
+				<NO_OF_CLAIMS></NO_OF_CLAIMS>
+				<DATE_FROM>{DateToSAPFormat(dfClaimFrom.text)}</DATE_FROM>
+				<DATE_TO>{DateToSAPFormat(dfClaimTo.text)}</DATE_TO>
+				<PORTAL></PORTAL>
+				<HELP_URL></HELP_URL>
+				<ORG_UNIT></ORG_UNIT>
+				<HEADERS></HEADERS>
+				<ITEMS></ITEMS>
+				<MILEAGE></MILEAGE>
+				<REQUESTOR></REQUESTOR>
+				<COST_CENTRES></COST_CENTRES>
+				<CLAIMS></CLAIMS>
+				<CLAIM_NOTES></CLAIM_NOTES>
+				<CLAIM_LINE_NOTES></CLAIM_LINE_NOTES>
+				<CLAIM_HISTORY></CLAIM_HISTORY>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WebService id="wsDoApprove"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_EXPENSES_APPROVE'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doReject')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_EXPENSES_APPROVE"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    	 	<ITEMS/>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+	<mx:WebService id="wsDoReject"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_EXPENSES_REJECT'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doReject')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_EXPENSES_REJECT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    	 	<ITEMS/>
+	    	 	<ITEM_DETAIL/>
+	    	 	<MILEAGE_DETAIL/>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>	
+
+	<mx:WebService id="wsDoHold"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_EXPENSES_HOLD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doHold')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_EXPENSES_HOLD"  
+	    	 resultFormat="e4x" concurrency="last">
+	   	     <mx:request>
+				<WIID>{holdWIID}</WIID>
+	    	 	<REASON>{holdReason}</REASON>
+	    	 	<ENDDA>{DateToSAPFormat(holdDate)}</ENDDA>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WebService id="wsDoUnHold"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_EXPENSES_UNHOLD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doUnHold')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_EXPENSES_UNHOLD"  
+	    	 resultFormat="e4x" concurrency="last">
+	   	     <mx:request>
+				<WIID>{holdWIID}</WIID>
+	    	 	<REASON></REASON>
+	    	 	<ENDDA></ENDDA>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WebService id="wsShowExpense"
+ 		wsdl="{wsdl_prefix + 'Z_HR_CAS_TRAVEL_EXP'}"
+     	useProxy="false" 
+
+  		fault="webServiceFault(event,'wsShowExpense')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_HR_CAS_TRAVEL_EXP"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    	 	<I_PERNR>{expensePernr}</I_PERNR>
+	    	 	<I_REINR>{expenseClaimNo}</I_REINR>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+	<mx:WipeRight id="textEffect" duration="150"/> 
+	<mx:Canvas id="outerCanvas"  >
+		<mx:TabNavigator x="0" y="0" width="1180" height="116" fillColors="[#D4D4D4, #D4D4D4]"
+			 id="tabSelection" creationPolicy="all" change="handleTabSelect()" enabled="true" includeInLayout="true">
+			<mx:Canvas label="Expense Claims" width="1180" height="74" backgroundColor="#F2F2F2" id="tabStrip" focusEnabled="false">
+				<HR:DateField1 x="108" y="8" width="117" id="dfClaimFrom" enabled="true" editable="true" formatString="DD.MM.YYYY"/>
+				<HR:DateField1 x="260" y="8" width="117" id="dfClaimTo" enabled="true" editable="true" formatString="DD.MM.YYYY"/>				
+				<mx:Label x="8" y="10" 	text="Request Dates" 	fontWeight="bold" toolTip="This is the date the request was made" />
+				<mx:Label x="234.5" y="10" 	text="to" 			fontWeight="bold"/>
+
+				<mx:Label x="8" y="44" id="lblcos" text="Cost Centre" fontWeight="bold"/> 
+				<mx:ComboBox x="108" y="42"
+					id           = "comboKostlKostl"					
+				    labelField   = "label" 
+				    dataProvider="{costCentres}"
+					change       = "setCombo2()"
+					enabled      = "{bEnableButtons}">
+				</mx:ComboBox>
+
+				<mx:Label x="410" y="10" id="lblClaim" text="Claim number" fontWeight="bold"/> 
+				<mx:TextInput x="508" y="10" width="117" id="dfClaimNo" enabled="true" editable="true"/>
+				<mx:Label x="410" y="45" id="lblReq" text="Claimant" fontWeight="bold"/> 
+				<mx:ComboBox x="508" y="42"
+					id           = "comboRequestorRequestor"					
+				    labelField   = "label" 
+				    dataProvider="{requestors}"
+					change       = "setCombo()"
+					enabled      = "{bEnableButtons}">
+				</mx:ComboBox>
+
+				<HR:Button1 x="850" y="10" label="Refresh" click="doRefresh();" id="buttonRefresh" enabled="true" />
+				<ns1:HelpIcon id="help" x="945" width="100" height="56"  backgroundImage="@Embed('HR/images/help_bg2.gif')"/>
+				<mx:Image source="@Embed('HR/images/Logo_bgr.gif')" id="image1" x="1045" y="0"/>
+			</mx:Canvas>
+		</mx:TabNavigator>
+
+		<mx:Canvas y="120" id="innerCanvas" minWidth="1200" width="1190" height="560">
+			<!-- These buttons are only shown when we run the flex app locally.
+			   If we run in Portal or a BSP they won't be displayed -->
+			<HR:Button1 y="0" click="doReject();" label="Reject" id="buttonReject" left="856"/>
+			<HR:Button1 x="927" y="0" click="doApprove();" label="Approve" id="buttonApprove"/>
+	
+			<mx:VBox verticalAlign="top" x="0" y="30">
+				<containers:CollapsiblePanel id="cp1" width="1166" title="Expense Claims" x="0">
+					<mx:VBox verticalGap="0" id="repeateContainer" >
+						<mx:Repeater id="rpExpenseClaims" 
+							         dataProvider="{wsGetItemsToApprove.Z_CAS_EXPENSES_GET_ITEMS.lastResult.HEADERS.item}"
+							         recycleChildren="true">
+							<ns2:TableOutput ext_data="{rpExpenseClaims.currentItem}"
+								            ext_index="{rpExpenseClaims.currentIndex}"
+								            allItems="{wsGetItemsToApprove.Z_CAS_EXPENSES_GET_ITEMS.lastResult.ITEMS.item}"
+								            mileageItems="{wsGetItemsToApprove.Z_CAS_EXPENSES_GET_ITEMS.lastResult.MILEAGE.item}" 
+								            formatXML="{fieldFormatting.ExpenseClaimsOutput}"
+								            userSort="doSort(event, rpExpenseClaims.dataProvider);">
+							</ns2:TableOutput>
+						</mx:Repeater>
+					</mx:VBox>
+				</containers:CollapsiblePanel>
+			</mx:VBox>
+		</mx:Canvas>
+	</mx:Canvas>
+</mx:Application>

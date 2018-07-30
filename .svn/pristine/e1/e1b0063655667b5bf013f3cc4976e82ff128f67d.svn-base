@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VDG:HideShowDataGrid xmlns:mx="http://www.adobe.com/2006/mxml"
+	 xmlns:VDG="VDG.*"
+     initialize="init();"	
+	 creationComplete="creationComplete();">
+
+<mx:Metadata>
+	[Event(name="variantUpdated", type="mx.events.DataGridEvent")]
+	[Event(name="variantUpdateFailed", type="mx.events.DataGridEvent")]
+	[Event(name="variantRetreived", type="mx.events.DataGridEvent")]
+	[Event(name="variantRetreivalFailed", type="mx.events.DataGridEvent")]	
+</mx:Metadata>
+
+
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.controls.Alert;
+		import VDG.vdg_internal;
+
+
+		// Very important note on working with datagrid columns
+		// It is ESSENTIAL that you copy the columns array to a new array, make ammendments,
+	    // and copy it back into this.columns, otherwise your changes won't be updated.
+	    // This is because the DataGrid class only updates its columns when you call 
+	    // set columns.
+	    
+	    // Notes
+		// 1 - Since we can't see the column id from in here, we have to sort using the column header. 
+		//     Therefore all column headers should be unique
+		// 2 - Make sure this datagrid has an ID, as we use the ID when we save the table settings to SAP
+		// 3 - If you want to use the gradual hiding and unhiding effects, any custom Item Renderers (or item editors),
+		//     including column headers, should implement the interface IDropInListItemRenderer.
+		//     This tells us what column and row the item renderer is in. 
+		
+			
+			import mx.events.FlexEvent;
+		    import mx.controls.dataGridClasses.DataGridColumn;
+		    import mx.rpc.events.ResultEvent;
+			import mx.events.DataGridEvent;
+			import mx.controls.dataGridClasses.DataGridBase;
+		   
+		    
+		    		
+           // public const c_test_server:String = "http://saptest.ni.ad.newsint:8001";
+			public const c_dev_server:String = "http://sapr3d.ni.ad.newsint:8080";
+			public const c_sap_client:String = "sap-client=007&";
+			public const c_wsdl_sicf_prefix:String = "/zni/bc/soap/wsdl11?"; 
+		
+			[Bindable]
+			public var wsdl_prefix:String;
+			
+			[Bindable]
+			private var _IM_APP:String;
+			
+			[Bindable]
+			private var _IM_TABLE:String;	
+			
+			// Need to override the SET function to make ID bindable
+			[Bindable]
+			override public function set id(_id:String):void {
+				super.id = _id;
+			}
+			
+	
+		
+			private function init():void {
+				// Called at the "init" event of the application
+				// We need to tell the web services where to get their WSDls from.			
+				
+				if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    			wsdl_prefix = c_wsdl_sicf_prefix
+				                 + "services=";
+	     	    	
+				else  // Running locally
+			 	   wsdl_prefix  = c_dev_server       // Which SAP server should we connect to?
+			              	    + c_wsdl_sicf_prefix
+			             	    + c_sap_client       // Which SAP client should we connect to?
+			            	    + "services=" ;   	
+	    	}
+	    	
+	    	private function creationComplete():void {
+	    		
+  		 		// We want this event listener to be triggered AFTER the column has been sorted
+  		 		 this.addEventListener(DataGridEvent.HEADER_RELEASE,sortClick,false,-4);
+	    		
+	    		// Get the display variant
+	    		getVariant();
+	    	}
+		
+			public function getVariant():void {
+				// Make this public in case it wants to be called from outside
+				// Called on creation complete so datagrid should already have all its columns
+				// Just in case it doesn't (say for example it gets set once data is returned from SAP),
+				// check if columns have been supplied. If they haven't been, it'll get picked up later.
+				if (this.parent)
+				{
+					_IM_APP = this.parentApplication.id;
+					_IM_TABLE = this.id;
+					if (columns && columns.length > 0)
+					{
+						wsGetVariant.Z_ECS_GET_DATAGRID_VARIANT.send();	
+					}
+				}				
+			}
+			
+			override public function set columns(value:Array):void
+			{
+				super.columns = value;
+				cloneColumns();
+				getVariant();				
+			}
+			
+			
+			
+			///////////////////////////////////////////////////
+			// Methods to convert between the display and the 
+			// display variant.
+			//////////////////////////////////////////////////
+			protected function sortClick(event:DataGridEvent):void {
+				// Record the sorted event in the variant				
+				sortColIndex = event.columnIndex;
+				
+				// Set the variant from the display, but allow Flex to sort the column first
+				this.callLater(setVariantFromDisplay, new Array(event) )
+				
+				
+			}
+			
+		
+			override public function setVariantFromDisplay(event:Object = ""):void {
+				// Sets the variant based on the current display 
+				// and save variant in SAP 		
+									
+				super.setVariantFromDisplay(event);
+					
+				// Send the variant to SAP
+				_IM_APP = this.parentApplication.id;
+				_IM_TABLE = this.id;
+				trace("this.id = " + _IM_TABLE);
+				trace("this.parent.id = " + _IM_APP );
+				
+				wsSetVariant.Z_ECS_SET_DATAGRID_VARIANT.send();		  
+			
+			}
+			
+
+			
+			
+			private function variantUpdated(event:Event):void {
+				trace ("variantUpdated");
+			
+				this.dispatchEvent(new DataGridEvent('variantUpdated',true));
+			}
+			
+			private function variantRetreived(event:ResultEvent):void
+			{
+				// Update the display variant based on the data received
+				// from the web service to SAP, then update the display.
+				
+				trace ("variantRetreived");
+				
+				// Takes the XMLList returned by the SOAP RFC and convert
+				// it to an array
+				var obj:Object;
+				var bool_temp:String;
+				var _variantXML:XMLList = event.result[0].EX_VARIANT.item;
+				_variant = new Array();
+				for each (var item:Object in _variantXML) 
+				{
+					obj = new Object;
+					
+					bool_temp             = (new XML(item.VISIBLE)).toString();
+					obj.VISIBLE = stringToBoolean(bool_temp);
+					
+					bool_temp             = (new XML(item.SORT_DESCENDING)).toString();
+					obj.SORT_DESCENDING = stringToBoolean(bool_temp);
+					
+					bool_temp             = (new XML(item.SORTED)).toString();
+					obj.SORTED           = stringToBoolean(bool_temp);					
+						
+					obj.WIDTH            = (new XML(item.WIDTH)).toString();
+					obj.COL_NO           = (new XML(item.COL_NO)).toString();
+					obj.COL_ORDER        = (new XML(item.COL_ORDER)).toString();
+	
+					
+					
+					_variant.push(obj);					
+				}
+				
+
+				
+				//  OK, variant is updated, now update the display
+				this.dispatchEvent(new DataGridEvent('variantRetreived',true));	
+				
+				if (_variant.length < 1 || _variant.length != columns.length )
+				{
+					// If we don't get a variant back, or the variant we get back doesn't
+					// have enough columns, then leave the disaply alone,
+					// and create a new variant in SAP.
+					
+					trace ("variant empty or invalid");
+					// We have to have a variant for when the user right-clicks					
+					this.setVariantFromDisplay(new Event('empty'));
+								
+				} 
+				else 
+				{
+					updateDisplayFromVariant();
+				}
+			}
+			
+			override protected function contextReset(event:Object=""):void
+			{
+				super.contextReset(event);
+				
+				if (!(event is Event))  // If this is the second call
+				{
+					setVariantFromDisplay();
+				}
+				
+				
+			}
+			
+			
+			protected function updateDisplayFromVariant():void			
+			{// Update the current display based on what is held in _variant
+				
+				if (!_variant || variant.length == 0) return;
+				
+				
+				// Make all columns visible
+				setColumnsToVisible();
+				
+				// Validate the variant
+				if (!validateVariant())
+				{
+					Alert.show("There was an error restoring your column preferences. The default columns are being restored. No action is required unless this message occurs regularly. ");
+					// Force a reset of the fields by setting the dataprovider
+					setVariantFromDisplay();
+					//super.dataProvider = this.dataProvider;					
+					return;
+				}
+				
+				// Initialise the sorted column
+				sortColIndex = -1;
+				
+				// Fill 'tempColumns' with elements from the old array, 
+				// in the order specified by "_variant", and take the
+				// sort, visible and width values from the variant
+				var tempColumns:Array = new Array;
+				
+				// Revert to the original sort order before applying the new variant
+				for (var j:String in this.columns)
+	    		{
+	    			 tempColumns[j] = _oldColumns[j].ref;
+	    		}   				
+				
+				var tempColumns2:Array = new Array;
+				// Now apply the new variant, since "_variant" and "columns" are now in the same order				
+				var _index:uint = 0;
+				var _num:int = -1;		
+				
+				// When we set the size of a column in a datagrid, all columns to the right of it 
+				// are resized. Therefore we must loop through the columns from left to right, according
+				// to the order in which the columns are DISPLAYED.	
+				_variant.sort(sortByColOrder);
+				
+				for (var i:String in _variant) {
+					_index = _variant[i].COL_ORDER;
+					_num   = _variant[i].COL_NO;
+					tempColumns2[_index] = tempColumns[_num];
+					tempColumns2[_index].visible = _variant[i].VISIBLE;
+					
+					if (_variant[i].VISIBLE == true)
+					{
+						tempColumns2[_index].minWidth = 12;
+						tempColumns2[_index].sortDescending = _variant[i].SORT_DESCENDING;
+						tempColumns2[_index].width = _variant[i].WIDTH ;
+						var p:Number = _variant[i].WIDTH;
+						trace("Setting column " + _index + " width " + p);
+					}
+					else
+					{
+						tempColumns2[_index].minWidth = 0;
+						tempColumns2[_index].width = 0 ;
+					}
+					_variant[i].HEADER_TEXT = tempColumns[_num].headerText;
+					
+					
+					// Sort by column
+					if (_variant[i].SORTED == true)
+					{
+						sortColIndex = _variant[i].COL_NO;
+					}
+								
+				}			
+				// Now set "columns" (by reference) to apply the result of this variant
+				super.columns = tempColumns2;
+				
+				// Just to neaten things up, now the columns are in the right order, set the column widths again					
+	    		for (i in _variant)
+	    		{
+	    			_index = _variant[i].COL_ORDER;
+	    			columns[_index].width = _variant[i].WIDTH ;    			     			 
+	    		}
+				
+				// Trace actual widths
+				trace("Widths: ");
+				for (var l:String in columns)
+				{
+					trace(l + " " + columns[l].width);
+				}
+				
+				// Sort the columns (simulate a click event on the sorted column)
+				// Can't sort if there is no data
+				if (sortColIndex > -1 && this.dataProvider)
+				{
+					var _event:DataGridEvent = new DataGridEvent(DataGridEvent.HEADER_RELEASE,false,false,sortColIndex)
+					this.dispatchEvent(_event);
+				}
+				
+				
+				// And return the variant to its original sort order
+				_variant.sort(sortByColNo);
+				
+			
+				
+			    trace("display updated");
+				
+			}
+			
+			
+			
+			[Bindable]
+			override public function set dataProvider(obj:Object):void 
+			{
+				// We want to re-do the display every time data is loaded into the datagrid
+					suspendBackgroundProcessing();
+				    super.dataProvider = obj;
+         			updateDisplayFromVariant();
+					invalidateSize();
+				    itemsNeedMeasurement = true;
+      			    //invalidateProperties();
+			        invalidateDisplayList();
+			    this.callLater(debug);
+			    resumeBackgroundProcessing();
+			  //  makeRowsAndColumns();
+
+			        
+			}	
+			private function debug():void
+			{
+				// Used for debugging
+				var obj:int = 1;
+							
+			}
+			
+			
+			private function variantUpdateFailed(event:Event):void {
+				
+				trace ("variant Update failed");
+				this.dispatchEvent(new DataGridEvent('variantUpdateFailed',true));
+			}
+
+			private function variantRetreivalFailed(event:Event):void {
+				trace ("variant retreival failed");
+				this.dispatchEvent(new DataGridEvent('variantRetreivalFailed',true));
+			}
+			
+			override protected function makeRowsAndColumns(left:Number, top:Number,
+                                                right:Number, bottom:Number,
+                                                firstCol:int, firstRow:int,
+                                                byCount:Boolean = false, rowsNeeded:uint = 0):Point
+            {
+            	// Override this method to catch errors
+            	var start:uint = new Date().time;
+    	
+            	trace("Start of makeRowsAndColumns " + start);
+            	var point:Point;
+            	
+            	// Important - there are two important arrays - rowInfo and listItems. If they get our of sync then
+            	// we have problems. rowInfo holds info on row height, and listItems holds all the renderes (UI Components)
+            	// Our method updateDisplayFromVariant causes listItems to be cleared later the the datagrid recalcualtes
+            	// its columns, which can get data out of sync.
+            	// Hence we need to check if listItems is empty andif it is, we need to clear rowInfo too
+            	
+            	if (!listItems || listItems.length == 0)
+            	{
+            		rowInfo = [];  // Clear the array rowInfo
+            	}
+            	
+            	
+            	try 
+            	{
+            		// Prolem is here somewhere
+            		//this.listItems = [];
+            		//this.rowInfo = []; // Force recalculation
+            		point = super.makeRowsAndColumns(left, top,
+                                                right, bottom,
+                                                firstCol, firstRow,
+                                                byCount, rowsNeeded)
+            	}
+            	catch (e:Error)  //UninitializedError
+            	{
+            		var x:String = e.message;
+            		
+            		// This is one of two bits of code that could throw the error
+            		// But its not this so comment it out
+            		//var lines:Sprite = Sprite(listContent.getChildByName("lines"));
+      			    //if (lines)
+            	    //listContent.setChildIndex(lines, listContent.numChildren - 1);
+            	    
+            	    // This is the other bit that we know errors
+            	    // It seems to be because itemEditorInstance has no parent
+            	    if (itemEditorInstance)
+            	                listContent.setChildIndex(DisplayObject(itemEditorInstance),
+                                      listContent.numChildren - 1);
+            	}
+                
+                var end:uint = new Date().time;
+    	
+            	trace("End of makeRowsAndColumns " + (start - end) + "later"); 
+                 
+                return point;                               	
+            }
+            
+            protected function validateVariant():Boolean
+            {// Make sure that the variant that came back is valid
+           
+                var isOK:Boolean = true;
+           
+       		    var checkVariant:Array = _variant.slice(0);
+           
+     		    // Check for duplicates in column order      
+          		checkVariant.sortOn("COL_ORDER", Array.NUMERIC);
+           		var last:String = "";
+           		var thisOne:String;
+           		for each (var obj:Object in checkVariant)
+           		{		
+           			thisOne = obj.COL_ORDER.toString();
+           			if (last.localeCompare(thisOne) == 0)
+           			{
+           				isOK = false;  // Duplicate found
+           			}
+           			last = thisOne;           		
+           		}
+
+           		// Check for duplicates in column number      
+          		checkVariant.sortOn("COL_NO", Array.NUMERIC);
+           		last = "";
+           		thisOne;
+           		for each (obj in checkVariant)
+           		{	
+           			thisOne = obj.COL_NO.toString();
+           			if (last.localeCompare(thisOne) == 0)
+           			{
+           				isOK = false;  // Duplicate found
+           			}
+           			last = thisOne;           		
+           		}         
+            	
+            	
+                return isOK;	
+            }
+			
+		]]>
+	</mx:Script>
+	
+	
+	
+	
+	
+	
+	<mx:WebService id="wsGetVariant"
+	 	wsdl="{wsdl_prefix + 'Z_ECS_GET_DATAGRID_VARIANT'}"
+     	useProxy="false" 
+    	result="variantRetreived(event)"
+  		fault="variantRetreivalFailed(event)"    	
+       	showBusyCursor="true"> 
+		<mx:operation concurrency="last" resultFormat="e4x" name="Z_ECS_GET_DATAGRID_VARIANT">
+			<mx:request>
+				<IM_APP>{_IM_APP}</IM_APP>
+				<IM_TABLE>{_IM_TABLE}</IM_TABLE>
+			</mx:request>
+		</mx:operation>
+		
+	</mx:WebService>
+	
+	<mx:WebService id="wsSetVariant"
+	 	wsdl="{wsdl_prefix + 'Z_ECS_SET_DATAGRID_VARIANT'}"
+     	useProxy="false" 
+    	result="variantUpdated(event)"
+    	load="trace('WSDL loaded wsSetVariant')"
+  		fault="variantUpdateFailed(event)"    	
+       	showBusyCursor="true"> 
+		<mx:operation concurrency="last" resultFormat="e4x" name="Z_ECS_SET_DATAGRID_VARIANT">
+			<mx:request>
+				<IM_APP>{_IM_APP}</IM_APP>
+				<IM_TABLE>{_IM_TABLE}</IM_TABLE>
+				<IM_VARIANT>{_variant}</IM_VARIANT>			
+			</mx:request>		
+		</mx:operation>	
+	</mx:WebService>
+
+	
+</VDG:HideShowDataGrid>

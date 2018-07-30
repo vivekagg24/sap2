@@ -1,0 +1,317 @@
+<mvc:View controllerName="nuk.sap.timesheet.controller.Timesheet" displayBlock="true" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+  <Page title="{i18n>timesheets-title}"
+    enableScrolling="true"
+    showNavButton="true"
+    navButtonPress="onNavBack"
+    inset="false"
+    class="sapUiOverflowContentPadding">
+
+    <customHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.PageHeader" type="XML" />
+    </customHeader>
+
+    <subHeader>
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.Navigation" type="XML" />
+    </subHeader>
+
+    <!-- Note - we only pass a single timesheet into this view, so using /timesheets/0 is acceptable -->
+
+    <content>
+      <Table
+        id="tblTimesheet"
+        backgroundDesign="Solid"
+        mode="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Delete' : 'None'}"
+        noDataText="{i18n>timesheet-table-no-data}"
+        delete="onDeleteRow"
+        items="{
+          path: 'timesheet>time_worked'
+        }">
+        <headerToolbar>
+          <OverflowToolbar>
+            <Title text="{
+              parts: [ 'i18n>timesheet-table-title', 'i18n>timesheet-table-title-sep', 'timesheet>date_from', 'timesheet>date_to' ],
+              formatter: 'nuk.sap.timesheet.util.Formatter.formatTimesheetHeaderLong'
+             }"
+             level="H2"/>
+            <ToolbarSpacer/>
+            <Text text="{i18n>timesheet-status}: {timesheet>status_text}" level="H3"/>
+          </OverflowToolbar>
+        </headerToolbar>
+
+        <columns>
+          <Column width="20em">
+            <Text text="{i18n>timesheet-table-project}"/>
+          </Column>
+
+          <Column width="5em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheet>date_from', 'i18n>timesheet-day1' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekendDay"/>
+          </Column>
+
+          <Column width="5em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheet>date_from', 'i18n>timesheet-day2' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekendDay"/>
+          </Column>
+
+          <Column width="5em" hAlign="Center">
+            <Text text="{
+                parts: [ 'timesheet>date_from', 'i18n>timesheet-day3' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="5em" hAlign="Center">
+            <Text text="{
+                parts: [ 'timesheet>date_from', 'i18n>timesheet-day4' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="5em" hAlign="Center">
+            <Text text="{
+                parts: [ 'timesheet>date_from', 'i18n>timesheet-day5' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="5em" hAlign="Center">
+            <Text text="{
+                parts: [ 'timesheet>date_from', 'i18n>timesheet-day6' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+         </Column>
+
+          <Column width="5em" hAlign="Center">
+            <Text text="{
+                parts: [ 'timesheet>date_from', 'i18n>timesheet-day7' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+         </Column>
+
+         <Column width="5em" hAlign="End">
+            <Label text="{i18n>timesheet-table-project-total}" design="Bold"/>
+         </Column>
+
+        </columns>
+
+        <items>
+          <ColumnListItem>
+            <cells>
+              <!-- this will only work with 1.34.x, where the forceSelection property is available -->
+              <!--
+              <Select
+                id="selProject"
+                change="onProjectChange"
+                selectedKey="{timesheet>project_id}"
+                forceSelection="false"
+                enabled="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                width="100%"
+                placeholder="{i18n>timesheet-table-project-placeholder}"
+                items="{timesheet>/assigned_projects}">
+                <core:Item key="{timesheet>project_id}" text="{timesheet>name}" />
+              </Select>
+              -->
+
+              <ComboBox
+                id="selProject"
+                selectionChange="onProjectChange"
+                selectedKey="{timesheet>project_id}"
+                enabled="true"
+                editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                width="100%"
+                placeholder="{i18n>timesheet-table-project-placeholder}"
+                items="{timesheet>/assigned_projects}">
+                <core:Item key="{timesheet>project_id}" text="{timesheet>name}" />
+              </ComboBox>
+
+              <Input
+                  value="{
+                    path: 'timesheet>time/0',
+                    type: 'HoursWorked'
+                  }"
+                  valueStateText="{i18n>timesheet-input-hours-invalid}"
+                  maxLength="5"
+                  type="Number"
+                  change="onHoursChange"
+                  editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                  textAlign="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Right' : 'Center' }"
+                  class="weekendDay"
+              />
+
+              <Input
+                  value="{
+                    path: 'timesheet>time/1',
+                    type: 'HoursWorked'
+                  }"
+                  valueStateText="{i18n>timesheet-input-hours-invalid}"
+                  maxLength="5"
+                  type="Number"
+                  change="onHoursChange"
+                  editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                  textAlign="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Right' : 'Center' }"
+                  class="weekendDay"
+              />
+
+              <Input
+                  value="{
+                    path: 'timesheet>time/2',
+                    type: 'HoursWorked'
+                  }"
+                  valueStateText="{i18n>timesheet-input-hours-invalid}"
+                  maxLength="5"
+                  type="Number"
+                  change="onHoursChange"
+                  editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                  textAlign="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Right' : 'Center' }"
+              />
+
+              <Input
+                  value="{
+                    path: 'timesheet>time/3',
+                    type: 'HoursWorked'
+                  }"
+                  valueStateText="{i18n>timesheet-input-hours-invalid}"
+                  maxLength="5"
+                  type="Number"
+                  change="onHoursChange"
+                  editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                  textAlign="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Right' : 'Center' }"
+              />
+
+              <Input
+                  value="{
+                    path: 'timesheet>time/4',
+                    type: 'HoursWorked'
+                  }"
+                  valueStateText="{i18n>timesheet-input-hours-invalid}"
+                  maxLength="5"
+                  type="Number"
+                  change="onHoursChange"
+                  editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                  textAlign="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Right' : 'Center' }"
+              />
+
+              <Input
+                  value="{
+                    path: 'timesheet>time/5',
+                    type: 'HoursWorked'
+                  }"
+                  valueStateText="{i18n>timesheet-input-hours-invalid}"
+                  maxLength="5"
+                  type="Number"
+                  change="onHoursChange"
+                  editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                  textAlign="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Right' : 'Center' }"
+              />
+
+              <Input
+                  value="{
+                    path: 'timesheet>time/6',
+                    type: 'HoursWorked'
+                  }"
+                  valueStateText="{i18n>timesheet-input-hours-invalid}"
+                  maxLength="5"
+                  type="Number"
+                  change="onHoursChange"
+                  editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+                  textAlign="{= ${timesheet>/timesheets/0/is_editable} === 'true' ? 'Right' : 'Center' }"
+              />
+
+              <Label
+                design="Bold"
+                text="{
+                  parts: [
+                    'timesheet>time/0',
+                    'timesheet>time/1',
+                    'timesheet>time/2',
+                    'timesheet>time/3',
+                    'timesheet>time/4',
+                    'timesheet>time/5',
+                    'timesheet>time/6'
+                  ],
+                  formatter: 'nuk.sap.timesheet.util.Formatter.calculateProjectTotal'
+                }"/>
+
+            </cells>
+          </ColumnListItem>
+
+        </items>
+
+      </Table>
+
+      <OverflowToolbar design="Solid">
+        <content>
+            <Button
+              text="{i18n>timesheet-table-row-add}"
+              type="Emphasized"
+              icon="sap-icon://sys-add"
+              press="onAddRow"
+              tooltip="{i18n>timesheet-table-row-add-tooltip}"
+              class="sapUiSmallMarginBegin"
+              visible="{= ${timesheet>/timesheets/0/is_editable} === 'true'}"
+            />
+            <ToolbarSpacer/>
+            <Label text="{i18n>timesheet-table-total-billable}" design="Bold" />
+            <Label
+              text="{
+              path: 'timesheet>hours_billable',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: {
+                minFractionDigits: 2
+              }
+            }"
+            design="Bold"
+            class="sapUiLargeMarginEnd" />
+            <Label text="{i18n>timesheet-table-total-hours}" design="Bold" />
+            <Label
+              text="{
+                path: 'timesheet>hours_total',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: {
+                  minFractionDigits: 2
+                }
+              }"
+              design="Bold"
+              class="sapUiLargeMarginEnd" />
+        </content>
+      </OverflowToolbar>
+
+      <Panel>
+        <content>
+
+          <Label text="Comments" textAlign="Center" labelFor="txtComment" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+          <TextArea
+            value="{timesheet>submitter_comment}"
+            id="txtComment"
+            placeholder="{i18n>timesheet-table-submitter-comment-placeholder}"
+            rows="4"
+            cols="100"
+            editable="{= ${timesheet>/timesheets/0/is_editable} === 'true' }"
+          />
+        </content>
+      </Panel>
+
+      <OverflowToolbar design="Solid">
+        <ToolbarSpacer/>
+        <Button text="{i18n>timesheet-submit}" type="Accept" press="onSubmit" visible="{= ${timesheet>/timesheets/0/is_editable} === 'true'}"/>
+        <Button text="{i18n>timesheet-cancel}" type="Reject" press="onCancel" visible="{= ${timesheet>/timesheets/0/is_editable} === 'true'}"/>
+        <Button text="{i18n>timesheet-withdraw}" type="Reject" press="onWithdraw" visible="{= ${timesheet>/timesheets/0/is_withdrawable} === 'true'}"/>
+      </OverflowToolbar>
+
+      <core:Fragment fragmentName="nuk.sap.timesheet.fragment.MessageArea" type="XML" />
+
+    </content>
+
+  </Page>
+</mvc:View>

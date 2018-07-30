@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       width="35" maxWidth="30" height="30"
+	       implements="mx.controls.listClasses.IDropInListItemRenderer">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.listClasses.BaseListData;
+			import mx.events.DynamicEvent;
+			
+			private function CollapseAll():void{
+				var event:DynamicEvent = new DynamicEvent("collapseAll", true);	
+				event.grid = _listData.owner;			
+				this.dispatchEvent(event);
+		    }
+    
+		   	private function ExpandAll():void{
+				var event:DynamicEvent = new DynamicEvent("expandAll", true);
+				event.grid = _listData.owner;
+				this.dispatchEvent(event);
+			}
+	
+			/** We need to have a reference to listData so we can tell the event which grid
+			   the event was triggered ni
+			   */		
+			protected var _listData:BaseListData;
+			public function get listData():BaseListData
+			{
+				return _listData;
+			}
+			
+			public function set listData(value:BaseListData):void
+			{
+				_listData = value;
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:HBox horizontalGap="1">
+	<!-- expand all all -->
+	<!--<mx:Image source="@Embed('../../HR/images/s_b_aexp.gif')"
+	 resize="false" click="ExpandAll()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Expand all lines"/> -->
+	<!-- collapse all -->
+	<!--<mx:Image source="@Embed('../../HR/images/s_b_acom.gif')"
+	 resize="false" click="CollapseAll()" useHandCursor="true" buttonMode="true" mouseChildren="false" toolTip="Collapse all lines"/> -->
+	</mx:HBox>	
+   	<mx:Metadata>
+       	[Event(name="expandAll", type="mx.events.DynamicEvent")]
+       	[Event(name="collapseAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>	 
+</mx:Canvas>

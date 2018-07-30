@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+    <mx:Script>
+        <![CDATA[
+            [Bindable]
+            public var Currency:Array = ["US Dollars", "Euro"];
+                        
+            private function calculate():void {
+                if (cb_amount.selectedItem == "US Dollars") { 
+                    var a:Number = Number(txt_A.text); 
+                    var c:Number = (a * 0.798072); 
+                    txt_B.text = String(c);
+                    txt_currency.text = "Euro";
+                } else if (cb_amount.selectedItem == "Euro") {
+                    var b:Number = Number(txt_A.text); 
+                    var d:Number = (b * 1.25302); 
+                    txt_B.text = String(d);
+                    txt_currency.text = "US Dollars";
+                } else {
+                    txt_currency.text = "Enter an amount and select a currency";
+                }
+            }
+        ]]>
+    </mx:Script>
+    <mx:Label x="10" y="40" text="Enter amount"/>
+    <mx:TextInput id="txt_A"  x="95" y="40" width="100"/>
+    <mx:ComboBox x="210" y="40" id="cb_amount" dataProvider="{Currency}" prompt="Select currency..." width="150"/>
+    <mx:TextInput id="txt_B"  x="95" y="80" width="100" editable="false"/>
+    <mx:Text id="txt_currency" width="100"  x="210" y="80"/>
+    <mx:Button id="btn_calculate" click="calculate();" x="95" y="140" label="Calculate" width="100"/>   
+</mx:Application>
+

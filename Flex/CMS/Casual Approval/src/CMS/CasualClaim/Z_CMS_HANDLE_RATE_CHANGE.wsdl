@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:s0="urn:sap-com:document:sap:rfc:functions" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="urn:sap-com:document:sap:rfc:functions">
+  <types>
+    <xsd:schema targetNamespace="urn:sap-com:document:sap:rfc:functions">
+      <xsd:element name="Z_CMS_HANDLE_RATE_CHANGE">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="IM_HOURS">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:totalDigits value="5"></xsd:totalDigits>
+                  <xsd:fractionDigits value="2"></xsd:fractionDigits>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="IM_SHIFTNO">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:totalDigits value="7"></xsd:totalDigits>
+                  <xsd:fractionDigits value="2"></xsd:fractionDigits>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="IM_SHIFTRATE">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:totalDigits value="13"></xsd:totalDigits>
+                  <xsd:fractionDigits value="2"></xsd:fractionDigits>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Z_CMS_HANDLE_RATE_CHANGE.Response">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="EX_AMOUNT">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:totalDigits value="13"></xsd:totalDigits>
+                  <xsd:fractionDigits value="2"></xsd:fractionDigits>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="EX_GROSSAMOUNT">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:totalDigits value="13"></xsd:totalDigits>
+                  <xsd:fractionDigits value="2"></xsd:fractionDigits>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="EX_HOURLY">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:totalDigits value="13"></xsd:totalDigits>
+                  <xsd:fractionDigits value="2"></xsd:fractionDigits>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="EX_RETURN_CODE" type="xsd:int"></xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </types>
+  <message name="Z_CMS_HANDLE_RATE_CHANGEInput">
+    <part name="parameters" element="s0:Z_CMS_HANDLE_RATE_CHANGE"></part>
+  </message>
+  <message name="Z_CMS_HANDLE_RATE_CHANGEOutput">
+    <part name="parameters" element="s0:Z_CMS_HANDLE_RATE_CHANGE.Response"></part>
+  </message>
+  <portType name="Z_CMS_HANDLE_RATE_CHANGEPortType">
+    <operation name="Z_CMS_HANDLE_RATE_CHANGE">
+      <input message="s0:Z_CMS_HANDLE_RATE_CHANGEInput"></input>
+      <output message="s0:Z_CMS_HANDLE_RATE_CHANGEOutput"></output>
+    </operation>
+  </portType>
+  <binding name="Z_CMS_HANDLE_RATE_CHANGEBinding" type="s0:Z_CMS_HANDLE_RATE_CHANGEPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <operation name="Z_CMS_HANDLE_RATE_CHANGE">
+      <soap:operation soapAction="http://www.sap.com/Z_CMS_HANDLE_RATE_CHANGE"></soap:operation>
+      <input>
+        <soap:body use="literal"></soap:body>
+      </input>
+      <output>
+        <soap:body use="literal"></soap:body>
+      </output>
+    </operation>
+  </binding>
+  <service name="Z_CMS_HANDLE_RATE_CHANGEService">
+    <documentation>SAP Service Z_CMS_HANDLE_RATE_CHANGE via SOAP</documentation>
+    <port name="Z_CMS_HANDLE_RATE_CHANGEPortType" binding="s0:Z_CMS_HANDLE_RATE_CHANGEBinding">
+      <soap:address location="http://saponi.ni.ad.newsint:8080/sap/bc/soap/rfc?sap-client=007"></soap:address>
+    </port>
+  </service>
+</definitions>

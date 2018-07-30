@@ -1,0 +1,83 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>TabHandling.as</title>
+<link rel="stylesheet" type="text/css" href="../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="asComment">// ActionScript file
+</span><span class="asComment">// Functions for the tabstrip control
+</span><span class="asReserved">private</span> <span class="asVar">var</span> tab_to_display<span class="asOperator">:</span>int;
+
+<span class="asComment">// Which tab will show if no data comes back?
+</span><span class="asReserved">private</span> <span class="asReserved">const</span> c_default_md_tab<span class="asOperator">:</span>int <span class="asOperator">=</span> 1; <span class="asComment">// Pre-approved retainers
+</span><span class="asReserved">private</span> <span class="asReserved">const</span> c_default_me_tab<span class="asOperator">:</span>int <span class="asOperator">=</span> 0; <span class="asComment">// Retainers to approve (pre-approval not required)
+</span>
+          <span class="asReserved">private</span> <span class="asFunction">function</span> getTableCurrentTab<span class="asBracket">()</span><span class="asOperator">:</span>XMLList <span class="asBracket">{</span>
+              <span class="asReserved">return</span> getTableTab<span class="asBracket">(</span>tabSelection.selectedIndex<span class="asBracket">)</span>;
+          <span class="asBracket">}</span>
+
+          <span class="asReserved">private</span> <span class="asFunction">function</span> getTableTab<span class="asBracket">(</span>int<span class="asOperator">:</span>int<span class="asBracket">)</span><span class="asOperator">:</span>XMLList <span class="asBracket">{</span>
+                <span class="asComment">// Show all contracts for the selected tab
+</span>                
+                <span class="asComment">// &quot;tableReturned&quot; contains all contracts returned by SAP
+</span>                <span class="asComment">// &quot;table&quot; contains all contracts in the current tab
+</span>                <span class="asVar">var</span> l_table<span class="asOperator">:</span>XMLList <span class="asOperator">=</span> <span class="asReserved">new</span> XMLList;
+                <span class="asReserved">for</span> <span class="asBracket">(</span><span class="asVar">var</span> i<span class="asOperator">:</span>String <span class="asReserved">in</span> tableReturned<span class="asBracket">)</span> <span class="asBracket">{</span>
+                        <span class="asVar">var</span> l_include<span class="asOperator">:</span>Boolean <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                        <span class="asComment">// The tab selected tells us which items to include
+</span>                        <span class="asReserved">switch</span> <span class="asBracket">(</span>int<span class="asBracket">)</span> <span class="asBracket">{</span>
+                            <span class="asReserved">case</span> 0<span class="asOperator">:</span>  <span class="asComment">// Retainer Approval / PreApproval (ME)
+</span>                                    <span class="asReserved">if</span> <span class="asBracket">(</span> tableReturned<span class="asBracket">[</span>i<span class="asBracket">]</span>.PREAPPROVED <span class="asOperator">!=</span> <span class="asString">&apos;X&apos;</span><span class="asBracket">)</span>
+                                        l_include <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                                <span class="asReserved">break</span>;
+                            <span class="asReserved">case</span> 1<span class="asOperator">:</span>  <span class="asComment">// Retainer Final Approval (MD)
+</span>                                    <span class="asReserved">if</span> <span class="asBracket">(</span>tableReturned<span class="asBracket">[</span>i<span class="asBracket">]</span>.PREAPPROVED <span class="asOperator">==</span> <span class="asString">&apos;X&apos;</span><span class="asBracket">)</span> 
+                                        l_include <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                                <span class="asReserved">break</span>;                           
+                        <span class="asBracket">}</span>
+                        <span class="asReserved">if</span> <span class="asBracket">(</span>l_include <span class="asOperator">==</span> <span class="asReserved">true</span><span class="asBracket">)</span> l_table <span class="asOperator">=</span> l_table <span class="asOperator">+</span> tableReturned<span class="asBracket">[</span>i<span class="asBracket">]</span>;
+                <span class="asBracket">}</span>                
+                <span class="asReserved">return</span> l_table;
+            <span class="asBracket">}</span>
+            
+            <span class="asReserved">private</span> <span class="asFunction">function</span> getTabsToDisplay<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span> <span class="asBracket">{</span>
+                <span class="asComment">// Hides or shows tabs based on contracts returned
+</span>                <span class="asComment">// Only shows non-empty tabs
+</span>                <span class="asComment">// The first non-empty tab should be shown
+</span>                tab_to_display <span class="asOperator">=</span> <span class="asOperator">-</span>1;
+                
+                <span class="asReserved">for</span> <span class="asBracket">(</span><span class="asVar">var</span> i<span class="asOperator">:</span>int <span class="asOperator">=</span> tabSelection.numChildren <span class="asOperator">-</span> 1; i <span class="asOperator">&gt;</span> <span class="asOperator">-</span>1; i<span class="asOperator">--</span><span class="asBracket">)</span> <span class="asBracket">{</span>
+                    <span class="asVar">var</span> l_string<span class="asOperator">:</span>String <span class="asOperator">=</span> getTableTab<span class="asBracket">(</span>i<span class="asBracket">)</span>.toString<span class="asBracket">()</span>
+                    <span class="asReserved">if</span> <span class="asBracket">(</span><span class="asOperator">!</span>l_string <span class="asOperator">||</span> l_string <span class="asOperator">==</span> <span class="asString">&quot;&quot;</span><span class="asBracket">)</span>
+                    <span class="asBracket">{</span>
+                        tabSelection.getChildAt<span class="asBracket">(</span>i<span class="asBracket">)</span>.visible <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                        tabSelection.getTabAt<span class="asBracket">(</span>i<span class="asBracket">)</span>.visible <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                    <span class="asBracket">}</span>    
+                    <span class="asReserved">else</span>
+                    <span class="asBracket">{</span> 
+                        tabSelection.getChildAt<span class="asBracket">(</span>i<span class="asBracket">)</span>.visible <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                        tabSelection.getTabAt<span class="asBracket">(</span>i<span class="asBracket">)</span>.visible <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                        tab_to_display <span class="asOperator">=</span> i;
+                    <span class="asBracket">}</span>
+                <span class="asBracket">}</span>
+                tabSelection.enabled <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                <span class="asReserved">if</span> <span class="asBracket">(</span>tab_to_display <span class="asOperator">==</span> <span class="asOperator">-</span>1<span class="asBracket">)</span> 
+                <span class="asBracket">{</span>
+                    <span class="asComment">// All tabs are empty, which one do we display?
+</span>                <span class="asBracket">}</span>
+                <span class="asReserved">else</span>
+                <span class="asBracket">{</span>
+                    tabSelection.selectedIndex <span class="asOperator">=</span> tab_to_display;
+                <span class="asBracket">}</span>
+            <span class="asBracket">}</span>
+            
+            <span class="asReserved">private</span> <span class="asFunction">function</span> handleTabSelect<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span> <span class="asBracket">{</span>
+                <span class="asComment">// When the user picks a tab, display retainer contracts for that tab
+</span>                <span class="asComment">// Only need to do this if we are on the first screen    
+</span>                <span class="asReserved">if</span> <span class="asBracket">(</span><span class="asOperator">!</span>currentState <span class="asOperator">||</span> currentState <span class="asOperator">==</span> <span class="asString">&apos;&apos;</span> <span class="asOperator">||</span> currentState <span class="asOperator">==</span> <span class="asString">&apos; &apos;</span><span class="asBracket">)</span>
+                table <span class="asOperator">=</span> getTableCurrentTab<span class="asBracket">()</span>;
+            <span class="asBracket">}</span></pre></body>
+</html>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:local="*">
+	<local:ShiftGrid  id="sg1"
+		              dataProvider="{dp2}"
+		              direction="vertical" width="792" height="199">
+		
+	</local:ShiftGrid>
+
+<!--	<mx:HorizontalList height="40" 
+		id="hl1"
+		itemRenderer="GridCell"
+		allowMultipleSelection="true"
+	    allowDragSelection="true"
+		dataProvider="{dp1}"
+	    labelField="val"
+	    
+		width="809" x="10" y="290">
+		
+		
+		
+	</mx:HorizontalList> -->
+	<mx:Script >
+		<![CDATA[
+			
+			public function rotate():void
+			{
+				if (sg1.direction == "vertical") sg1.direction = "horizontal";
+				else sg1.direction = "vertical";
+				
+			}
+			
+		]]>
+	</mx:Script>
+	
+
+	
+	<mx:XMLListCollection id="dp1">
+		<mx:source>
+			<mx:XMLList xmlns="">
+				<bob/>
+				<fish/>
+				<apple/>
+				<bob/>
+				<fish/>
+							
+			</mx:XMLList>
+		</mx:source>
+	</mx:XMLListCollection>
+	<mx:XMLListCollection id="dp2">
+		<mx:source>
+			<mx:XMLList xmlns="">
+			    <days>
+			    	<day>
+			    		<val>
+			    			Mon		    			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Tues		    			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Wed  			
+			    		</val>			    		
+			    	</day>		
+			    	<day>
+			    		<val>
+			    			Thurs    			
+			    		</val>			    		
+			    	</day>				    		    	
+			    	<day>
+			    		<val>
+			    			Fri   			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Sat    			
+			    		</val>			    		
+			    	</day>			    	
+			    	<day>
+			    		<val>
+			    			Sun    			
+			    		</val>			    		
+			    	</day>	
+			    	<day>
+			    		<val>
+			    			Mon		    			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Tues		    			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Wed  			
+			    		</val>			    		
+			    	</day>		
+			    	<day>
+			    		<val>
+			    			Thurs    			
+			    		</val>			    		
+			    	</day>				    		    	
+			    	<day>
+			    		<val>
+			    			Fri   			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Sat    			
+			    		</val>			    		
+			    	</day>			    	
+			    	<day>
+			    		<val>
+			    			Sun    			
+			    		</val>			    		
+			    	</day>	
+			    	<day>
+			    		<val>
+			    			Mon		    			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Tues		    			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Wed  			
+			    		</val>			    		
+			    	</day>		
+			    	<day>
+			    		<val>
+			    			Thurs    			
+			    		</val>			    		
+			    	</day>				    		    	
+			    	<day>
+			    		<val>
+			    			Fri   			
+			    		</val>			    		
+			    	</day>
+			    	<day>
+			    		<val>
+			    			Sat    			
+			    		</val>			    		
+			    	</day>			    	
+			    	<day>
+			    		<val>
+			    			Sun    			
+			    		</val>			    		
+			    	</day>				    				    	
+			    </days>			
+				<ox>
+					<bob/>
+					<fish/>
+					<apple/>
+					<bob/>
+					<fish/>					
+				</ox>
+				<ox>
+					<bob/>
+					<fish/>
+					<apple/>
+					<bob/>
+					<fish/>					
+				</ox>
+							
+			</mx:XMLList>
+		</mx:source>
+	</mx:XMLListCollection>	
+	<mx:TextArea x="91" y="501"/>
+	<mx:Button x="79" y="380" label="Rotate" click="rotate()"/>
+</mx:Application>

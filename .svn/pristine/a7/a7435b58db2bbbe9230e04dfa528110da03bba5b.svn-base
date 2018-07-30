@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="665"
+	    xmlns:fc="com.flexcapacitor.controls.*" >
+	    
+	    <!--ECS stylesheet -->
+		<mx:Style source="ECS.css"/>
+		
+		<mx:Script>
+			<![CDATA[
+				import mx.controls.Alert;
+			
+				private const STATUS_VALIDATED:String="2";									//ECS status - validated
+				private const STATUS_APPROVED:String="3";									//ECS status - approved
+				private const STATUS_POSTED:String="5";										//ECS status - posted
+
+				// CPR Variables
+					[Bindable]
+					public var cpr:String;					
+					[Bindable]
+					public var year:String;					
+					[Bindable]
+					public var company:String;
+					
+					
+				// WSDL Prefix to connect to web service
+					[Bindable]
+					public var wsdl_prefix:String;
+			
+				// Email flags
+					[Bindable]
+					public var viewEmail1:Boolean;
+					[Bindable]
+					public var viewEmail2:Boolean;				
+				
+				// Email dates / times				
+					[Bindable]
+					public var sentDate1:String;				
+					[Bindable]
+					public var sentTime1:String;				
+					[Bindable]
+					public var sentDate2:String;				
+					[Bindable]
+					public var sentTime2:String;	
+				
+				
+	/*
+		getHTMLForEmail (Z_ECS_CPR_GET_EMAIL_TEXT)
+		get the HTML text for the email
+	*/     
+	private function getHTMLForEmail(CPRStatus:String):void{
+		wsGetContributorEmail.Z_ECS_CPR_GET_EMAIL_TEXT.request.IM_STATUS=CPRStatus;
+		wsGetContributorEmail.Z_ECS_CPR_GET_EMAIL_TEXT.send();
+	}		
+	
+	// Get whichever email the user clicked the button for
+	private function getContributorEmailCallBack(result:Object):void{
+		html1.htmlText = result.EX_HTML;
+	}
+		
+				
+			]]>
+		</mx:Script>
+	    
+		<mx:Canvas label="Communication History" width="100%" height="665" id="tabCommunicationHistory" tabEnabled="false">
+		 	
+		 <mx:Panel x="430" y="10" width="370" height="143" layout="absolute" styleName="panel" title="Email sent for a New Contributor/ Contract">
+				<mx:Label x="19" y="10" text="Date Sent"/>
+				<mx:Label x="19" y="38" text="Time Sent"/>
+				<mx:Button x="122.5" y="69" label="View Email" styleName="button" id="btnViewEmail1" enabled="{viewEmail1}"
+					click="getHTMLForEmail(STATUS_VALIDATED)"/>
+				<mx:TextInput x="124" y="9" width="122" editable="false" styleName="disabled" id="txtSentDate1" text="{sentDate1}"/>
+				<mx:TextInput x="124" y="37" width="122" editable="false" styleName="disabled" id="txtSentTime1" text="{sentTime1}"/>
+			</mx:Panel>
+			<mx:Panel x="21" y="10" width="370" height="143" layout="absolute" styleName="panel" title="Email sent for Confirmation of Payment">
+				<mx:Label x="20" y="10" text="Date Sent"/>
+				<mx:Label x="20" y="38" text="Time Sent"/>
+				<mx:TextInput x="124" y="9" width="122" editable="false" styleName="disabled" id="txtSentDate2" text="{sentDate2}"/>
+				<mx:TextInput x="124" y="37" width="122" editable="false" styleName="disabled" id="txtSentTime2" text="{sentTime2}"/>
+				<mx:Button x="122.5" y="69" label="View Email" styleName="button" id="btnViewEmail2" 
+					click="getHTMLForEmail(STATUS_POSTED)" enabled="{viewEmail2}"/>
+			</mx:Panel>
+			
+			<!--HTML Component for display the email texts-->
+			<fc:HTML  moveEffect="{}" resizeEffect="{}"
+				borderStyle="solid" borderThickness="2" y="170" left="21" right="21"
+				elementType="division" height="484" cornerRadius="6" borderColor="#605669" 
+				offscreenOffset="-5000" fitToContentHeight="false"
+				getHeightTimeout="1000" id="html1">
+			</fc:HTML>
+			
+			
+		</mx:Canvas> 
+	
+	<!-- Effects -->
+	<mx:Move id="move1" duration="500" target="{html1}" />
+	<mx:Resize id="resize1" duration="500" target="{html1}"/>		
+		
+	<!--Get the email HTML (either contractual or infirming contributor of payment)-->
+	<mx:WebService
+		id="wsGetContributorEmail" 
+    	wsdl="{wsdl_prefix}Z_ECS_CPR_GET_EMAIL_TEXT"
+    	useProxy="false"
+    	result="getContributorEmailCallBack(event.result)"   	 
+     	showBusyCursor="true"
+     	fault="Alert.show(event.fault.faultString, 'Email History')">
+	    <mx:operation name="Z_ECS_CPR_GET_EMAIL_TEXT"  
+	     	 concurrency="last"
+	    	 resultFormat="e4x" >
+	    	<mx:request>
+	    		<IM_CPR_NUMBER>{cpr}</IM_CPR_NUMBER>
+	    		<IM_YEAR>{year}</IM_YEAR>
+	    		<IM_COMPANY>{company}</IM_COMPANY>
+	    		<IM_STATUS></IM_STATUS>
+	    	</mx:request>
+		</mx:operation>
+	</mx:WebService> 
+		
+</mx:Module>

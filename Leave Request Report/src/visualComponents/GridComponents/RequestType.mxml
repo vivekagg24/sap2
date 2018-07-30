@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="18" height="42">
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			requestIcon.data = value;
+	 			requestIcon.enabled = false;
+			
+				if (value && value.DEL_FLAG == "D"){
+					requestIcon.enabled = true;
+					requestIcon.visible = true;
+					requestIcon.source = "HR/images/delete.gif";
+					requestIcon.toolTip="Deletion";
+				}
+				else if (value && value.DEL_FLAG == "I"){
+					requestIcon.enabled = true;
+					requestIcon.visible = true;
+					requestIcon.source = "HR/images/S_B_CREA.gif";
+					requestIcon.toolTip="New request";
+				}
+				else if (value && value.DEL_FLAG == "A"){
+					requestIcon.enabled = true;
+					requestIcon.visible = true;
+					requestIcon.source = "HR/images/S_B_CHNG.gif";
+					requestIcon.toolTip="Amendment";
+				}
+				else {
+		 			requestIcon.enabled = false;
+					requestIcon.visible = false;
+				}
+	 		}
+	 		
+	 		public function set listData(value:BaseListData):void
+	 		{
+	 			requestIcon.listData = value;
+	 		}
+	 		
+	 		public function get listData():BaseListData
+	 		{
+	 			return requestIcon.listData;
+	 		}				
+		]]>
+	</mx:Script>
+		
+	<mx:Image id="requestIcon" 
+		 resize="false" useHandCursor="false" buttonMode="false"> 
+	</mx:Image>
+</mx:Canvas>

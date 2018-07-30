@@ -1,0 +1,1645 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx               = "http://www.adobe.com/2006/mxml"  
+	                  styleName        = "application"
+   	                  width            = "100%"
+	                  height           = "100%" 
+	                  enabled          = "true" 
+	                  layout           = "absolute" 
+                      initialize       = "init()"
+	                  creationComplete = "creationComplete()"	 
+                      xmlns:ecs        = "Components.*"
+ 	                  keyUp            = "handleControlKeyUp(event)"
+ 	                  keyDown          = "handleControlKeyDown(event)"   
+ 	                  xmlns:ns1        = "*"
+                      xmlns:fc         = "com.flexcapacitor.controls.*" 
+ 	                  xmlns:ns2        = "ni.components.*"> 
+
+                                        
+ <!-- //resize(); possible after event Creation Complete  -->
+ 
+	<mx:Style source="ECS.css"/>
+	
+	<mx:Script source="../src/Scripts/Declarations.as"/> 
+	<mx:Script source="../src/Scripts/Validation.as"/> 
+	<mx:Script source="../src/Scripts/SupportingFunctions.as"/> 		
+	<mx:Script source="../src/Scripts/ConTypeChangeHandling.as"/> 		
+	<mx:Script source="../src/Scripts/UnboundData.as"/> 			
+	<mx:Script source="../src/Scripts/BankFunctions.as"/> 				
+	<mx:Script source="../src/Scripts/QuickAddress.as"/> 	
+	<mx:Script source="../src/Scripts/ExternalCalls.as"/> 	
+	<mx:Script source="../src/Scripts/CrossDomain.as"/> 				
+ 
+<mx:Script>
+
+	<![CDATA[
+		import flash.system.Security;
+		import mx.events.CloseEvent;
+		
+		
+	    	import mx.core.Container;
+    	import mx.core.IFlexDisplayObject;
+    	import mx.collections.ArrayCollection;
+        import mx.managers.PopUpManager;
+        import mx.controls.Alert;
+        import mx.events.ListEvent;
+  		import mx.core.Application;
+  		import mx.rpc.events.FaultEvent;
+ 		import mx.rpc.events.ResultEvent;
+ 		import mx.events.CloseEvent;
+ 		import mx.managers.FocusManager;
+ 		import mx.managers.SystemManager;	
+		
+		
+		
+		
+		
+		
+		
+/*		public function resize():void
+		{
+			var matrix:Matrix = new Matrix;
+			matrix.scale(0.8, 0.8);
+			this.transform.matrix = matrix;
+		}                                                    */
+		
+		//public const c_wsdl_prefix:String = "http://saponi.ni.ad.newsint:8080/sap/bc/soap/wsdl11?sap-client=007&services=";
+		public const c_dev_server:String = "http://vecdci.ds.newsint:8000";
+		public const c_uat_server:String = "http://vectci.ds.newsint";
+		public const c_sap_client:String = "sap-client=007&";
+		public const c_wsdl_sicf_prefix:String = "/zni/bc/soap/wsdl11?"; 
+		
+		[Bindable]
+		public var wsdl_prefix:String;
+	
+		
+/* 	
+	 =============================
+      SCRIPTS
+	 =============================
+      
+      init
+	  creationComplete	  
+	  ShowCPR
+	  ValidateIBAN
+	  CheckVATno
+	  GetBankAddress
+	  GetContribDetails
+	  HandleSearchAlert
+	  SearchOrGet
+	  ServerRequest
+	  ToggleDisplayMode
+	  HandleChDispToggleAlert
+	  ReGetContributor
+	  SetView
+	  AdvContribSearch
+	  CreateNew
+	  HandleCreateAlert
+	  SetFieldsForNewRecord
+	  ServerResponse
+	  SetAuthorisationRights
+	  HandleContributorReturn
+	  buildCPRsArray
+	  ProcessDuplicates
+ 	  webServiceFault 
+*/
+	
+	    private function init():void{ 
+
+	    	// Must be called in application "initialize" event, before Web Services try to load their WSDLs.
+	    	// If it is called by the "applicationComplete" event, it is too late.
+	    	
+	    	// Determine secuirty sandbox and thus whether we are running locally or no
+	    	// If we are running locally, point flex to Dev server
+	    	// If we are running remotely, look on whatever server we are running from
+	    	
+	    	if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    		wsdl_prefix = c_wsdl_sicf_prefix
+				            + "services=";
+	     	    	
+			else  // Running locally
+			    wsdl_prefix = c_dev_server       // Which SAP server should we connect to?
+			                + c_wsdl_sicf_prefix
+			                + c_sap_client       // Which SAP client should we connect to?
+			                + "services=" ;   	
+	    }
+    private function creationComplete():void {
+    	// Start the application.
+    	// Called on startup after display has been created
+    	
+    	// Allow call from external	
+    	ExternalInterface.addCallback("updateFromExternal", updateFromExternal);
+    	
+    	// Focus on the contributor name field
+		focusManager.setFocus(tiSearchCon); 
+		tiSearchCon.dispatchEvent(new Event(MouseEvent.CLICK));    	
+    	
+    	// Get the data
+    	ServerRequest(cInitLoad);
+    	
+    }
+    
+   	
+     
+    // Make call to external javascript function to show selected Payment.    
+	private function ShowCPR(event:ListEvent):void {
+
+        var CurrentRow:String = String(event.rowIndex);
+        
+		if(CurrentRow == '-1' || CurrentRow == null || CurrentRow == '0'){
+			
+			return;			
+		}				
+
+		var ChosenRow:int;
+		
+		ChosenRow = int(CurrentRow) - 1;
+		
+		var oCPRs:Object = aCPRs[ChosenRow];
+
+		var sBelnr:String  = oCPRs.Belnr.toString();
+		var sYear:String   = oCPRs.Year.toString(); 
+		var sCoCode:String = oCPRs.CoCode.toString(); 
+				
+	    var objParameters:Object = new Object();
+
+	    objParameters.belnr = sBelnr;
+	    objParameters.bukrs = sCoCode;
+	    objParameters.gjahr = sYear;
+
+	    if (!ExternalInterface.call("showPayment", objParameters)){
+    		 Alert.show("Error occurred trying to display Payment");
+    	}
+	}
+
+	private function ValidateIBAN():void{
+		
+		if(tiIBAN.text != ""){
+			
+			ServerRequest(cBankFromIBAN);			
+		}
+	}
+	
+	
+	private function CheckVATno():void{
+	
+		if ( tiVatNo.text != "" ){
+        	
+        	if ( comboAddressCountries.value == 'GB' ){
+
+				ServerRequest(cVATNo);        		
+
+        	}else{
+
+				 Alert.show("VAT numbers are not required for non GB countries, please leave this field blank");
+        		
+        	}
+		
+    	}else{
+
+//      	Nothing entered in the VAT field
+			bVatNoInvalid = true;             // we maintain this here to signal a "grey out" of self bill date field 
+			SetSelfBillingField();
+
+		}
+
+	}
+	
+	private function GetBankAddress():void{
+		
+		if (tiSortCode.text == ""){
+			
+			ClearBankAddress();	
+					
+		}else{
+			ServerRequest(cBankAddress);
+		}
+	}
+
+	private function GetContribDetails():void{
+
+		if(dataChanged == "X"){
+		
+			Alert.show(cUnsavedDataWarning, cWarning ,Alert.OK | Alert.NO,this,HandleSearchAlert,null,Alert.NO);
+
+		}else{
+
+			SearchOrGet();
+			
+		}
+	}
+
+	private function HandleSearchAlert(oEvent:CloseEvent):void{
+
+		 if (oEvent.detail==Alert.OK) {
+
+			SearchOrGet();
+         }		
+	}
+
+	private function SearchOrGet():void{
+		
+		if(viewRights == cNone){
+			
+			Alert.show("You are not authorised to display contributors", cAuthError); 
+			
+			return;
+		}
+		
+		if(displayMode == cNew ){
+			
+			displayMode = cEdit;
+		}
+		
+		var ConNr:int = int(tiSearchCon.text);
+	
+		if (ConNr == 0){
+			
+			ServerRequest(cSearchContributor);
+			
+		}else{
+			
+			ServerRequest(cGetContributor);
+			ServerRequest(cGetContributorRecentCPRs);
+		}
+	}
+
+	public function ServerRequest(ID:String):void{
+		
+		var oRequestCall:Object;
+
+		bEnableServerTripButtons = false;				
+		bEnableSaveButton		 = false;
+  			
+		switch (ID){
+
+			case cSearchContributor:
+
+				oRequestCall = wsContribSearch.Z_ECS_CONTRIB_SEARCH.send();
+                             
+				break;
+
+			case cIBANFromBank:
+
+				oRequestCall = wsGetIBAN.Z_ECS_CONTRIB_IBAN.send();
+							
+				break;
+
+			case cGetNewContribFromCPR:
+
+				if(createRights == cNone){
+					
+					Alert.show("You are not authorised to create contributors",cAuthError);
+		
+					SetView(cView);	
+					
+					return ;
+				}else{
+					
+					oRequestCall = wsGetNewContribFromCPR.Z_ECS_GET_NEW_CONTRIB_FROM_CPR.send();
+					
+				}
+
+				break;
+				
+			case cBankFromIBAN:
+
+				bIBANInvalid = true;
+
+				oRequestCall = wsGetBANK.Z_ECS_CONTRIB_BANK.send();
+							
+				break;
+
+			case cBankAddress:
+
+				bBankInvalid = true;
+				
+				oRequestCall = wsGetBankAddress.Z_ECS_CONTRIB_BANK_ADDRESS.send();
+							
+				break;
+
+			case cVATNo:
+
+				bVatNoInvalid = true; 
+
+				oRequestCall = wsVATCheck.Z_ECS_CONTRIB_VATNO.send();
+					
+				break;
+
+			case cInitLoad:
+
+				InitialiseAllValidatorFields();
+						
+				oRequestCall = wsGetInitialData.Z_ECS_CONTRIB_INIT_DATA.send();
+
+				break;
+				
+			case cSave:
+			 	
+				handleVATPaymentBlock();                          // see src\scripts\SupportingFunctions.as
+		/*				// sreddy
+		// Satrt sreddy 19.11.2014 Govt flag alert IC#279394
+			 	//	var govflag1:String = xmlConDetails.CH_CONTRIB_DETAIL.BRSCH.toString();
+			 		
+			 		if (nogovtflag == "X") { 
+			 			GovtFlagAlert();
+			 			DataChanged(true);	
+			 		} else {
+			 		DataChanged(false);	 // original line
+			 		}
+			 		//srddy 279394 */
+				var return_code:Boolean = ValidateDataOnSave();   // see src\scripts\Validation.as
+			 
+				if (return_code != true){
+
+					bEnableServerTripButtons = true;				
+					bEnableSaveButton		 = true;
+					return;
+				}
+
+				if (CurrentConNr == cNewContributor){
+		
+					ServerTripMode = cNew; 
+					tiSearchCon.text  = "";
+					
+				}else{
+					ServerTripMode = cEdit; 
+					tiSearchCon.text  = CurrentConNr;			
+				}
+
+				oRequestCall = wsGetContributor.Z_ECS_CONTRIB_MAINTAIN.send();
+              //  firsttime = false; //serddy
+				break;		
+
+			case cGetContributor:
+		 firsttime = false; //sreddy
+	     nogovtflag = "";  //sreddy
+				ServerTripMode = cGetDetail; 
+
+				oRequestCall = wsGetContributor.Z_ECS_CONTRIB_MAINTAIN.send();
+/* Launch Contributor Email lookup when Contributor is found  */
+				wsGetContributorEmail.Z_ECS_CPR_GET_EMAIL_TEXT.send();
+
+				break;	
+				
+			case cGetContributorRecentCPRs:		
+			
+			    xmlConCPRs = new XML();	
+				oRequestCall = this.wsGetContributor.Z_ECS_GET_CONTRIB_RCNT_CPRS.send();					
+					
+		}
+
+		oRequestCall.marker = ID;
+	}
+
+	private function ToggleDisplayMode():void{
+
+		if (displayMode == cView){
+
+			if(viewRights == cNone){
+	
+				Alert.show("You are not authorised to make changes to contributors",cAuthError);
+				
+				return;
+				
+			}
+
+			if(CurrentConNr == ""){
+
+				FocusComponent = tiSearchCon;
+
+				Alert.show("Please search for a contributor", "Display / Change Contributor",1,this,HandleValidationAlertClose);				
+				
+				return;				
+			}
+			
+			SetView(cEdit);
+			GovtFlagAlert();  // sreddy IC 279394 - commented for reverting the changes
+		}else{
+			if(dataChanged == "X"){
+
+				Alert.show(cUnsavedDataWarning, cWarning ,Alert.OK | Alert.NO,this,HandleChDispToggleAlert,null,Alert.NO);
+			}else{
+
+				SetView(cView);
+			}
+		}
+
+	}
+	
+	private function HandleChDispToggleAlert(oEvent:CloseEvent):void{
+
+		 if (oEvent.detail==Alert.OK) {
+
+			SetView(cView);
+
+			ReGetContributor();
+         }
+	}
+
+	private function ReGetContributor():void{
+
+		tiSearchCon.text  = CurrentConNr;			
+
+		SetDefaultValues();
+
+		ServerRequest(cGetContributor);
+		ServerRequest(cGetContributorRecentCPRs);
+	}
+	
+	private function SetView(Mode:String):void{
+
+		displayMode = Mode;
+
+		SetTitle();
+		
+		ResetRequiredFields();
+		
+		EnableButtonsAndFields(false);
+		
+		switch(displayMode){
+
+			case cViewOnly:
+			
+				bShowButtons = false;
+				
+				break;
+
+			case cEdit:
+
+				switch(editRights){
+					
+					case cFull:
+
+						EnableButtonsAndFields(true);
+
+						SetConTypeFields()
+						
+						SetSelfBillingField();											
+						
+						SwitchOnCheckboxConfirmDetails();
+											
+						break;
+						
+					case cPartial:
+                        setVendortypefields(); // sreddy IC#00145795
+						bEnablePartialRightsFields = true;
+						bEnableSaveButton		   = true;
+	
+						break;
+				}
+		
+				break;
+
+			case cNew:
+
+				EnableButtonsAndFields(true);
+	
+				SetConTypeFields()
+				
+				SetSelfBillingField();
+			    
+			    DisableAddressFieldsBeforeQASearchIsUsed();
+				
+				SwitchOnCheckboxConfirmDetails();
+												
+				break;				
+		}
+
+		ValidateAll();
+	}
+
+	private function AdvContribSearch():void{
+ 
+    	var win:ContributorSearch;
+
+    	win = ContributorSearch(PopUpManager.createPopUp(this,ContributorSearch,true));
+    	
+    	win.move(50,70);
+
+
+
+	}
+
+	private function CreateNew():void{		
+
+		if(createRights == cNone){
+			
+			Alert.show("You are not authorised to create contributors",cAuthError);
+
+			SetView(cView);	
+			
+			return ;
+		}
+
+		if (displayMode == cView){
+
+			SetFieldsForNewRecord()
+
+		}else{
+			if(dataChanged == "X"){	
+				Alert.show(cUnsavedDataWarning, cWarning ,Alert.OK | Alert.NO,this,HandleCreateAlert,null,Alert.NO);				
+			}else{
+				SetFieldsForNewRecord()				
+			}
+		}
+	}
+			
+	private function HandleCreateAlert(oEvent:CloseEvent):void{
+
+		 if (oEvent.detail==Alert.OK) {
+				SetFieldsForNewRecord()			
+            }
+	}
+	
+	private function SetFieldsForNewRecord():void{
+		
+		Application.application.enabled =  true;
+
+		tiSearchCon.text = "";
+
+		DataChanged(false);
+
+		SetDefaultValues();
+		
+		CurrentConNr = cNewContributor;
+
+		SetView(cNew);
+		
+		bEnableDispChanButton = false;
+		comboCurrency.enabled = false;
+	}
+
+	
+	private function ServerResponse(event:ResultEvent):void
+	{
+		var oCallResponse:Object = event.token;
+
+  		var Return_message:String;
+  		var Return_code:int;  			
+
+		switch(oCallResponse.marker)
+		{			
+			case cSearchContributor:
+
+				var xmlSearchResults:XML = new XML(wsContribSearch.Z_ECS_CONTRIB_SEARCH.lastResult);
+
+				Return_code = xmlSearchResults.EX_RETURN_CODE.toString();
+				
+				if(Return_code != 0){
+	
+					FocusComponent = tiSearchCon;
+			
+					Return_message = "No contributors matched search criteria:" + tiSearchCon.text;
+			
+			  		Alert.show( Return_message ,"Contributor Search", Alert.OK,this,HandleValidationAlertClose);	
+								
+				}else{
+
+			 		btnDispChange.setFocus();
+			 		
+					ConList = ContribList(PopUpManager.createPopUp(this, ContribList ,true));
+					
+					ConList.title = "Choose Contributor";
+					
+					ConList.showCloseButton = true;						
+					
+					ConList.xmlContributors = xmlSearchResults.EX_T_CON_DETAIL.item;
+					
+				}
+		
+				break;			
+
+			case cBankAddress:
+
+			 	var xmlBankAddress:XML = new XML(wsGetBankAddress.Z_ECS_CONTRIB_BANK_ADDRESS.lastResult);	
+
+		  		Return_code = xmlBankAddress.EX_RETURN_CODE.toString();
+			  	
+				if(Return_code != 0){
+			
+			  		Return_message = xmlBankAddress.EX_RET_MESSAGE.toString();
+	
+					ClearBankAddress();
+			
+					FocusComponent = tabBankDetail;
+			
+			  		Alert.show( Return_message ,cBankErrorTitle, Alert.OK,this,HandleValidationAlertClose);	
+			
+				}else{
+			
+					bBankInvalid = false;
+					
+					PopulateBankAddress(xmlBankAddress.EX_S_ADDRESS);
+				}
+			
+				break;
+				
+			case cIBANFromBank:
+			
+			 	var xmlIBAN:XML = new XML(wsGetIBAN.Z_ECS_CONTRIB_IBAN.lastResult);	
+
+  				Return_code = xmlIBAN.EX_RETURN_CODE.toString();
+
+				if(Return_code != 0){
+
+					tiIBAN.text = "";
+				
+		  			Return_message = xmlIBAN.EX_RETURN_MESSAGE.toString();
+
+  					Alert.show( Return_message ,"Get IBAN", Alert.OK ,this);	
+	
+				}else{
+					tiIBAN.text = xmlIBAN.EX_IBAN.toString();								
+										
+					DataChanged(true);
+				}
+				
+				break;
+
+			case cGetNewContribFromCPR:
+
+				SetFieldsForNewRecord();
+				
+			 	xmlConDetails = new XML(wsGetNewContribFromCPR.Z_ECS_GET_NEW_CONTRIB_FROM_CPR.lastResult);
+		
+		  		Return_code = xmlConDetails.EX_RETURN_CODE.toString();
+		  		
+				setGBPAllowed();
+
+				if(Return_code != 0){
+
+			  		Return_message = xmlConDetails.EX_RETURN_MESSAGE.toString();
+
+  					Alert.show( Return_message ,"Invalid CPR number", Alert.OK);						
+
+					displayMode = cView 
+					
+					SetDefaultValues();
+					
+				}else{
+
+					xmlLastConDetails = new XML(xmlConDetails.toString()); // Clone it for undo changes
+					SetUnboundData();
+					setPostCodeMandatoryDependingOnCountry();
+				}
+			
+				break;
+
+			case cBankFromIBAN:
+
+			 	var xmlBank:XML = new XML(wsGetBANK.Z_ECS_CONTRIB_BANK.lastResult);	
+
+  				Return_code = xmlBank.EX_RETURN_CODE.toString();
+
+				if(Return_code != 0){
+					
+		  			Return_message = xmlBank.EX_RETURN_MESSAGE.toString();
+
+					FocusComponent = tiIBAN;
+					
+  					Alert.show( Return_message ,"Invalid IBAN", Alert.OK ,this,HandleValidationAlertClose);	
+  					
+				}else{
+
+					bIBANInvalid = false;
+										
+					tiAccountNr.text 			   = xmlBank.EX_BANK_DETAILS.BANKN.toString();
+					tiControlKey.text 			   = xmlBank.EX_BANK_DETAILS.BKONT.toString();
+					comboBankCountries.ChosenValue = xmlBank.EX_BANK_DETAILS.BANKS.toString();
+					tiSortCode.text 			   = xmlBank.EX_BANK_DETAILS.BANKL.toString();
+
+					PopulateBankAddress(xmlBank.EX_BANK_DETAILS);
+					
+					DataChanged(true);	
+				}
+			
+				break;
+									
+			case cSave:
+
+				Return_code = HandleContributorReturn();				
+
+				if(Return_code == 0){
+
+			 		dbUpdated = "X";
+
+		  			DataChanged(false);	
+							  					
+		  			var mode:String = xmlConDetails.CH_CONTRIB_DETAIL.UPDATE_MODE.toString();
+		  			
+		  			var lifnr:String =  xmlConDetails.CH_CONTRIB_DETAIL.LIFNR.toString()
+		  			
+		  			if (mode == cNew) passNewLifnrToJavascript(lifnr);
+		  			
+		  			Return_message = xmlConDetails.EX_RETURN_MESSAGE.toString();
+		
+					var alert:Alert = Alert.show( Return_message ,"Contributor", Alert.OK ,this);	
+		  			alert.addEventListener(CloseEvent.CLOSE, function():void {ExternalInterface.call("switchToCprScreen"); } );
+		  			  			
+		  			
+		  			
+		  			displayMode = cView;  // 185
+
+				}
+			
+				break;
+							
+			case cGetContributor:
+
+				Return_code = HandleContributorReturn();
+
+				if(Return_code != 0){
+					
+					displayMode = cView 
+					
+					SetDefaultValues();
+				}
+		
+	  			DataChanged(false);
+	  			
+	  			setGBPAllowed();
+	  			
+	  			setPostCodeMandatoryDependingOnCountry();
+				
+				displayMode = cView;   //sreddy
+				
+				break;
+
+			case cVATNo:
+
+				var xmlVATno:XML = new XML(wsVATCheck.Z_ECS_CONTRIB_VATNO.lastResult);
+
+  				Return_code = xmlVATno.EX_RETURN_CODE.toString();
+
+				if(Return_code != 0){
+
+		  			Return_message = xmlVATno.EX_RET_MESSAGE.toString();
+
+					tnFinDetail.selectedIndex = 0;
+					FocusComponent = tiVatNo;				
+					
+  					Alert.show( Return_message ,"VAT Number", Alert.OK ,this,HandleValidationAlertClose);	
+
+				}else{
+
+					bVatNoInvalid = false; 					
+
+				}
+				
+				break;
+						
+								
+			case cInitLoad:
+			
+			 	xmlInitData = new XML(wsGetInitialData.Z_ECS_CONTRIB_INIT_DATA.lastResult);
+                                
+				if (Application.application.parameters.Contrib_num != null && 
+					Application.application.parameters.Contrib_num != ""){
+				
+					tiSearchCon.text = Application.application.parameters.Contrib_num;
+				
+					displayMode = Application.application.parameters.Display_mode;
+
+					ServerRequest(cGetContributor);		
+					ServerRequest(cGetContributorRecentCPRs); // Fix Service call 424746			
+
+				}else if(Application.application.parameters.cpr != null &&			
+  		  				 Application.application.parameters.cpr != ""){
+  		  				 	
+  		  			CPRforNewContrib = Application.application.parameters.cpr;
+  		  			
+  		  			ServerRequest(cGetNewContribFromCPR)
+				                   
+				}else{
+	
+					displayMode = cView;
+				}
+				
+				SetDefaultValues();
+
+				SetAuthorisationRights();
+					
+				tiSearchCon.setFocus();
+
+				break;		
+				
+			case cGetContributorRecentCPRs:
+			{
+				xmlConCPRs = new XML(event.result);
+				buildCPRsArray(); // Service call 424746
+				
+			}
+				
+			
+			
+					
+		}
+
+// Resets all fields / buttons to appropriate status (view or edit)
+		SetView(displayMode);
+	}
+
+	private function SetAuthorisationRights():void{
+
+		editRights   = xmlInitData.EX_EDIT_RIGHTS.toString();
+		viewRights	 = xmlInitData.EX_VIEW_RIGHTS.toString();
+		createRights = xmlInitData.EX_CREATE_RIGHTS.toString();  
+		chequeRights = xmlInitData.EX_CHEQUE_RIGHTS.toString();  
+		
+	}
+
+	private function HandleContributorReturn():int{     // used in server response function
+
+		Application.application.enabled =  true;
+
+  		var Return_message:String;
+  		var Return_code:int;  		
+  			
+	 	xmlConDetails = new XML(wsGetContributor.Z_ECS_CONTRIB_MAINTAIN.lastResult);	
+
+  		Return_code = xmlConDetails.EX_RETURN_CODE.toString();
+
+		switch (Return_code){
+
+			case 0:
+			    
+			    // Clone it for "undo changes" if user preses excape
+				xmlLastConDetails = new XML(xmlConDetails.toString()); 
+
+				GetBankAddress();
+
+// Detail for contributor returned successfully.
+// Most data controls are bound to the XML. This function updates those fields not bound
+				SetUnboundData();
+	
+				CurrentConNr = xmlConDetails.CH_CONTRIB_DETAIL.LIFNR;
+
+				bEnableDispChanButton = true;
+
+				if(displayMode == cNew){
+					
+					displayMode = cEdit;
+				}	
+							
+				//buildCPRsArray();  * Now done in response to getContributorCPRs
+				
+				break;
+			
+			case 2:
+
+				ProcessDuplicates();
+			
+				break;
+			
+			case 4:
+
+	  			Return_message = xmlConDetails.EX_RETURN_MESSAGE.toString();
+	
+	  			Alert.show( Return_message ,"Contributor", Alert.OK ,this);	
+			
+				break;
+
+		}
+		
+		return Return_code;		
+	}
+
+
+	private function buildCPRsArray():void{
+			
+		aCPRs = new ArrayCollection;
+	 
+		//var xmlCPRs:XMLList = xmlConDetails.EX_T_CPRS.item;     // Service call 424746
+		var xmlCPRs:XMLList = xmlConCPRs.CH_T_CPRS.item;          // Service call 424746
+
+  	 	for each(var item:* in xmlCPRs){
+
+    		aCPRs.addItem({Belnr:item.CPR, CoCode:item.COYCODE, Year:item.FISCALYEAR});
+	    }
+               
+	}
+	
+
+	private function ProcessDuplicates():void{
+
+ 		btnDispChange.setFocus();
+ 		
+		ConList = ContribList(PopUpManager.createPopUp(this, ContribList ,true));
+		
+		ConList.title = "Possible duplicates found" 
+			
+		ConList.pnlResults.title =  "PRESS 'Cancel' TO CONTINUE," +
+									" PRESS 'Choose' TO PICK A CONTRIBUTOR AND OVERWRITE NEW DATA";
+		
+		ConList.showCloseButton = true;						
+		
+		ConList.xmlContributors = xmlConDetails.EX_T_DUPLICATES.item;  // see sap r/3 function module Z_ECS_CONTRIB_MAINTAIN (class zcl_ecs_contributor method check_for_duplicates)
+
+		CheckDuplicates = ""
+	}
+
+  	private function webServiceFault(e:FaultEvent,Title:String):void{
+
+		Alert.show(e.fault.faultString,Title);
+
+// Resets server trip buttons / fields to appropriate status	
+		SetView(displayMode);
+
+  	}
+
+	]]>
+		
+</mx:Script>	
+
+
+<!--  ============                                                       -->
+<!--  WEB SERVICES                                                       -->
+<!--  ============                                                       -->
+<!--                                                                     -->
+<!--  Service	              	Function module               			 -->
+<!--  =========                 ===============                			 -->
+<!--  wsGetNewContribFromCPR	Z_ECS_GET_NEW_CONTRIB_FROM_CPR 			 -->
+<!--  wsVATCheck				Z_ECS_CONTRIB_VATNO            	 		 -->
+<!--  wsContribSearch			Z_ECS_CONTRIB_SEARCH             		 -->
+<!--  wsGetInitialData			Z_ECS_CONTRIB_INIT_DATA        drop down options  		 -->
+<!--  wsGetContributor			Z_ECS_CONTRIB_MAINTAIN           		 -->
+<!--  wsGetBankAddress			Z_ECS_CONTRIB_BANK_ADDRESS       		 -->
+<!--  wsGetIBAN					Z_ECS_CONTRIB_IBAN      				 -->
+<!--  wsGetBANK  				Z_ECS_CONTRIB_BANK		 				 -->
+<!--                                                                     -->
+
+
+<!--     	wsdl="C:\ECS Upgrade\Contributor Screen\Z_ECS_GET_NEW_CONTRIB_FROM_CPR.wsdl" -->
+<!--		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_GET_NEW_CONTRIB_FROM_CPR"    	     -->
+
+	<mx:WebService  	id             	= "wsGetNewContribFromCPR"    
+		    	    	wsdl           	= "{wsdl_prefix + 'Z_ECS_GET_NEW_CONTRIB_FROM_CPR'}"	   
+			    		useProxy       	= "false"
+			    		result         	= "ServerResponse(event)"
+			  			fault          	= "webServiceFault(event,'wsGetNewContribFromCPR')"    	    	
+     					showBusyCursor 	= "true"
+     				    load            = "loadCrossPolicyFile(event)">
+	    <mx:operation 	name         	= "Z_ECS_GET_NEW_CONTRIB_FROM_CPR"  
+	    	          	resultFormat 	= "e4x" 
+	    	          	concurrency  	= "last">
+  			<mx:request>			
+				<IM_CPR>{CPRforNewContrib}</IM_CPR>
+	    		<CH_CONTRIB_DETAIL>{modContrib}</CH_CONTRIB_DETAIL>				
+			</mx:request>
+		</mx:operation>
+	</mx:WebService>
+	
+	
+<!--     	wsdl="C:\ECS Upgrade\Contributor Screen\Z_ECS_CONTRIB_VATNO.wsdl" -->
+<!--		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_CONTRIB_VATNO"    	   -->
+
+	<mx:WebService 		id				= "wsVATCheck" 
+						wsdl			= "{wsdl_prefix + 'Z_ECS_CONTRIB_VATNO'}"    	   
+    					useProxy		= "false"
+    					result			= "ServerResponse(event)"
+  						fault			= "webServiceFault(event,'wsVATCheck')"    	    	
+     					showBusyCursor 	= "true"
+     					load            = "loadCrossPolicyFile(event)">
+	    <mx:operation 	name		   	= "Z_ECS_CONTRIB_VATNO"  
+	    	 			resultFormat   	= "e4x" 
+			    	 	concurrency    	= "last">
+  			<mx:request>			
+				<IM_VAT_NO>{tiVatNo.text}</IM_VAT_NO>
+				<IM_COUNTRY>{comboAddressCountries.selectedItem.data}</IM_COUNTRY>
+			</mx:request>
+		</mx:operation>
+	</mx:WebService>
+
+<!--		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_CONTRIB_SEARCH"    	   -->
+<!--     	wsdl="C:\ECS Upgrade\Contributor Screen\Z_ECS_CONTRIB_SEARCH.wsdl"  -->
+
+	<mx:WebService 		id				=	"wsContribSearch" 
+						wsdl			=	"{wsdl_prefix + 'Z_ECS_CONTRIB_SEARCH'}"    	  
+    					useProxy		=	"false"
+    					result			=	"ServerResponse(event)"
+  						fault			=	"webServiceFault(event,'wsContribSearch')"    	    	
+     					showBusyCursor	=	"true"
+     					load            =   "loadCrossPolicyFile(event)">
+	    <mx:operation 	name			=	"Z_ECS_CONTRIB_SEARCH"  
+	    	 			resultFormat	=	"e4x" 
+	    	 			concurrency		=	"last">
+			<mx:request>			
+				<IM_SEARCH_STRING>{tiSearchCon.text} </IM_SEARCH_STRING>
+			</mx:request>		    	 
+		</mx:operation>		
+	</mx:WebService>
+
+<!--     	wsdl="C:\ECS Upgrade\Contributor Screen\Z_ECS_CONTRIB_INIT_DATA.wsdl" -->
+<!--		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_CONTRIB_INIT_DATA"    	      -->
+
+	<mx:WebService 		id				=	"wsGetInitialData" 
+						wsdl			=	"{wsdl_prefix + 'Z_ECS_CONTRIB_INIT_DATA'}"     	   
+    					useProxy		=	"false"
+    					result			=	"ServerResponse(event)"
+  						fault			=	"webServiceFault(event,'wsGetInitialData')"    	    	
+     					showBusyCursor	=	"true"
+     					load            = "loadCrossPolicyFile(event)">
+	    <mx:operation 	name			=	"Z_ECS_CONTRIB_INIT_DATA"  
+	    	 			resultFormat	=	"e4x" 
+	    	 			concurrency		=	"last">
+		</mx:operation>
+	</mx:WebService>
+
+
+<!--		wsdl = "C:\ECS Upgrade\Contributor Screen\Z_ECS_CONTRIB_MAINTAIN.wsdl"	-->
+<!-- 		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_CONTRIB_MAINTAIN"    	 -->
+
+	<mx:WebService 		id				=	"wsGetContributor" 
+ 						wsdl			=	"{wsdl_prefix + 'Z_ECS_CONTRIB_MAINTAIN,Z_ECS_GET_CONTRIB_RCNT_CPRS'}"    	 
+    					useProxy		=	"false" 						  	
+       					showBusyCursor	=	"true"
+       					load            =   "loadCrossPolicyFile(event)">   
+	    <mx:operation 	name			=	"Z_ECS_CONTRIB_MAINTAIN"  
+	    				resultFormat	=	"e4x"
+	    				concurrency		=	"last"
+	    			    result			=	"ServerResponse(event)"
+	    			    fault			=	"webServiceFault(event,'wsGetContributor')"  >
+			<mx:request>			
+	    		<CH_CONTRIB_DETAIL>{modContrib}</CH_CONTRIB_DETAIL>
+			</mx:request>		    	 
+		</mx:operation>
+		<mx:operation 	name			=	"Z_ECS_GET_CONTRIB_RCNT_CPRS"  
+	    				resultFormat	=	"e4x"
+	    				concurrency		=	"last"
+	    			    result			=	"ServerResponse(event)"
+	    			    fault			=	"webServiceFault(event,'wsGetContributor')"  >
+			<mx:request>			
+	    		<IM_CONTRIBUTOR>{modContrib.LIFNR}</IM_CONTRIBUTOR>
+	    		<CH_T_CPRS></CH_T_CPRS>
+			</mx:request>		    	 
+		</mx:operation>
+	</mx:WebService>
+	
+<!-- 		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_CONTRIB_BANK_ADDRESS"  		  -->
+<!-- 		wsdl="C:\ECS Upgrade\Contributor Screen\Z_ECS_CONTRIB_BANK_ADDRESS.wsdl"  -->
+
+	<mx:WebService 		id				=	"wsGetBankAddress" 
+						wsdl			=	"{wsdl_prefix + 'Z_ECS_CONTRIB_BANK_ADDRESS'}"  
+    					useProxy		=	"false"
+    					result			=	"ServerResponse(event)"
+  						fault			=	"webServiceFault(event,'wsGetBankAddress')" 
+       					showBusyCursor	=	"true"
+       					load            =   "loadCrossPolicyFile(event)">   
+	    <mx:operation 	name			=	"Z_ECS_CONTRIB_BANK_ADDRESS"  
+	    	 			resultFormat	=	"e4x" 
+	    	 			concurrency		=	"last">
+ 			<mx:request>			
+				<IM_BANK_NUMBER>{tiSortCode.text}</IM_BANK_NUMBER>
+				<IM_BANK_COUNTRY>{comboBankCountries.selectedItem.data}</IM_BANK_COUNTRY>
+			</mx:request>		    	 
+   	 		</mx:operation>
+	</mx:WebService>
+
+<!-- 		wsdl="C:\ECS Upgrade\Contributor Screen\Z_ECS_CONTRIB_IBAN.wsdl"  -->
+<!--   		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_CONTRIB_IBAN"    		  -->
+
+	<mx:WebService 		id				=	"wsGetIBAN" 
+  						wsdl			=	"{wsdl_prefix + 'Z_ECS_CONTRIB_IBAN'}"      
+    					useProxy		=	"false"
+    					result			=	"ServerResponse(event)"
+  						fault			=	"webServiceFault(event,'wsGetIBAN')"    	
+       					showBusyCursor	=	"true"
+       					load            =   "loadCrossPolicyFile(event)">   
+	    <mx:operation 	name			=	"Z_ECS_CONTRIB_IBAN"  
+	    	 			resultFormat	=	"e4x" 
+	    	 			concurrency		=	"last">
+ 			<mx:request>			
+				<IM_BANK_ACCOUNT>{tiAccountNr.text}</IM_BANK_ACCOUNT>
+				<IM_BANK_COUNTRY>{comboBankCountries.selectedItem.data}</IM_BANK_COUNTRY>
+				<IM_BANK_NUMBER>{tiSortCode.text}</IM_BANK_NUMBER>
+				<IM_BANK_CONTROL_KEY>{tiControlKey.text}</IM_BANK_CONTROL_KEY>
+			</mx:request>		    	 
+   	 		</mx:operation>
+	</mx:WebService>
+
+<!--		wsdl="/sap/bc/soap/wsdl11?services=Z_ECS_CONTRIB_BANK"    	     -->
+<!-- 		wsdl="C:\ECS Upgrade\Contributor Screen\Z_ECS_CONTRIB_BANK.wsdl" -->
+
+	<mx:WebService 		id              = "wsGetBANK" 
+		           		wsdl            = "{wsdl_prefix + 'Z_ECS_CONTRIB_BANK'}"    	
+    	           		useProxy        = "false"
+    	           		result          = "ServerResponse(event)"
+  		           		fault           = "webServiceFault(event,'wsGetBANK')"    	
+       	           		showBusyCursor  = "true"
+       	           		load            =   "loadCrossPolicyFile(event)">   
+	    <mx:operation 	name         	= "Z_ECS_CONTRIB_BANK"  
+	    	          	resultFormat 	= "e4x" 
+	    	          	concurrency  	= "last">
+ 			<mx:request>			
+ 				<IM_IBAN>{tiIBAN.text}</IM_IBAN>
+			</mx:request>		    	 	    	 
+		</mx:operation>
+	</mx:WebService>
+
+    <!-- This web service copied from CPR Entry : Communication History tab (also from CPR Entry flex screen, see below)  -->
+	<!-- Get the email HTML (either contractual or infirming contributor of payment)-->
+	<!-- Replaced Z_ECS_CPR_GET_EMAIL_TEXT with Z_ECS_CPR_GET_EMAIL_TEXT to look up the first email to
+	contributor  -->
+	
+	<mx:WebService 		id              = "wsGetContributorEmail" 
+    	           		wsdl            = "{wsdl_prefix + 'Z_ECS_CPR_GET_EMAIL_TEXT'}"  
+    	           		useProxy        = "false"
+                   		result          = "getContributorEmailCallBack(event.result)"   	 
+     	          		 showBusyCursor = "true"
+     	           		fault           = "webServiceFault(event,'GetContributorEmail')" 
+     	           		load            = "loadCrossPolicyFile(event)">
+	    <mx:operation 	name        	= "Z_ECS_CPR_GET_EMAIL_TEXT"  
+	     	          	concurrency  	= "last"
+	                  	resultFormat 	= "e4x" >
+	    	<mx:request>
+	    		<IM_STATUS>{STATUS_POSTED}</IM_STATUS>
+	    		<IM_CPR_NUMBER>{cpr}</IM_CPR_NUMBER>
+	    		<IM_YEAR>{year}</IM_YEAR>
+	    		<IM_COMPANY>{company}</IM_COMPANY>
+	    	</mx:request>
+		</mx:operation>
+	</mx:WebService>
+
+<!-- NB Using the selected.Item.data properties 
+  	 of the comboboxes as the 'ChosenValue' property is not currently bindable -->
+	<mx:Model id="modContrib" >
+		<CH_CONTRIB_DETAIL>
+			<UPDATE_MODE>{ServerTripMode}</UPDATE_MODE>
+			<CHECK_FOR_DUPLICATES>{CheckDuplicates}</CHECK_FOR_DUPLICATES>			
+			<LIFNR>{tiSearchCon.text}</LIFNR>		
+			<CONTRIB_TYPE>{comboContribTypes.selectedItem.data}</CONTRIB_TYPE>
+			<FIRST_NAME>{tiFirstName.text}</FIRST_NAME>
+			<LAST_NAME>{tiSurname.text}</LAST_NAME>
+			<STAFF_NUMBER>{tiStaffNumber.text}</STAFF_NUMBER>
+			<AGENT_NAME>{tiAgent.text}</AGENT_NAME>
+			<NOM_DE_PLUME>{tiAlias.text}</NOM_DE_PLUME>
+			<AGENCY>{tiAgency.text}</AGENCY>
+			<AGENCY_CONTACT>{tiAgencyContact.text}</AGENCY_CONTACT>
+			<PAYMENT_TO>{comboPaymentTo.selectedItem.data}</PAYMENT_TO>
+			<NOEMAIL>{NoEmailFlag}</NOEMAIL>
+			<DONOTCONTACT>{NoContactFlag}</DONOTCONTACT>
+			<NAME3>{tiHouse.text}</NAME3>
+			<STRAS>{tiStreet.text}</STRAS>
+			<NAME4>{tiTown.text}</NAME4>
+			<ORT01>{tiCity.text}</ORT01>
+			<LAND1>{comboAddressCountries.selectedItem.data}</LAND1>
+			<PROFS>{comboContribTypes.selectedItem.data}</PROFS>
+			<LOEVM>{deleteFlag}</LOEVM>
+			<ZAHLS>{comboPayBlock.selectedItem.data}</ZAHLS>
+			<SPERR>{postBlock}</SPERR>
+			<PSTLZ>{tiPostCode.text}</PSTLZ>
+			<STCEG>{tiVatNo.text}</STCEG>
+			<ZTERM>{comboPayterms.selectedItem.data}</ZTERM>
+			<ZWELS>{comboPayMeth.selectedItem.data}</ZWELS>
+			<KVERM>{tiMemo.text}</KVERM>
+			<TELTX>{comboCurrency.selectedItem.data}</TELTX>
+			<GBDAT>{dfSelfBilling.SAPDateField}</GBDAT>
+			<ALTKN>{tiPrevAcc.text}</ALTKN>
+			<TELF1>{tiTelNr.text}</TELF1>
+			<TELF2>{tiTelNr2.text}</TELF2>
+			<TELF3>{tiTelNr3.text}</TELF3>
+			<TELFX>{tiFax.text}</TELFX>
+			<LFURL>{tiWebsite.text}</LFURL>
+			<EMAIL1>{tiEmail.text}</EMAIL1>
+			<EMAIL2>{tiEmail2.text}</EMAIL2>
+			<BANKS>{comboBankCountries.selectedItem.data}</BANKS>
+			<BANKL>{tiSortCode.text}</BANKL>
+			<BANKN>{tiAccountNr.text}</BANKN>
+			<BKONT>{tiControlKey.text}</BKONT>
+			<BKREF>{tiBKRef.text}</BKREF>
+			<IBAN>{tiIBAN.text}</IBAN>
+			<ERDAT>{tiERDAT}</ERDAT>
+			<ERNAM>{tiERNAM}</ERNAM>
+			<EDITORIAL_TEXT>{taEditorialText.text}</EDITORIAL_TEXT>
+			<CONFIRMDETAILS>{confirmDetails}</CONFIRMDETAILS>	
+			<BRSCH>{govtflag}</BRSCH>	
+			<ZZPI>{pisetflag}</ZZPI>
+			<ZZSA>{setsaflag}</ZZSA>
+		</CH_CONTRIB_DETAIL>
+	</mx:Model>
+
+    <mx:EmailValidator id="EmailCheck"  source="{tiEmail}"  property="text"  />
+    <mx:EmailValidator id="EmailCheck2" source="{tiEmail2}" property="text" required="false" />     
+
+	<mx:PhoneNumberValidator required="false" id="PhoneCheck1" source="{tiTelNr}"   property="text" />
+	<mx:PhoneNumberValidator required="false" id="PhoneCheck2" source="{tiTelNr2}"  property="text" />
+	<mx:PhoneNumberValidator required="false" id="PhoneCheck3" source="{tiTelNr3}"  property="text" />
+
+	<mx:Validator id="FirstNameCheck" required="false" source="{tiFirstName}"       property="text" />
+	<mx:Validator id="SurnameCheck"   required="false" source="{tiSurname}"         property="text" />
+	<mx:Validator id="StaffNumber"    required="false" source="{tiStaffNumber}"     property="text" />
+	<mx:Validator id="AgencyCheck"    required="false" source="{tiAgency}"          property="text" />
+	<mx:Validator id="AgentCheck"     required="false" source="{tiAgent}"           property="text" />
+	<mx:Validator id="ConTypeCheck"   required="false" source="{comboContribTypes}" property="selectedItem" />
+
+<!--<mx:Validator id="HouseCheck"     required="true"  source="{tiHouse}"           property = "text" />       #401 -->
+	<mx:Validator id="StreetCheck"    required="true"  source="{tiStreet}"          property = "text" />
+	<mx:Validator id="PostCodeCheck"  required="true"  source="{tiPostCode}"    	property = "text" />
+		
+	<ecs:BankAccountValidator  id                 = "AccountNrCheck"
+		                       required           = "true"
+		                       source             = "{tiAccountNr}"
+		                       property           = "text"
+		                       country            = "{comboBankCountries.selectedItem.data.toString()}"
+		                       requiredFieldError = "Please enter Account Number" /> 
+		                       
+	<mx:Validator requiredFieldError="Please enter Sort Code"             id="SortCodeCheck"  required="false" source="{tiSortCode}"     property="text"         />	 	
+	<mx:Validator requiredFieldError="Please select Payment Recipient"    id="PaymentToCheck" required="false" source="{comboPaymentTo}" property="selectedItem" />	 	 
+	<ecs:CurrencyValidator requiredFieldError="Please select Contributor Currency"
+		                  id="CurrencyCheck"
+		                  required="false"
+		                  source="{comboCurrency}"
+		                  property="selectedItem"
+		                   />	  
+	<mx:MenuBar x="10" y="10" width="505" height="22"></mx:MenuBar>
+	<mx:Button visible="{bShowButtons}"  x="125" y="10" label="Create New"  id="btnCreate" fontWeight="bold" click="CreateNew();"/>
+	<mx:Button visible="{bShowButtons}"  x="10" y="10" enabled="{bEnableDispChanButton}" id="btnDispChange" label="Display / Change"  click="ToggleDisplayMode();" fontWeight="bold"/>
+	<mx:Button visible="{bShowButtons}" enabled="{bEnableSaveButton}" x="463.8" y="10" label="Save"  id="btnSave" fontWeight="bold" click="ServerRequest(cSave)"/>
+	<mx:Button x="238" y="45" label="Advanced Search"  id="btnGet" fontWeight="bold" click="AdvContribSearch();"/>
+
+	<ecs:TextInput1 styleName="inputECS" x="70" y="45" id="tiSearchCon"  enter="GetContribDetails();" borderColor="#000000" borderThickness="1" borderStyle="solid" width="160"/>
+
+	<mx:TabNavigator x="10" y="76" width="947" height="773" backgroundAlpha="0"  borderStyle="solid"
+		 backgroundColor="#dceefc"   id="tnContributor" creationPolicy="all">
+
+		<mx:Canvas label="Contributor" width="936" height="734" id="cvsContributor">
+		
+	<mx:Panel x="10" y="10" width="905" height="170" layout="absolute" title="{Title}">
+		<mx:Label x="10" y="38" text="First Name(s)" />
+		<mx:Label x="10" y="66" text="Alias"/>
+		<mx:Label x="10" y="94" text="News/Picture Agency"/>
+		<mx:Label x="331" y="37" text="Surname"/>
+		<mx:Label x="331" y="10" text="Payroll Number"/>
+		<mx:Label x="331" y="65" text="Contributor's Agent/Company"/>
+		<mx:Label x="331" y="93" text="Agency Contact Name"/>
+		<mx:Label x="10" y="10" text="Contributor Type" fontWeight="bold"/>
+	
+	 	<ecs:ComboBox2 id="comboContribTypes" prompt="{cPrompt}" ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.CONTRIB_TYPE.toString()}" dataProviderFromSAP="{xmlInitData.EX_T_CONTRIB_TYPES.item}" compareToKey="true" enabled="{bEnableFields}" x="129" y="8" width="160" change="NewContribType()"/> 
+		<mx:TextInput id="tiPrevConType" visible="false" text="{xmlConDetails.CH_CONTRIB_DETAIL.CONTRIB_TYPE.toString()}"/>
+		
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.STAFF_NUMBER}" x="485" y="5" id="tiStaffNumber" change="DataChanged(true);" width="160" maxChars="8" numbersOnly="true" upperCase="false"/>	
+
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.FIRST_NAME}" x="129" y="38" id="tiFirstName" change="DataChanged(true);" width="160" maxChars="17"/>
+		
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.LAST_NAME}" x="485" y="36" id="tiSurname" change="DataChanged(true);" width="160" maxChars="18"/>	
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.NOM_DE_PLUME}" x="129" y="66" id="tiAlias"  change="DataChanged(true);" maxChars="35" width="160"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.AGENT_NAME}" x="485" y="66" id="tiAgent"  change="DataChanged(true);" maxChars="35" width="160"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.AGENCY}" x="129" y="94" id="tiAgency"  change="DataChanged(true);" maxChars="35" width="160"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.AGENCY_CONTACT}" x="485" y="94" id="tiAgencyContact"   change="DataChanged(true);" maxChars="35" width="160"/>							
+
+		<mx:Label x="702" y="10" text="Make payment to" id="labPaymentto" visible="{bPaymToVisible}"/>
+		<ecs:ComboBox2 id="comboPaymentTo"  visible="{bPaymToVisible}" enabled="{bEnableFields}" ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.PAYMENT_TO.toString()}" x="702" y="36"  dataProviderFromSAP="{xmlInitData.EX_T_PAYMENT_TO.item}"  compareToKey="true" change="DataChanged(true);ValidateNames();" prompt="{cPrompt}"/>		
+		<!--<mx:Label x="702" y="65" text="Related to" id="labVendorType" visible="{bVendorTypeVisible}"/>-->
+        <mx:CheckBox id="comboVendorType" change="DataChanged(true);setvendortype();"  visible="{bVendorTypeVisible}" enabled="{bEnablevendortype}" label="Government"  x="702" y="68"/>      
+        <mx:CheckBox id="privateInves" change="DataChanged(true);setpiflag();"  visible="{bVendorTypeVisible}" enabled="{bEnableprivate}" label="Private investigator"  x="702" y="86"/> 
+        <mx:CheckBox id="searchAgent" change="DataChanged(true);sasetflag();"  visible="{bVendorTypeVisible}" enabled="{bEnableagent}" label="Search Agent"  x="702" y="104"/> 
+	</mx:Panel>
+
+	<mx:Panel x="10" y="188" width="905" height="239" layout="absolute" title="Correspondence Details">
+
+		<mx:Label x="10" y="161" text="Post Code"/>
+		<mx:Label x="10" y="39" text="House/Flat"/>
+		<mx:Label x="10" y="132" text="City"/>
+		<mx:Label x="10" y="69" text="Street"/>
+		<mx:Label x="11" y="101" text="Town"/>
+		<mx:Label x="10" y="7" text="Country"/>
+		<mx:Label x="528.5" y="133" text="Website" width="56"/>
+		<mx:Label x="264" y="12" text="Quick Address"/>
+			 
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" x="347" y="10" id="tiQuickAddress" enter="QuickAddress()" change="DataChanged(true)" width="122" maxChars="40" toolTip="Only relevant for GB addresses"/>
+		<mx:Button enabled="{bEnableServerTripButtons}" x="477" y="11" label="Go" click="QuickAddress()" id="btnGetAddress"/>
+		
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.NAME3}" x="93" y="37" id="tiHouse" change="DataChanged(true)"  width="122" maxChars="35" />
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.STRAS}" x="93" y="67" id="tiStreet" change="DataChanged(true)" width="122" maxChars="35" />
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.NAME4}" x="93" y="99" id="tiTown" change="DataChanged(true)" width="122" maxChars="35" />		
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.ORT01}" x="93" y="130" id="tiCity" change="DataChanged(true)" width="122" maxChars="35"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.PSTLZ}" x="93" y="159" id="tiPostCode"  change="DataChanged(true);" width="122" maxChars="10"/>
+
+		<ecs:ComboBox2 id                  = "comboAddressCountries" 
+			           enabled             = "{bEnableFields}" 
+			           ChosenValue         = "{xmlConDetails.CH_CONTRIB_DETAIL.LAND1.toString()}" 
+			           dataProviderFromSAP = "{xmlInitData.EX_T_COUNTRIES.item}"  
+			           compareToKey        = "true" 
+			           change              = "DataChanged(true); ValidateBankDetails(); CorrespondenceCountryChanged1(); CorrespondenceCountryChanged2(); setPostCodeMandatoryDependingOnCountry();" 
+			           x="93" y="5" width="122" />		
+
+
+		<mx:Label x="264" y="72" text="Telephone"/>
+		<mx:Label x="264" y="103" text="Telephone 2"/>
+		<mx:Label x="264" y="133" text="Telephone 3"/>
+		<mx:Label x="528.5" y="72" text="Email"/>
+		<mx:Label x="528.5" y="102" text="Email 2"/>
+		<mx:Label x="264" y="163" text="Fax"/>
+        <!--<mx:Label x="675.5" y="12" text="Private investigator"/>-->
+        
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnablePartialRightsFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.TELF1}" x="347" y="70" id="tiTelNr" change="DataChanged(true)" width="122" maxChars="16"/>		
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnablePartialRightsFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.TELF2}" x="347" y="101" id="tiTelNr2" change="DataChanged(true)" width="122" maxChars="16"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnablePartialRightsFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.TELF3}" x="347" y="131" id="tiTelNr3" change="DataChanged(true)" width="122" maxChars="16"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnablePartialRightsFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.TELFX}" x="347" y="161" id="tiFax" change="DataChanged(true)" width="122" maxChars="31"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnablePartialRightsFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.EMAIL1}" x="611.5" y="70" id="tiEmail" change="DataChanged(true)" width="177" maxChars="241"/>								
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnablePartialRightsFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.EMAIL2}" x="611.5" y="100" id="tiEmail2" change="DataChanged(true)" width="177" maxChars="241"/>
+		<ecs:TextInput1 styleName="inputECS" enabled="{bEnablePartialRightsFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.LFURL}" x="611.5" y="131" id="tiWebsite" change="DataChanged(true)" width="177" maxChars="132"/>
+<mx:Label x="528.5" y="167" text="No Email Available" visible="{bnoemailvisible}"/>
+	<mx:Label x="675.5" y="167" text="Do not contact"/>
+	<mx:CheckBox change="DataChanged(true);NoEmailFlagChange();" visible="{bnoemailvisible}" enabled="{bEnablePartialRightsFields}" x="628.5" y="167" id="cbNoEmail" />
+	<mx:CheckBox click="if(cbNoContact.selected == true){NoContactFlagAlert()} " change="DataChanged(true);UpdateNoContactFlag();" enabled="{bEnablePartialRightsFields}" x="775.5" y="167" id="cbNoContact" /> 
+	</mx:Panel>
+
+	<mx:Panel x="10" y="435" width="905" height="240" layout="absolute" title="Financial Detail" id="pnFinDetail">
+
+	<mx:TabNavigator x="8" y="7" width="846" height="181" id="tnFinDetail" creationPolicy="all">
+
+	<mx:Canvas label="Payment Details" width="840" height="151" id="tabPayDetail">
+					<mx:Label x="10" y="10" text="Payment Method"/>
+					<mx:Label x="12" y="73" text="Self-billing"/>
+					<mx:Label x="623" y="71" text="Inactive">
+									<mx:toolTip>Payments cannot be made to inactive contributors - please contact Contributions in Peterborough to reactivate the account</mx:toolTip>
+					</mx:Label>
+					<mx:Label x="317" y="42" text="Payment Block"/>
+					<mx:Label x="12" y="40" text="VAT No"/>
+					<mx:Label x="10" y="106" text="Payment Terms"/>
+					<mx:Label x="317" y="10" text="Currency"/>
+					<mx:Label x="623" y="28" text="Posting Block"/>
+
+					<ecs:ComboBox2 id="comboPayMeth" prompt="{cPrompt}" ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.ZWELS.toString()}" dataProviderFromSAP="{xmlInitData.EX_T_PAY_METHODS.item}" compareToKey="true" enabled="{bEnableFields}" x="112" y="10" width="160" change="HandlePayMethodChange() "/>
+					<ecs:ComboBox3 id="comboCurrency"  ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.TELTX.toString()}" dataProviderFromSAP="{xmlInitData.EX_T_CURRENCIES.item}" compareToKey="true" enabled="{bEnableFields}" x="419" y="10" width="151" change="DataChanged(true)" />
+					<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}"  text="{xmlConDetails.CH_CONTRIB_DETAIL.STCEG}" x="112" y="40" id="tiVatNo" change="DataChanged(true)" maxChars="20" focusOut="CheckVATno(); handleVATPaymentBlock() "/>  
+					<ecs:ComboBox2 id="comboPayterms" prompt="{cPrompt}" ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.ZTERM.toString()}" dataProviderFromSAP="{xmlInitData.EX_T_PAY_TERMS.item}" compareToKey="true" enabled="{bEnableFields}" x="112" y="104" width="160" change="DataChanged(true)"/>
+					
+					<ecs:ComboBox2 id="comboPayBlock"
+						  enabled="{checkEnablePaymentBlock(bEnableFields, comboPayMeth.selectedItem) }" 
+						  ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.ZAHLS.toString()}"
+						  x="419" y="42" width="151"
+						  dataProviderFromSAP="{xmlInitData.EX_T_PAY_BLOCK_CODES.item}"
+						  change="DataChanged(true)"
+						  focusOut="handleVATPaymentBlock() "/>					
+					
+					<ecs:DateField id           = "dfSelfBilling"  
+						           change       = "DataChanged(true)" 
+						           enabled      = "{bEnableFields}" 
+						           formatString = "DD/MM/YYYY" 
+						           editable     = "true" 
+						           styleName    = "inputECS"  
+						           focusOut     = "handleVATPaymentBlock()"
+						           x="112" y="71" width="160" />
+
+   					<mx:CheckBox 	change  = "DataChanged(true);UpdatePostBlock();" 
+   								 	enabled = "{bEnableFields}" 
+   								 	x 		= "736" 
+   								 	y		= "28" 
+   								 	id 		= "cbPostBlock"/>    
+
+					<mx:CheckBox 	click	=	"if(cbDelFlag.selected == true){DeleteFlagAlert()} " 
+						         	change	=	"DataChanged(true);UpdateDelFlag();" 
+						         	enabled	=	"{bEnableFields}"
+						          	x		=	"736"
+						          	y		=	"71" 
+					             	id		=	"cbDelFlag" >
+									<mx:toolTip>Payments cannot be made to inactive contributors - please contact Contributions in Peterborough to reactivate the account</mx:toolTip>
+					</mx:CheckBox>
+					
+					<mx:CheckBox 	id      = "cbConfirmDetails"                
+									x       = "736" 
+						         	y       = "114" 
+						         	change  = "DataChanged(true);UpdateConfirmDetails();"  
+						         	enabled = "{bEnableFields}">
+									<mx:toolTip>For use by accounts payable in Peterborough</mx:toolTip>
+					</mx:CheckBox> 				  
+ 				    
+ 				    <ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.ALTKN}" x="419" y="114" id="tiPrevAcc" change="DataChanged(true)" maxChars="20">  
+					<ecs:toolTip>This is the active account for this contributor: use this for all new payments.</ecs:toolTip>
+					</ecs:TextInput1>
+
+					<mx:Label x="317" y="114" text="Active account" toolTip="This is the active account for this contributor: use this for all new payments." width="94"/>
+                    
+                    <mx:Label x="317" y="84" text="Account Memo"/> 
+					<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.KVERM}" x="419" y="82" id="tiMemo" change="DataChanged(true)" maxChars="34"/>
+					<mx:Label x="623" y="114" text="Details Confirmed">
+									<mx:toolTip>Payments cannot be made to inactive contributors - please contact Contributions in Peterborough to reactivate the account</mx:toolTip>
+					</mx:Label>
+					
+	</mx:Canvas>
+
+	<mx:Canvas label="Bank Details" width="838" height="149" id="tabBankDetail">
+					<mx:Label x="10" y="44" text="Account Number"/>
+					<mx:Label x="10" y="12" text="Country"/>
+					<mx:Label x="286" y="44" text="Sort Code"/>
+					<mx:Label x="10" y="78" text="Reference"/>
+					<mx:Label x="285.95" y="12" text="Control Key"/>
+					<mx:Label x="286" y="78" text="IBAN"/>
+
+					<ecs:ComboBox2 id="comboBankCountries"  enabled="{bEnableFields}" ChosenValue="{xmlConDetails.CH_CONTRIB_DETAIL.BANKS.toString()}" x="109" y="10"  dataProviderFromSAP="{xmlInitData.EX_T_COUNTRIES.item}"  compareToKey="true" change="DataChanged(true);GetBankAddress();ValidateBankDetails();"/>
+					<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.BKONT}" x="354.95" y="10" id="tiControlKey" focusOut="ValidateBankDetails()" change="DataChanged(true)" maxChars="2"/>
+					<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.BANKN}" x="109" y="42" id="tiAccountNr" focusOut="ValidateBankDetails()" change="DataChanged(true)" maxChars="18"/>
+					<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.BANKL}" x="355" y="42" id="tiSortCode" change="DataChanged(true)" focusOut="GetBankAddress();ValidateBankDetails()" maxChars="15" />
+					<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.BKREF}" x="109" y="76" id="tiBKRef" focusOut="ValidateBankDetails()" change="DataChanged(true)" maxChars="20"/>
+					<ecs:TextInput1 styleName="inputECS" enabled="{bEnableFields}" text="{xmlConDetails.CH_CONTRIB_DETAIL.IBAN}" x="354.95" y="76" id="tiIBAN" focusOut="ValidateBankDetails();ValidateIBAN()"  change="DataChanged(true)" maxChars="34"/>
+				
+					<mx:Button enabled="{bEnableServerTripButtons}" x="523" y="43" label="Generate IBAN"  id="btnIBAN" fontWeight="bold" click="ServerRequest(cIBANFromBank);"/>
+					<mx:Canvas x="636" y="7" width="192" height="114" borderColor="#000000" backgroundColor="#EFEFEF">
+									<mx:Label x="5" y="2" text="Bank" />
+									<mx:Label x="5" y="22" text="Branch" />
+									<mx:Label x="5" y="42" text="Street" />
+									<mx:Label x="5" y="62" text="City" />
+									<mx:Label x="5" y="82" text="Swift" />
+
+									<mx:Label x="46" y="2" text="{xmlConDetails.CH_CONTRIB_DETAIL.BANKA}" id="lbBank"/>
+									<mx:Label x="46" y="22" text="{xmlConDetails.CH_CONTRIB_DETAIL.BRNCH}" id="lbBranch"/>
+									<mx:Label x="46" y="42" text="{xmlConDetails.CH_CONTRIB_DETAIL.STREET}" id="lbStreet"/>
+									<mx:Label x="46" y="62" text="{xmlConDetails.CH_CONTRIB_DETAIL.CITY}" id="lbCity" />
+									<mx:Label x="46" y="82" text="{xmlConDetails.CH_CONTRIB_DETAIL.SWIFT}" id="lbSwift" />
+									
+					</mx:Canvas>
+
+
+	</mx:Canvas>
+
+	<mx:Canvas label="Recent Payments" width="829" height="100%">
+
+	       <mx:DataGrid id                 = "dgPayments"  
+					    itemDoubleClick    = "ShowCPR(event)"
+						dataProvider       = "{xmlConCPRs.CH_T_CPRS.item}" 
+						resizableColumns   = "true" 
+						showHeaders        = "true" 
+						sortableColumns    = "true"
+						doubleClickEnabled = "true" 
+						dragMoveEnabled    = "true" 
+						draggableColumns   = "true" 
+						editable           = "false" 
+						enabled            = "true"
+						x="10" y="10" height="128" width="809" >
+			<mx:columns>
+				<mx:DataGridColumn headerText = "CPR"                    dataField = "CPR"/>
+				<mx:DataGridColumn headerText = "Story"                  dataField = "STORY"/>
+				<mx:DataGridColumn headerText = "Amount"                 dataField = "AMOUNT">
+					<mx:itemRenderer>
+						<mx:Component>                                 		
+          					<mx:Text text="{date}">
+          						<mx:Script>
+          							<![CDATA[              
+          									import mx.controls.dataGridClasses.DataGridColumn;
+          									import mx.formatters.NumberFormatter;
+          									[Bindable]
+          									private var date:String;
+          									override public function set data(value:Object):void {	
+          										var format:NumberFormatter = new NumberFormatter;
+          										format.useThousandsSeparator=true;
+          										
+			            					    if(value != null && value != "")
+			             					   {
+			             					       super.data = value;									                   
+			             					       if(!(value is DataGridColumn) && value.AMOUNT)
+			             					       {
+			             					       	date=format.format(value.AMOUNT.toString());
+			                					    }
+			        							}
+			        						}
+          								]]>
+          							</mx:Script>
+          							</mx:Text>
+        						</mx:Component>
+  							</mx:itemRenderer>
+				</mx:DataGridColumn>
+				
+	   		    <mx:DataGridColumn headerText = "Publ. Date"             dataField = "PUBDATE">
+               		<mx:itemRenderer>
+						<mx:Component>                                 		
+          					<mx:Text text="{date}">
+ 			         			<mx:Script>
+ 			         			<![CDATA[              
+   			       				import mx.controls.dataGridClasses.DataGridColumn;
+   			       				import mx.formatters.DateFormatter;
+  			        				[Bindable]
+  			        				private var date:String;
+     			     				override public function set data(value:Object):void {	
+      			    					var format:DateFormatter = new DateFormatter;
+      			    					format.formatString="DD.MM.YYYY";
+       			   					
+						                if(value != null && value != "")
+						                {
+			        			            super.data = value;									                   
+			                    			if(!(value is DataGridColumn))
+						                    {
+						                    	date=format.format(value.PUBDATE.toString());
+			            			        }
+						        		}
+						        	}
+			          			]]>
+          					</mx:Script>
+ 			         		</mx:Text>
+        				</mx:Component>
+  					</mx:itemRenderer>
+  				</mx:DataGridColumn>	   		      
+             	<mx:DataGridColumn headerText = "Page Numbers"           dataField = "PAGENOS"/>
+             	<mx:DataGridColumn headerText = "Contributor Reference"  dataField = "REFERENCE"/>				
+<!--            <mx:DataGridColumn headerText = "Currency"               dataField = "CURRENCY"/>  -->
+                <mx:DataGridColumn headerText = "Payment Date"		     dataField = "PAYMENT_DATE">
+                	<mx:itemRenderer>
+						<mx:Component>                                 		
+          					<mx:Text text="{date}">
+ 			         			<mx:Script>
+ 			         			<![CDATA[              
+   			       				import mx.controls.dataGridClasses.DataGridColumn;
+   			       				import mx.formatters.DateFormatter;
+  			        				[Bindable]
+  			        				private var date:String;
+     			     				override public function set data(value:Object):void {	
+      			    					var format:DateFormatter = new DateFormatter;
+      			    					format.formatString="DD.MM.YYYY";
+       			   					
+						                if(value != null && value != "")
+						                {
+			        			            super.data = value;									                   
+			                    			if(!(value is DataGridColumn))
+						                    {
+						                    	date=format.format(value.PAYMENT_DATE.toString());
+			            			        }
+						        		}
+						        	}
+			          			]]>
+          					</mx:Script>
+ 			         		</mx:Text>
+        				</mx:Component>
+  					</mx:itemRenderer>
+  				</mx:DataGridColumn>
+                
+                
+<!--				<mx:DataGridColumn headerText = "Status"                 dataField = "STATUS"/> -->
+	<mx:DataGridColumn width        = "50" 
+		               headerText   = "Status" 
+		               dataField    = "ECSSTATUS"
+		               itemRenderer = "Components.ECSStatusRenderer"/>				
+            	<mx:DataGridColumn headerText = "Cost Centre" 		     dataField = "COST_CENTRE"/>             	
+
+			</mx:columns>
+			
+		</mx:DataGrid>
+		
+	</mx:Canvas>
+
+	<mx:Canvas label="Contributor notes" width="100%" height="100%">
+		<mx:TextArea id="taEditorialText"  fontSize="14" text="{xmlConDetails.CH_CONTRIB_DETAIL.EDITORIAL_TEXT}" x="10" y="10" width="824" height="128" styleName="inputECS" enabled="{bEnablePartialRightsFields}" change="DataChanged(true)"/>
+	</mx:Canvas>
+		</mx:TabNavigator>
+
+	</mx:Panel>
+	<mx:Button visible="{bShowButtons}" enabled="{bEnableSaveButton}" x="441.95" y="693" label="Save"  id="btnSave0" fontWeight="bold" click="ServerRequest(cSave); "/>
+		
+		</mx:Canvas>
+		<mx:Canvas label="Change History" width="100%" height="100%">
+			<mx:Panel x="10" y="10" width="905" height="666" layout="absolute" title="{Title}">
+				<mx:DataGrid id="dgHistory" x="19.5" y="55" height="559" width="846" resizableColumns="true" showHeaders="true" sortableColumns="true" dragMoveEnabled="true" draggableColumns="true" editable="false" enabled="true" dataProvider="{xmlConDetails.EX_T_CHANGE_HISTORY.item}">
+					<mx:columns>
+						<mx:DataGridColumn headerText="Date" dataField="DATE"/>
+						<mx:DataGridColumn headerText="Time" dataField="TIME"/>						
+						<mx:DataGridColumn headerText="User" dataField="USER"/>
+						<mx:DataGridColumn headerText="Field" dataField="FIELD_NAME"/>
+						<mx:DataGridColumn headerText="Old Value" dataField="OLD_VALUE"/>
+						<mx:DataGridColumn headerText="New Value" dataField="NEW_VALUE"/>
+					</mx:columns>
+				</mx:DataGrid>
+				<mx:Label x="19.5" y="10" text="Created By" />
+				<mx:Label x="221.5" y="10" text="Created On"/>
+				<ecs:TextInput1 styleName="inputECS" enabled="false" text="{xmlConDetails.CH_CONTRIB_DETAIL.ERNAM}" x="99.5" y="8" id="tiERNAM" width="95" maxChars="17"/>
+				<ecs:TextInput1 styleName="inputECS" enabled="false" text="{xmlConDetails.CH_CONTRIB_DETAIL.ERDAT}" x="302.5" y="8" id="tiERDAT" width="95" maxChars="18"/>
+			</mx:Panel>
+		</mx:Canvas> 
+
+<!-- BELOW Copied from CPR Entry : Communication History -->						
+		<mx:Canvas label="Communication History" width="100%" height="665" id="tabCommunicationHistory" tabEnabled="false">
+<!-- New -->				
+			<!--<mx:Panel x="21" y="10" width="370" height="143" layout="absolute" styleName="panel" title="Email sent for Confirmation of Payment">
+				<mx:Label x="20" y="10" text="Date Sent"/>
+				<mx:Label x="20" y="38" text="Time Sent"/>
+				<mx:TextInput x="124" y="9" width="122" editable="false" styleName="disabled" id="txtSentDate2" text="{sentDate2}"/>
+				<mx:TextInput x="124" y="37" width="122" editable="false" styleName="disabled" id="txtSentTime2" text="{sentTime2}"/>
+				<mx:Button x="122.5" y="69" label="View Email" styleName="button" id="btnViewEmail2" 
+					click="getHTMLForEmail(STATUS_POSTED)" enabled="{viewEmail2}"/>
+			</mx:Panel> -->
+<!--End New -->				
+			<!--HTML Component for display the email texts-->
+			<fc:HTML  moveEffect="{}" resizeEffect="{}"
+				borderStyle="solid" borderThickness="2" y="103" width="690" x="10" 
+				elementType="division" height="539" cornerRadius="6" borderColor="#605669" 
+				offscreenOffset="-5000" fitToContentHeight="false"
+				getHeightTimeout="1000" id="html1">
+			</fc:HTML>
+			<!-- Modified New Contributor email tab to match format of other tabs, removed sendond email section as not required 
+			tab data now loads automatically on after contributor is found-->
+			<mx:Panel x="10" y="10" width="690" height="85" layout="absolute" title="Email sent for a New Contributor/ Contract">
+				<mx:Label x="10" y="11" text="Date Sent"/>
+				<mx:Label x="209" y="10" text="Time Sent"/>
+				<ecs:TextInput1 styleName="inputECS" enabled="false" text="{sentTime1}" x="269" y="10" id="txtSentTime1" width="95" maxChars="17"/>
+				<mx:Label x="432" y="10" text="Referance CPR"/>
+				<ecs:TextInput1 styleName="inputECS" enabled="false" text="{sentCPR1}" x="519" y="9" id="txtSentCPR" width="95" maxChars="17"/>
+			    <ecs:TextInput1 styleName="inputECS" enabled="false" text="{sentDate1}" x="70" y="10" id="txtSentDate1" width="95" maxChars="17"/>
+			</mx:Panel>
+</mx:Canvas>
+<!-- ABOVE Copied from CPR Entry : Communication History -->				
+
+	</mx:TabNavigator>
+
+	<mx:Label x="10" y="47" text="Search" fontWeight="bold"/>
+
+</mx:Application> 

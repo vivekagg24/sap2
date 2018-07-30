@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<index>
+	<title>Source of Desk Head Journals</title>
+	<nodes>
+		<node label="assets">
+			<node label="Assets.swf" icon="swfIcon" url="source/assets/Assets.swf"/>
+		</node>
+		<node label="CMS.Components" icon="packageIcon" expanded="true">
+			<node label="Button1.mxml" icon="mxmlIcon" url="source/CMS/Components/Button1.mxml.html"/>
+			<node label="ComboBox1.mxml" icon="mxmlIcon" url="source/CMS/Components/ComboBox1.mxml.html"/>
+			<node label="DateField1.mxml" icon="mxmlIcon" url="source/CMS/Components/DateField1.mxml.html"/>
+		</node>
+		<node label="CMS.images">
+			<node label="add.gif" icon="imageIcon" url="source/CMS/images/add.gif.html"/>
+			<node label="change.gif" icon="imageIcon" url="source/CMS/images/change.gif.html"/>
+			<node label="contract_tree.gif" icon="imageIcon" url="source/CMS/images/contract_tree.gif.html"/>
+			<node label="delete.gif" icon="imageIcon" url="source/CMS/images/delete.gif.html"/>
+			<node label="desel_all.gif" icon="imageIcon" url="source/CMS/images/desel_all.gif.html"/>
+			<node label="detail_on.gif" icon="imageIcon" url="source/CMS/images/detail_on.gif.html"/>
+			<node label="execute.gif" icon="imageIcon" url="source/CMS/images/execute.gif.html"/>
+			<node label="expand_tree.gif" icon="imageIcon" url="source/CMS/images/expand_tree.gif.html"/>
+			<node label="held.gif" icon="imageIcon" url="source/CMS/images/held.gif.html"/>
+			<node label="help.gif" icon="imageIcon" url="source/CMS/images/help.gif.html"/>
+			<node label="history_on.gif" icon="imageIcon" url="source/CMS/images/history_on.gif.html"/>
+			<node label="hold_on.gif" icon="imageIcon" url="source/CMS/images/hold_on.gif.html"/>
+			<node label="Logo_bgr.gif" icon="imageIcon" url="source/CMS/images/Logo_bgr.gif.html"/>
+			<node label="Notes.gif" icon="imageIcon" url="source/CMS/images/Notes.gif.html"/>
+			<node label="redlight.gif" icon="imageIcon" url="source/CMS/images/redlight.gif.html"/>
+			<node label="s_b_acom.gif" icon="imageIcon" url="source/CMS/images/s_b_acom.gif.html"/>
+			<node label="s_b_aexp.gif" icon="imageIcon" url="source/CMS/images/s_b_aexp.gif.html"/>
+			<node label="s_B_MRKA.gif" icon="imageIcon" url="source/CMS/images/s_B_MRKA.gif.html"/>
+			<node label="s_B_MRKD.gif" icon="imageIcon" url="source/CMS/images/s_B_MRKD.gif.html"/>
+			<node label="s_B_OFCB.gif" icon="imageIcon" url="source/CMS/images/s_B_OFCB.gif.html"/>
+			<node label="s_B_OPTA.gif" icon="imageIcon" url="source/CMS/images/s_B_OPTA.gif.html"/>
+			<node label="s_s_locl.gif" icon="imageIcon" url="source/CMS/images/s_s_locl.gif.html"/>
+			<node label="save.gif" icon="imageIcon" url="source/CMS/images/save.gif.html"/>
+			<node label="search.gif" icon="imageIcon" url="source/CMS/images/search.gif.html"/>
+			<node label="sell_all.gif" icon="imageIcon" url="source/CMS/images/sell_all.gif.html"/>
+			<node label="substituted.gif" icon="imageIcon" url="source/CMS/images/substituted.gif.html"/>
+			<node label="tick.gif" icon="imageIcon" url="source/CMS/images/tick.gif.html"/>
+			<node label="tickplus.gif" icon="imageIcon" url="source/CMS/images/tickplus.gif.html"/>
+			<node label="yellowlight.gif" icon="imageIcon" url="source/CMS/images/yellowlight.gif.html"/>
+		</node>
+		<node label="com.arc90.flexlib.containers" icon="packageIcon" expanded="true">
+			<node label="CollapsiblePanel.as" icon="actionScriptIcon" url="source/com/arc90/flexlib/containers/CollapsiblePanel.as.html"/>
+		</node>
+		<node label="dave_classes" icon="packageIcon" expanded="true">
+			<node label="Note.as" icon="actionScriptIcon" url="source/dave_classes/Note.as.html"/>
+		</node>
+		<node label="HR.Components" icon="packageIcon" expanded="true">
+			<node label="Button1.mxml" icon="mxmlIcon" url="source/HR/Components/Button1.mxml.html"/>
+			<node label="ComboBox1.mxml" icon="mxmlIcon" url="source/HR/Components/ComboBox1.mxml.html"/>
+			<node label="DateField1.mxml" icon="mxmlIcon" url="source/HR/Components/DateField1.mxml.html"/>
+		</node>
+		<node label="HR.generalClasses" icon="packageIcon" expanded="true">
+			<node label="valueForDropdown.as" icon="actionScriptIcon" url="source/HR/generalClasses/valueForDropdown.as.html"/>
+		</node>
+		<node label="HR.images">
+			<node label="add.gif" icon="imageIcon" url="source/HR/images/add.gif.html"/>
+			<node label="change.gif" icon="imageIcon" url="source/HR/images/change.gif.html"/>
+			<node label="contract_tree.gif" icon="imageIcon" url="source/HR/images/contract_tree.gif.html"/>
+			<node label="delete.gif" icon="imageIcon" url="source/HR/images/delete.gif.html"/>
+			<node label="desel_all.gif" icon="imageIcon" url="source/HR/images/desel_all.gif.html"/>
+			<node label="detail_on.gif" icon="imageIcon" url="source/HR/images/detail_on.gif.html"/>
+			<node label="execute.gif" icon="imageIcon" url="source/HR/images/execute.gif.html"/>
+			<node label="expand_tree.gif" icon="imageIcon" url="source/HR/images/expand_tree.gif.html"/>
+			<node label="held.gif" icon="imageIcon" url="source/HR/images/held.gif.html"/>
+			<node label="help.gif" icon="imageIcon" url="source/HR/images/help.gif.html"/>
+			<node label="help_bg.gif" icon="imageIcon" url="source/HR/images/help_bg.gif.html"/>
+			<node label="help_bg2.gif" icon="imageIcon" url="source/HR/images/help_bg2.gif.html"/>
+			<node label="history_on.gif" icon="imageIcon" url="source/HR/images/history_on.gif.html"/>
+			<node label="hold_on.gif" icon="imageIcon" url="source/HR/images/hold_on.gif.html"/>
+			<node label="Logo_bgr.gif" icon="imageIcon" url="source/HR/images/Logo_bgr.gif.html"/>
+			<node label="Notes.gif" icon="imageIcon" url="source/HR/images/Notes.gif.html"/>
+			<node label="redlight.gif" icon="imageIcon" url="source/HR/images/redlight.gif.html"/>
+			<node label="S_AGGREG.gif" icon="imageIcon" url="source/HR/images/S_AGGREG.gif.html"/>
+			<node label="S_ATTACH.gif" icon="imageIcon" url="source/HR/images/S_ATTACH.gif.html"/>
+			<node label="s_b_acom.gif" icon="imageIcon" url="source/HR/images/s_b_acom.gif.html"/>
+			<node label="s_b_aexp.gif" icon="imageIcon" url="source/HR/images/s_b_aexp.gif.html"/>
+			<node label="s_B_MRKA.gif" icon="imageIcon" url="source/HR/images/s_B_MRKA.gif.html"/>
+			<node label="s_B_MRKD.gif" icon="imageIcon" url="source/HR/images/s_B_MRKD.gif.html"/>
+			<node label="s_B_OFCB.gif" icon="imageIcon" url="source/HR/images/s_B_OFCB.gif.html"/>
+			<node label="s_B_OPTA.gif" icon="imageIcon" url="source/HR/images/s_B_OPTA.gif.html"/>
+			<node label="s_incoob.gif" icon="imageIcon" url="source/HR/images/s_incoob.gif.html"/>
+			<node label="s_outobj.gif" icon="imageIcon" url="source/HR/images/s_outobj.gif.html"/>
+			<node label="s_s_locl.gif" icon="imageIcon" url="source/HR/images/s_s_locl.gif.html"/>
+			<node label="save.gif" icon="imageIcon" url="source/HR/images/save.gif.html"/>
+			<node label="search.gif" icon="imageIcon" url="source/HR/images/search.gif.html"/>
+			<node label="sell_all.gif" icon="imageIcon" url="source/HR/images/sell_all.gif.html"/>
+			<node label="substituted.gif" icon="imageIcon" url="source/HR/images/substituted.gif.html"/>
+			<node label="tick.gif" icon="imageIcon" url="source/HR/images/tick.gif.html"/>
+			<node label="tickplus.gif" icon="imageIcon" url="source/HR/images/tickplus.gif.html"/>
+			<node label="yellowlight.gif" icon="imageIcon" url="source/HR/images/yellowlight.gif.html"/>
+		</node>
+		<node label="output_xml">
+			<node label="fieldFormatting.xml" url="source/output_xml/fieldFormatting.xml.txt"/>
+		</node>
+		<node label="scripts" icon="packageIcon" expanded="true">
+			<node label="ButtonFunctions.as" icon="actionScriptIcon" url="source/scripts/ButtonFunctions.as.html"/>
+			<node label="DataGridColumnSortFunctions.as" icon="actionScriptIcon" url="source/scripts/DataGridColumnSortFunctions.as.html"/>
+			<node label="Processing.as" icon="actionScriptIcon" url="source/scripts/Processing.as.html"/>
+			<node label="TabHandling.as" icon="actionScriptIcon" url="source/scripts/TabHandling.as.html"/>
+			<node label="Utilities.as" icon="actionScriptIcon" url="source/scripts/Utilities.as.html"/>
+		</node>
+		<node label="visualComponents" icon="packageIcon" expanded="true">
+			<node label="NewStarter.mxml" icon="mxmlIcon" url="source/visualComponents/NewStarter.mxml.html"/>
+			<node label="RepeatingHBox.as" icon="actionScriptIcon" url="source/visualComponents/RepeatingHBox.as.html"/>
+			<node label="TableOutput.mxml" icon="mxmlIcon" url="source/visualComponents/TableOutput.mxml.html"/>
+		</node>
+		<node label="visualComponents.GridComponents" icon="packageIcon" expanded="true">
+			<node label="Action.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/Action.mxml.html"/>
+			<node label="AppRejTextBox.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/AppRejTextBox.mxml.html"/>
+			<node label="DateLabel.as" icon="actionScriptIcon" url="source/visualComponents/GridComponents/DateLabel.as.html"/>
+			<node label="EditableCheckbox.as" icon="actionScriptIcon" url="source/visualComponents/GridComponents/EditableCheckbox.as.html"/>
+			<node label="EditableCheckboxCanvas.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/EditableCheckboxCanvas.mxml.html"/>
+			<node label="Expand.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/Expand.mxml.html"/>
+			<node label="HeldIcon.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/HeldIcon.mxml.html"/>
+			<node label="InOutIcon.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/InOutIcon.mxml.html"/>
+			<node label="NoteIcon.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/NoteIcon.mxml.html"/>
+			<node label="OutputCheckbox.as" icon="actionScriptIcon" url="source/visualComponents/GridComponents/OutputCheckbox.as.html"/>
+			<node label="OutputCheckboxCanvas.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/OutputCheckboxCanvas.mxml.html"/>
+			<node label="OutputCheckboxLine.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/OutputCheckboxLine.mxml.html"/>
+			<node label="RightLabel.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/RightLabel.mxml.html"/>
+			<node label="Selectall.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/Selectall.mxml.html"/>
+			<node label="ShowItems.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/ShowItems.mxml.html"/>
+			<node label="ShowItemsCanvas.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/ShowItemsCanvas.mxml.html"/>
+			<node label="subIcon.as" icon="actionScriptIcon" url="source/visualComponents/GridComponents/subIcon.as.html"/>
+			<node label="SubIcon.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/SubIcon.mxml.html"/>
+			<node label="TextArea1.mxml" icon="mxmlIcon" url="source/visualComponents/GridComponents/TextArea1.mxml.html"/>
+		</node>
+		<node selected="true" label="DeskHeadJournal.mxml" icon="mxmlAppIcon" url="source/DeskHeadJournal.mxml.html"/>
+		<node label="dummy.mxml" icon="mxmlIcon" url="source/dummy.mxml.html"/>
+		<node label="ECS.css" icon="cssIcon" url="source/ECS.css.html"/>
+		<node label="HelpIcon.mxml" icon="mxmlIcon" url="source/HelpIcon.mxml.html"/>
+		<node label="History.mxml" icon="mxmlIcon" url="source/History.mxml.html"/>
+		<node label="ListCheckbox.mxml" icon="mxmlIcon" url="source/ListCheckbox.mxml.html"/>
+		<node label="Message.mxml" icon="mxmlIcon" url="source/Message.mxml.html"/>
+		<node label="Notes.mxml" icon="mxmlIcon" url="source/Notes.mxml.html"/>
+		<node label="onHold.mxml" icon="mxmlIcon" url="source/onHold.mxml.html"/>
+		<node label="Processing.as" icon="actionScriptIcon" url="source/Processing.as.html"/>
+		<node label="RejectionText.mxml" icon="mxmlIcon" url="source/RejectionText.mxml.html"/>
+		<node label="SubIcon.mxml" icon="mxmlIcon" url="source/SubIcon.mxml.html"/>
+	</nodes>
+	<zipfile label="Download source (ZIP, 86K)" url="Desk Head Journals.zip"/>
+	<sdklink label="Download Flex 2 SDK" url="http://www.adobe.com/go/flex2_sdk"/>
+</index>

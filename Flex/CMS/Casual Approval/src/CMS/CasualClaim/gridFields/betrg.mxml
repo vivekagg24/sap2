@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         horizontalScrollPolicy="off"
+         width="100%" 
+         >
+    <mx:Script>
+        <![CDATA[
+        import mx.controls.dataGridClasses.DataGridColumn;
+            
+
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+		public var amount:String="";
+        private var retData:Object;
+		private var RowID:int;
+        public function initComponent():void{}
+        
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	amount=String(value.BETRG);
+					
+						RowID = value.ROW_NUMBER;
+					
+						txtAmount.text=amount;
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+			return retData;
+		}
+		
+		private function handleChange():void{
+			amount=txtAmount.text;
+			if (retData!=null) retData.amount = txtAmount.text;
+		}
+		
+         ]]>
+    </mx:Script>
+
+	<mx:TextInput
+   	 id="txtAmount"
+   	 width="70"
+	 enabled="false"
+	 styleName="inputECS"     
+   	 change="handleChange()"
+   	 maxChars="21">
+   	</mx:TextInput>
+
+   
+</mx:HBox>
+
+

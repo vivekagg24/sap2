@@ -1,0 +1,164 @@
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         width="171" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         verticalScrollPolicy="off"  horizontalGap="0">
+    
+	<mx:Script source="../scripts/Common.as"></mx:Script>
+	
+    <mx:Script>
+        <![CDATA[
+
+        import mx.controls.dataGridClasses.DataGridColumn;
+        	
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+        private var retData:Object;
+        
+        private var RowID:int;
+        
+        private var CurrHours:String;
+        private var CurrMins:String;
+
+		[Bindable]
+		public var aHours:Array = ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14',
+										'15','16','17','18','19','20','21','22','23'];
+
+		[Bindable]
+		public var aMins:Array = ['00','15','30','45'];
+        
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+						cbHours.selectedIndex = SetCbHourValue(value.ENDUZ);
+						cbMins.selectedIndex  = SetCbMinValue(value.ENDUZ);
+
+						RowID = value.ROW_NUMBER;
+
+						if(value.ZZAPPROVAL == cRejectStatus || value.ZZAPPROVAL == cApproved){
+					
+							cbMins.enabled = false;
+							cbHours.enabled = false;							
+						}else{
+							cbMins.enabled = true;
+							cbHours.enabled = true;														
+							
+						}
+						
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+			return retData;
+		}
+
+		private function SetCbMinValue(ComboValue:String):int{
+
+			var iMins:int;
+	
+			CurrMins = ComboValue.substr(3,2);
+
+			iMins = int(CurrMins);
+
+			if(iMins > -1 && iMins < 8 ){
+				CurrMins = '00'
+				return 0;
+			}
+
+			if(iMins > 7 && iMins < 23 ){
+				CurrMins = '15'
+				return 1;
+			}
+
+			if(iMins > 22 && iMins < 38 ){
+				CurrMins = '30'
+				return 2;
+			}
+
+			if(iMins > 37 && iMins < 60 ){
+				CurrMins = '45'
+				return 3;
+			}
+			return -1;
+    	}
+
+		private function SetCbHourValue(ComboValue:String):int{
+
+			var i:int;
+		
+			CurrHours = ComboValue.substr(0,2);
+		
+            for (i = 0; i < aHours.length; i++)
+            {
+               if(CurrHours == aHours[i])
+               {
+					return i;
+               }
+			}
+			return -1;
+    	}
+
+
+		private function cbMinsChange():void{
+	
+			var i:int;
+			var newValue:String;
+				
+            for (i = 0; i < aMins.length; i++)
+            {
+               if(cbMins.selectedIndex == i)
+               {
+					newValue = CurrHours + ':' + aMins[i] + ':00'
+
+					parentDocument.EnduzChange(newValue, RowID, cbMins);
+					
+					return;;
+
+               }
+			}
+		}
+
+		private function cbHoursChange():void{
+	
+			var i:int;
+			var newValue:String;
+				
+            for (i = 0; i < aHours.length; i++)
+            {
+               if(cbHours.selectedIndex == i)
+               {
+					newValue = aHours[i] + ':' + CurrMins + ':00'
+
+					parentDocument.EnduzChange(newValue, RowID, cbHours);
+					
+					return;;
+
+               }
+			}
+		}
+
+        ]]>
+    </mx:Script>
+   
+    <mx:ComboBox id="cbHours"
+                 dataProvider="{aHours}"
+                 change="cbHoursChange()"
+                 paddingRight = "1"
+                 paddingLeft = "1"                 
+                 width="45"/>      
+
+    <mx:ComboBox id="cbMins"
+                 dataProvider="{aMins}"
+                 change="cbMinsChange()"
+                 paddingRight = "1"
+                 paddingLeft = "1"
+				 width="45" />     
+
+</mx:HBox>

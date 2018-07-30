@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:DataGridItemRenderer xmlns:mx="http://www.adobe.com/2006/mxml" 
+	                     mouseOver="onMouseOver()"
+	                     mouseOut="onMouseOut()"
+	                     addedToStage="init()"
+	                     click="onClick()"
+	                      >
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Application;
+			import mx.controls.DataGrid;
+			import mx.events.FlexEvent;
+			
+		   protected var defaultColour:String;
+		   
+		   public static const c_active:String = "Active";
+		   public static const c_passive:String = "Passive";
+		   
+		
+		    public function init():void
+		    {
+		    	defaultColour = this.getStyle("color");
+		    }
+		    
+			
+			public function onMouseOver():void
+			{
+				var color:String = "0xFF0000";
+				this.setStyle("color", color);				
+			}
+			public function onMouseOut():void
+			{
+				this.setStyle("color", defaultColour);				
+			}			
+			
+			public function onClick():void
+			{
+				if (this.listData.label == c_active)
+				{
+					this.listData.label = c_passive	;		
+					this.text = c_passive;							
+				}
+				else
+				{
+					this.listData.label = c_active;
+					this.text = c_active;		
+				}
+				(Application.application as CASSubstitutes).setSubstituteStatus(this.listData, this.text);
+				
+			}
+			
+		]]>
+	</mx:Script>
+</mx:DataGridItemRenderer>

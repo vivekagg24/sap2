@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	label="Rejection text"
+   	styleName="titlewindow" 
+    creationComplete="DoInit()" x="50" y="150"
+	width="433" height="284"
+	xmlns:HR="HR.Components.*" borderAlpha="1"
+	backgroundColor="#dceefc" borderColor="#A7B6EB" layout="absolute" title="Hold Item">
+   
+    <mx:Script>
+        <![CDATA[
+		  	import mx.managers.PopUpManager;
+			import mx.controls.Alert;
+		  	
+		  	private function DoInit():void{
+				if (data.RESUB != "") {
+					btnSave.label = "Remove hold";
+					this.holduntil.text = data.RESUB;
+					this.taRejText.text = data.HOLD_REASON;
+					holduntil.enabled = false;
+					taRejText.enabled = false;
+					btnSave.setFocus();
+				}
+				else
+				{
+					btnSave.label = "Put on hold";
+					holduntil.enabled = true;					
+					taRejText.enabled = true;
+					taRejText.setFocus();
+				}
+		  	}	
+		  	
+		  	private function SetSaveButton():void{
+		  		if(taRejText.text != ""){
+			  		btnSave.enabled = true;		  		
+		  		}else{
+			  		btnSave.enabled = false;		  			
+		  		}
+		  	}
+
+			private function handleClose():void{
+				PopUpManager.removePopUp(this);
+				this.focusManager.deactivate();
+				parentApplication.focusManager.activate();
+				if (parentApplication.hasOwnProperty("focusField") &&
+				   parentApplication.focusField!=null)
+				{	
+					parentApplication.focusField.setFocus();
+					trace(parentApplication.focusField.id);
+				}
+				if (parentApplication.hasOwnProperty("focusEvent") && parentApplication.focusEvent!="") 
+				{
+					parentApplication.dispatchEvent(new Event(parentApplication.focusEvent));
+				}
+			}
+			
+			private function doOK():void
+			{	
+				if (data.RESUB == "") {
+					// check a reason for putting the item on hold has been entered
+					if (this.taRejText.text == "" || this.taRejText.text == null) 
+					{
+						Alert.show("please enter a reason for putting the item on hold");
+					}
+					else
+					{
+						// put the item on hold 
+						parentApplication.setOnHold(data.WIID, this.holduntil.value, this.taRejText.text);
+
+						// change the icon to be closed
+						if (this.holduntil.value == '') {
+							data.RESUB = 'INDEFINITE';
+						}
+						else
+						{
+							data.RESUB = this.holduntil.value;							
+						}
+	
+						// close the window
+						handleClose();
+					}
+				}
+				else
+				{
+					// take off hold
+					parentApplication.setOnUnHold(data.WIID, "", "");
+					
+					// change the icon to be closed
+					(data as XML).replace("RESUB", new XML(<x/>));
+					data.RESUB = "";
+					data.HOLD_REASON = "";
+					
+					// close the window
+					handleClose();
+				}
+			}
+        ]]>
+	</mx:Script>
+
+	<mx:Label x="10" y="8" text="Date to hold until" fontWeight="bold" toolTip="This is the date the request will be held until" />
+	<HR:DateField1 x="121" y="6" width="117" id="holduntil" enabled="true" editable="true" formatString="DD.MM.YYYY"/>
+	<mx:Label x="10" y="46" text="Reason for putting on hold" fontWeight="bold"/>
+	<mx:TextArea fontSize="12" id="taRejText" x="12.5" y="63"  maxChars="560" width="388" height="143" change="SetSaveButton()"/>
+	<mx:Button id="btnCancel" fontWeight="bold" label="Cancel" x="118" y="212" click="handleClose()"/>
+	<mx:Button id="btnSave" enabled="true" label="Remove hold" fontWeight="bold"  x="10" y="212" click="doOK()"/>
+</mx:TitleWindow>
+

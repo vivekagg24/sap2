@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       xmlns:ns1="visualComponents.GridComponents.*"
+	       borderThickness="5" 
+	       initialize="init();" >
+
+    <mx:Metadata>
+        [Event(name="userSort", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="showItems", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="displayNotes", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+		import mx.controls.LinkBar;
+			import mx.controls.ColorPicker;
+			import mx.binding.utils.ChangeWatcher;
+			import mx.controls.dataGridClasses.DataGridListData;
+			import visualComponents.GridComponents.Expand;
+			import visualComponents.GridComponents.ShowItemsCanvas;
+			import visualComponents.GridComponents.Selectall;
+			import visualComponents.GridComponents.OutputCheckbox;
+			import visualComponents.GridComponents.RightLabel;
+			import visualComponents.GridComponents.Action;
+			import visualComponents.GridComponents.NoteIcon;
+			import visualComponents.GridComponents.GovtIcon;
+			import visualComponents.GridComponents.RequestType;
+			import visualComponents.GridComponents.AppRejTextBox;
+			import visualComponents.MyDataGrid;
+			import HR.Components.DateField1;
+			import visualComponents.GridComponents.DateLabel;
+			import visualComponents.GridComponents.ShowItems;
+			import mx.controls.Alert;
+			import mx.controls.TextInput;
+			import mx.controls.dataGridClasses.DataGridItemRenderer;
+			import mx.controls.Image;
+			import mx.events.DataGridEvent;
+			import mx.controls.TextArea;
+			import mx.controls.Label;
+			import mx.controls.CheckBox;
+			import mx.core.Repeater;
+			import mx.events.DynamicEvent;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import VDG.TipRenderer;
+			
+			private function init():void
+			{
+				this.addEventListener("showItems", onShowItems);
+				this.addEventListener("checkboxSelection", onItemSelection);
+				
+				// Work out whether we have items every time data binding is triggered on ext_data
+				mx.binding.utils.ChangeWatcher.watch(this, "ext_data",  innerGridBinding);
+				mx.binding.utils.ChangeWatcher.watch(this, "allItems",  innerGridBinding);
+				mx.binding.utils.ChangeWatcher.watch(this, "mileageItems",  innerGridBinding);
+			}
+			
+			public function collapse():void
+			{
+				// Now collapse
+				hb1.visible=false; hb1.includeInLayout = false;
+				hb2.visible=false; hb2.includeInLayout = false;
+				hb3.visible=false;
+			}
+			
+			public function expand():void
+			{
+				var tableReturned:XMLList;
+				var tablelength:int;
+				
+				tableReturned = new XMLList(getMyItems(allItems, ext_data ));
+				tablelength = tableReturned.length();
+				
+				if (tablelength != 0) {
+				// firstly, create the grid if it hasn't yet been created
+					if (!dg1)
+					{
+						//dg1 = addInnerGrid();
+						dg1 = addInnerGrid("detail");		
+					}	
+					else // just set up inner grid
+					{				
+						setUpInnerGrid(dg1, allItems, "detail");						
+					}			
+		
+				// Now expand
+					hb1.visible=true; hb1.includeInLayout = true; 
+					hb3.visible=true;
+				}
+
+				tableReturned = new XMLList(getMyItems(mileageItems, ext_data ));
+				tablelength = tableReturned.length();
+
+				if (tablelength != 0) {
+				// firstly, create the grid if it hasn't yet been created
+					 if (!dg2)
+					{
+						dg2 = addInnerGrid("mileage");		
+					}	
+					else // just set up inner grid
+					{				
+						setUpInnerGrid(dg2, mileageItems, "mileage");						
+					}			
+
+				// Now expand
+					hb2.visible=true; hb2.includeInLayout = true;
+					hb3.visible=true;	
+				} 			
+			}
+			
+			public function selectLine():void
+			{
+				if (ext_data)
+				{
+					ext_data.APPREJ = 'X';
+					if ( ext_data.APPREJTEXT == '' ) {
+						ext_data.APPREJTEXT = 'See rejected claim for details';
+					}
+				}
+			}
+			
+			public function selectLine_header():void
+			{
+				if (ext_data)
+				{
+					ext_data.APPREJ = 'X';
+/* 					if ( ext_data.APPREJTEXT == '' ) {
+						ext_data.APPREJTEXT = 'See rejected claim for details';
+					} */
+				}
+			}			
+
+			public function deSelectLine():void
+			{
+				if (ext_data)
+				{
+					(ext_data as XML).replace("APPREJ", new XML(<x/>));
+					ext_data.APPREJ = ' ';
+					ext_data.APPREJTEXT = '';
+				}
+			}			
+			
+			private function onShowItems(event:DynamicEvent):void
+			{
+				if (event.isOpen)
+				{
+					expand(); 
+				}
+				else
+				{
+					collapse(); 
+				}
+			}
+				
+			// The data item from the external repeater
+			[Bindable]
+			public var ext_data:Object; 
+			
+			// If this data item is in an array, this is the index of the item in the array
+			[Bindable]
+			public var ext_index:int;
+			
+			// Reference to items
+			[Bindable]
+			public var allItems:Object;
+			
+			// The data item from the external repeater
+			[Bindable]
+			public var mileageItems:Object; 
+
+			// Array containing formatting widths
+			[Bindable]
+			public var formatArray:Array;
+			
+			// The data format
+			[Bindable]
+			public var formatXML:XMLList;
+
+			// backgroup colour
+			[Bindable]
+			protected var backgroundColour:uint;
+
+			// Display the column header
+			[Bindable]
+			public function displayTitle():Boolean
+			{
+			 	if (ext_index == 0)
+					return true;
+				else 
+					return false;
+			}		
+        
+        	// Set the row height
+        	[Bindable]
+        	public function setHeight():int
+			{
+				if (ext_index == 0)
+					return 86;
+				else
+					return 46;
+			}
+        
+        	public static var openIcon:Class;
+			
+			public function getMyItems(items:Object,  repeaterData:Object):XMLList
+			{
+				// Get the items
+				var l_workflow_id:String = repeaterData.WIID;
+				var l_items:XMLList = new XMLList(items.(WIID==l_workflow_id));
+								
+				// Tell the main datagrid whether to show an expand/collapse button
+				if (l_items.length() == 0)
+				{
+					repeaterData.hasItems = "true"; //"false";
+				}
+				else
+				{
+					repeaterData.hasItems = "true";
+				}
+				return l_items;
+			}
+			
+			protected function setColour(headerData:Object):uint  
+			{
+				var _color:uint;
+				
+				if (!headerData) // null
+				{
+					_color = 0xFFFFFF;
+				}
+				else
+				{
+					var flag:String = headerData.RESUBMITTED;
+// header line colours
+					if (flag == "X")
+					{
+						_color = 0xFFC6C6; // Red
+					}
+					else if (flag == "E")
+					{
+						_color = 0xFFFF91; // Yellow
+					}
+					else
+					{
+						_color = 0x9ED0E8; //E6F7FF; // Blue
+					}				
+				}
+				backgroundColour = 0xE8E8E8; // light grey background
+				return _color;
+			}
+
+			protected function getColumns(format_XML:XMLList):Array
+			{
+				if (!format_XML || (format_XML is XMLList && (format_XML as XMLList).length() == 0))
+					return [];
+					
+				var _cols:Array = new Array();
+				var col:DataGridColumn;
+				var firstLoop:Boolean = true;
+				var inner:XML = new XML(format_XML[0]);
+				
+				for each (var field:XML in inner.field)
+				{
+					var width:int = int(field.@width);
+					var field_name:String = field.@dataField;
+					var field_type:String = field.@type;
+					var column_title:String; // = field.@columnTitle;
+								
+					col = new DataGridColumn();
+					col.dataField = field_name;
+					col.width = width;
+						
+					if ( field_type == "checkboxln"){
+//						column_title = "Select to reject";
+						col.headerText = "Rej";
+						col.headerRenderer = createColumnHeaderWithHoverText("Select to reject");
+					}
+					else {
+						column_title = field.@columnTitle;
+						col.headerText = column_title;	
+						col.headerRenderer = createColumnHeaderWithHoverText(column_title);
+					}
+					
+					col.wordWrap = true;
+					
+					switch(field_type)
+					{
+					    case "checkbox":
+							col.sortable = false;
+					    	col.headerRenderer = new ClassFactory(visualComponents.GridComponents.Selectall);
+					    	col.itemRenderer = new ClassFactory(visualComponents.GridComponents.EditableCheckboxCanvas);				        
+					        break;
+					    case "checkboxln":
+							col.sortable = false;
+							col.setStyle("color", "red");
+							//col.headerRenderer = createColumnHeaderWithHoverText("Select to reject");						
+					    	col.itemRenderer = new ClassFactory(visualComponents.GridComponents.EditableCheckboxCanvasLine);				        
+					        break;					        
+					    case "OutputCheckbox":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.OutputCheckboxCanvas);
+					        break;	        
+					    case "LineCheckbox":
+							col.sortable = false;						
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.OutputCheckboxLine);
+					        break;
+					    case "Label":
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(mx.controls.Label);
+					        break;
+					    case "Link":
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.LinkLabel);
+					        break;					        
+					    case "TextArea":
+					        col.sortable = true;				
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.TextArea1);
+					        break;		        						        
+					    case "RightLabel":
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.RightLabel);
+					        break;					        
+					    case "textbox":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.AppRejTextBox);
+					        break;
+					    case "rejtextbox":
+							col.sortable = false;
+							col.setStyle("color", "red");
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.RejTextBox);
+					        break;					        
+					    case "image":
+					        col.sortable = false;
+					        col.itemRenderer = new ClassFactory(mx.controls.Image);
+					        break;
+					    case "lineImage":
+					    	col.sortable = false;
+					    	col.headerRenderer = new ClassFactory(visualComponents.GridComponents.Expand);
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.ShowItemsCanvas);
+					        break;
+					    case "dateLabel":
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.DateLabel);
+					        break;
+					    case "NoteIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.NoteIcon);
+					        break;
+				        case "GovtIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.GovtIcon);
+					        break;
+					    case "NotesLine":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.NotesLine);
+					        break;
+					    case "RequestType":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.RequestType);
+					        break;
+					    case "HeldIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.HeldIcon);
+					        break;					        
+					    case "SubIcon":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.DateLabel);
+					        break;					        
+					    case "Action":
+							col.sortable = false;
+					        col.itemRenderer = new ClassFactory(visualComponents.GridComponents.Action);
+					        break;					        
+					    default:
+					        col.sortable = true;
+					        col.itemRenderer = new ClassFactory(mx.controls.Label);
+					        break;
+					}
+					
+					_cols.push(col);
+					firstLoop = false;
+				}				
+				return _cols;
+			}		
+			
+			// Remember which column was sorted last
+			protected var _sortColumnIndex:int = -1;
+
+			// Remember sort order
+			protected var sortOrder:int = 0;
+						
+			// When the user sorts the header grid, we actuall want to sort the dataprovider of teh outside repeater
+			protected function onGridSort(event:DataGridEvent):void
+			{
+				var new_event:DynamicEvent = new DynamicEvent("userSort", true);
+				var fXML:XML = formatXML.headerFields[0];
+				var data_field:String = fXML.field[event.columnIndex].@dataField;
+				new_event.field = data_field;
+				
+				// Collapse before sorting (otherwise we get weird stuff happening)
+				var collapseEvent:DynamicEvent = new DynamicEvent("collapseAll", true);	
+				collapseEvent.grid = event.currentTarget;			
+				this.dispatchEvent(collapseEvent);				
+				
+				// Ascending or descending
+				if (event.columnIndex != _sortColumnIndex)
+				{
+					new_event.sortAscending = true;
+					sortOrder = 1;					
+				}
+				else 
+				{
+					var col:DataGridColumn = event.currentTarget.columns[event.columnIndex];
+					new_event.sortAscending = col.sortDescending; // We want the opposite of the state before the header was clicked
+					sortOrder = sortOrder * -1;
+				
+				}
+				_sortColumnIndex = event.columnIndex; // Remember for next time
+				new_event.sortOrder = sortOrder;
+				
+				this.dispatchEvent(new_event);
+			}
+			
+			// The inner data grid
+			protected var dg1:MyDataGrid; //DataGrid;
+			protected var dg2:MyDataGrid; //DataGrid;
+			
+			protected function innerGridBinding(event:Event):void
+			{
+				if (allItems && ext_data)
+				{
+					if (dg1)
+					{
+						dg1.dataProvider = getMyItems(allItems, ext_data );
+					}
+					else
+					{
+						getMyItems(allItems, ext_data );
+					}										
+				}
+				
+ 				else if (mileageItems && ext_data)
+				{
+					if (dg2)
+					{
+						dg2.dataProvider = getMyItems(mileageItems, ext_data );
+					}
+					else
+					{
+						getMyItems(mileageItems, ext_data );
+					}										
+				} 
+			}
+		
+			// Create the inner grid
+			protected function addInnerGrid(linetype:String):MyDataGrid //DataGrid
+			{			
+				// Create the component
+				var new_grid:MyDataGrid = new MyDataGrid(); //DataGrid = new DataGrid();		
+				// Add child to HBox
+				if (linetype == "detail") {
+					setUpInnerGrid(new_grid, allItems, linetype);
+					hb1.addChild(new_grid);	
+					//dg1 = new_grid;					
+				} 
+				else if (linetype == "mileage") {
+					setUpInnerGrid(new_grid, mileageItems, linetype);
+					hb2.addChild(new_grid);	
+					//dg2 = new_grid;	
+				}
+				// Finalise
+				return new_grid;						
+			}
+		
+			protected function setUpInnerGrid(grid:MyDataGrid, items:Object, linetype:String):void		
+			{
+				var tableReturned:XMLList;
+				var tablelength:int;
+				
+				tableReturned = new XMLList(getMyItems(items, ext_data ));
+				tablelength = tableReturned.length();
+
+				if (tablelength != 0) {
+		
+					var hc:Array = [];
+					// line item headers
+					hc.push(0xB7DAEB); //C5EAFC);//A8E2FF)
+					hc.push(0xB7DAEB);//A8E2FF);
+					grid.setStyle( "headerColors", hc);
+					grid.wordWrap = true;
+					grid.headerHeight = 32;
+					grid.selectable = false;
+					//grid.styleName =  "selected";
+					if (linetype == "detail") {
+						grid.height = (tablelength * 46) + 36;
+						grid.setStyle("paddingTop", 0);
+						grid.maxHeight = (tablelength * 46) + 36;
+						grid.columns = getColumns(formatXML.detailFields);
+						grid.rowHeight = 46;
+					}
+					else if (linetype == "mileage") {
+						grid.height = (tablelength * 20) + 36;
+						grid.setStyle("paddingTop", 0);
+						grid.maxHeight = (tablelength * 20) + 36;
+						grid.columns = getColumns(formatXML.mileageFields);
+					}
+					grid.dataProvider = getMyItems(items, ext_data );			
+				}
+			}
+
+			protected function createColumnHeaderWithHoverText(headerText:String):ClassFactory
+			{
+				//var cf:ClassFactory = new ClassFactory(mx.controls.dataGridClasses.DataGridItemRenderer);
+				var cf:ClassFactory = new ClassFactory(VDG.TipRenderer)
+				cf.properties = { toolTipVDG: headerText };
+				return cf;
+			}		
+			
+			/** Triggered whenver a checkbox is clicked 
+			*/
+			public function onItemSelection(event:DynamicEvent):void
+			{
+				// Firstly, where we the event triggered, line item or element?
+				var o:String = event.data.RECEIPTNO;
+				var sel:String;
+				if (!o || o.length == 0)
+				{
+					// Clicked at total line
+					// Do nothing for the time being -  I reservee the right to chage my mind later
+				}
+				else
+				{
+					// Clicked at line item
+					if (event.selected) {
+						selectLine();
+					}
+					else {
+					// remove text from line
+						event.data.APPREJTEXT = '';
+					// loop at items to see if they are all unselected
+				      	var Wiid:String = event.data.WIID;
+				      	for each (var x:XML in this.allItems)
+			    	   	{
+							if (Wiid == x.WIID) {
+								if (x.APPREJ == 'X') {
+									sel = 'X';
+								}
+							}
+				       	}
+				       	if (sel != 'X') {
+				       		deSelectLine();
+				       	}
+					}
+				}
+			}	
+		]]>
+	</mx:Script>
+	
+	<mx:VBox verticalGap="0">
+		<mx:HBox paddingTop="0" paddingBottom="0" backgroundColor="{setColour(ext_data)}"  width="100%">
+			<mx:DataGrid  id="DGmain" height="{setHeight()}"
+						  showHeaders="{displayTitle()}" 
+						  headerColors="[0x009BE9, 0x009BE9]"
+				          rowCount="1" headerHeight="40" wordWrap="true"
+				          columns="{getColumns(formatXML.headerFields)}"
+				          dataProvider="{ext_data}"
+				          selectable="false" 
+				          headerRelease="onGridSort(event)"
+				          paddingBottom="0"
+				          paddingTop="0"
+				          draggableColumns="false"
+				          resizableColumns="false"
+				          backgroundAlpha="0">
+			</mx:DataGrid>
+		</mx:HBox>
+		<mx:HBox id="hb3" paddingTop="0" paddingBottom="0" visible="false" backgroundColor="{backgroundColour}" width="100%">
+			<mx:Spacer width="10" />
+			<mx:VBox>
+				<mx:VBox id="hb2" visible="false" includeInLayout="false" paddingTop="0" paddingBottom="4" backgroundColor="{backgroundColour}">
+					<mx:Label id="lb2" text="Mileage lines" fontWeight="bold"/>
+				</mx:VBox>	
+				<mx:VBox id="hb1" visible="false" includeInLayout="false" paddingTop="0" paddingBottom="4" backgroundColor="{backgroundColour}">
+					<mx:Label id="lb1" text="Expense lines" fontWeight="bold"/>
+				</mx:VBox>
+			</mx:VBox>
+		</mx:HBox>
+		<mx:HBox height="5" backgroundColor="0xFFFFFF">
+		</mx:HBox>	
+	</mx:VBox>	
+</mx:Canvas>

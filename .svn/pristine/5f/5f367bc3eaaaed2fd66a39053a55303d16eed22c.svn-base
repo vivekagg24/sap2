@@ -1,0 +1,485 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>CollapsiblePanel.as</title>
+<link rel="stylesheet" type="text/css" href="../../../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="asPackage">package</span> com.arc90.flexlib.containers
+<span class="asBracket">{</span>
+<span class="asReserved">import</span> flash.events.Event;
+<span class="asReserved">import</span> flash.events.MouseEvent;
+<span class="asReserved">import</span> flash.utils.getQualifiedClassName;
+
+<span class="asReserved">import</span> mx.containers.Panel;
+<span class="asReserved">import</span> mx.controls.Button;
+<span class="asReserved">import</span> mx.core.EdgeMetrics;
+<span class="asComment">//import mx.core.FlexVersion;
+</span><span class="asReserved">import</span> mx.core.ScrollPolicy;
+<span class="asReserved">import</span> mx.core.UITextField;
+<span class="asReserved">import</span> mx.core.mx_internal;
+<span class="asReserved">import</span> mx.effects.Resize;
+<span class="asReserved">import</span> mx.events.EffectEvent;
+<span class="asReserved">import</span> mx.logging.ILogger;
+<span class="asReserved">import</span> mx.logging.Log;
+<span class="asReserved">import</span> mx.styles.CSSStyleDeclaration;
+<span class="asReserved">import</span> mx.styles.StyleManager;
+<span class="asComment">//import mx.styles.StyleProxy;
+</span><span class="asReserved">import</span> mx.styles.IStyleModule;
+<span class="asReserved">import</span> mx.events.StyleEvent;
+<span class="asReserved">import</span> flash.utils.Timer;
+<span class="asReserved">import</span> flash.events.TimerEvent;
+<span class="asReserved">import</span> mx.core.IUIComponent;
+    
+<span class="asReserved">use</span> <span class="asReserved">namespace</span> mx_internal;
+
+<span class="asComment">//--------------------------------------
+</span><span class="asComment">//  Events
+</span><span class="asComment">//--------------------------------------
+</span>
+<span class="asDoc">/**
+ *  Dispatched when the user collapses the panel.
+ *
+ *  @eventType minimize
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Event</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;minimize&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;flash.events.Event&quot;</span><span class="asBracket">)]</span>
+
+<span class="asDoc">/**
+ *  Dispatched when the user expands the panel.
+ *
+ *  @eventType restore
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Event</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;restore&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;flash.events.Event&quot;</span><span class="asBracket">)]</span>
+
+<span class="asComment">//--------------------------------------
+</span><span class="asComment">//  Styles
+</span><span class="asComment">//--------------------------------------
+</span>
+<span class="asDoc">/**
+ *  The collapse button disabled skin.
+ *
+ *  @default CollapseButtonDisabled
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Style</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;collapseButtonDisabledSkin&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;Class&quot;</span>, inherit<span class="asOperator">=</span><span class="asString">&quot;no&quot;</span><span class="asBracket">)]</span>
+
+<span class="asDoc">/**
+ *  The collapse button down skin.
+ *
+ *  @default CollapseButtonDown
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Style</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;collapseButtonDownSkin&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;Class&quot;</span>, inherit<span class="asOperator">=</span><span class="asString">&quot;no&quot;</span><span class="asBracket">)]</span>
+
+<span class="asDoc">/**
+ *  The collapse button over skin.
+ *
+ *  @default CollapseButtonOver
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Style</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;collapseButtonOverSkin&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;Class&quot;</span>, inherit<span class="asOperator">=</span><span class="asString">&quot;no&quot;</span><span class="asBracket">)]</span>
+
+<span class="asDoc">/**
+ *  The collapse button up skin.
+ *
+ *  @default CollapseButtonUp
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Style</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;collapseButtonUpSkin&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;Class&quot;</span>, inherit<span class="asOperator">=</span><span class="asString">&quot;no&quot;</span><span class="asBracket">)]</span>
+
+<span class="asDoc">/**
+ *  The collapse button default skin.
+ *
+ *  @default null
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Style</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;collapseButtonSkin&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;Class&quot;</span>, inherit<span class="asOperator">=</span><span class="asString">&quot;no&quot;</span>, states<span class="asOperator">=</span><span class="asString">&quot;up, over, down, disabled&quot;</span><span class="asBracket">)]</span>
+
+<span class="asDoc">/**
+ *  The collapse effect duration.
+ *
+ *  @default 250
+ */</span>
+<span class="asBracket">[</span><span class="asMetadata">Style</span><span class="asBracket">(</span>name<span class="asOperator">=</span><span class="asString">&quot;collapseDuration&quot;</span>, type<span class="asOperator">=</span><span class="asString">&quot;Number&quot;</span>, inherit<span class="asOperator">=</span><span class="asString">&quot;no&quot;</span><span class="asBracket">)]</span>
+
+<span class="asReserved">public</span> <span class="asClass">class</span> CollapsiblePanel <span class="asReserved">extends</span> Panel
+<span class="asBracket">{</span>
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Class constants
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Class variables
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asDoc">/**
+     * @private
+     * Logger for this class.
+     */</span>
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asVar">var</span> logger<span class="asOperator">:</span>ILogger <span class="asOperator">=</span> Log.getLogger<span class="asBracket">(</span><span class="asString">&quot;com.arc90.flexlib.containers.CollapsiblePanel&quot;</span><span class="asBracket">)</span>;
+    
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asVar">var</span> classConstructed<span class="asOperator">:</span>Boolean <span class="asOperator">=</span> constructClass<span class="asBracket">()</span>;
+    
+    <span class="asBracket">[</span>Embed<span class="asBracket">(</span>source<span class="asOperator">=</span><span class="asString">&quot;/assets/Assets.swf&quot;</span>, symbol<span class="asOperator">=</span><span class="asString">&quot;CollapseButtonDisabled&quot;</span><span class="asBracket">)]</span> 
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asVar">var</span> collapseButtonDisabledSkin<span class="asOperator">:</span>Class;
+    
+    <span class="asBracket">[</span>Embed<span class="asBracket">(</span>source<span class="asOperator">=</span><span class="asString">&quot;/assets/Assets.swf&quot;</span>, symbol<span class="asOperator">=</span><span class="asString">&quot;CollapseButtonDown&quot;</span><span class="asBracket">)]</span> 
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asVar">var</span> collapseButtonDownSkin<span class="asOperator">:</span>Class;
+    
+    <span class="asBracket">[</span>Embed<span class="asBracket">(</span>source<span class="asOperator">=</span><span class="asString">&quot;/assets/Assets.swf&quot;</span>, symbol<span class="asOperator">=</span><span class="asString">&quot;CollapseButtonOver&quot;</span><span class="asBracket">)]</span> 
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asVar">var</span> collapseButtonOverSkin<span class="asOperator">:</span>Class;
+    
+    <span class="asBracket">[</span>Embed<span class="asBracket">(</span>source<span class="asOperator">=</span><span class="asString">&quot;/assets/Assets.swf&quot;</span>, symbol<span class="asOperator">=</span><span class="asString">&quot;CollapseButtonUp&quot;</span><span class="asBracket">)]</span>
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asVar">var</span> collapseButtonUpSkin<span class="asOperator">:</span>Class;
+            
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Class methods
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asFunction">function</span> constructClass<span class="asBracket">()</span><span class="asOperator">:</span>Boolean
+    <span class="asBracket">{</span>
+        <span class="asReserved">if</span><span class="asBracket">(</span><span class="asOperator">!</span>StyleManager.getStyleDeclaration<span class="asBracket">(</span><span class="asString">&quot;CollapsiblePanel&quot;</span><span class="asBracket">))</span>
+        <span class="asBracket">{</span>
+            <span class="asVar">var</span> styleDecl<span class="asOperator">:</span>CSSStyleDeclaration <span class="asOperator">=</span> <span class="asReserved">new</span> CSSStyleDeclaration<span class="asBracket">()</span>;
+            styleDecl.defaultFactory <span class="asOperator">=</span> <span class="asFunction">function</span><span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+            <span class="asBracket">{</span>
+                <span class="asReserved">this</span>.collapseButtonUpSkin <span class="asOperator">=</span> collapseButtonUpSkin;
+                <span class="asReserved">this</span>.collapseButtonDownSkin <span class="asOperator">=</span> collapseButtonDownSkin;
+                <span class="asReserved">this</span>.collapseButtonOverSkin <span class="asOperator">=</span> collapseButtonOverSkin;
+                <span class="asReserved">this</span>.collapseButtonDisabledSkin <span class="asOperator">=</span> collapseButtonDisabledSkin;
+                <span class="asReserved">this</span>.collapseDuration <span class="asOperator">=</span> 0;
+            <span class="asBracket">}</span>
+            StyleManager.setStyleDeclaration<span class="asBracket">(</span><span class="asString">&quot;CollapsiblePanel&quot;</span>, styleDecl, <span class="asReserved">true</span><span class="asBracket">)</span>;
+        <span class="asBracket">}</span>        
+        <span class="asReserved">return</span> <span class="asReserved">true</span>;    
+    <span class="asBracket">}</span>   
+     
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Variables
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asDoc">/**
+     * @private
+     * Internal component: Collapse Button.
+     */</span>
+    <span class="asReserved">private</span> <span class="asVar">var</span> collapseButton<span class="asOperator">:</span>Button;
+    
+    <span class="asDoc">/**
+     * @private
+     * Height of the component before collapse.
+     */</span>
+    <span class="asReserved">private</span> <span class="asVar">var</span> expandedHeight<span class="asOperator">:</span>Number;
+    
+    <span class="asDoc">/**
+     * @private
+     * The transition effect from collapsed to expanded and back.
+     */</span>
+    <span class="asReserved">private</span> <span class="asVar">var</span> tween<span class="asOperator">:</span>Resize <span class="asOperator">=</span> <span class="asReserved">new</span> Resize<span class="asBracket">(</span><span class="asReserved">this</span><span class="asBracket">)</span>;     
+    
+    <span class="asDoc">/**
+     * @private
+     * The original verticalScrollPolicy.
+     */</span>
+    <span class="asReserved">private</span> <span class="asVar">var</span> originalVScrollPolicy<span class="asOperator">:</span>String;
+    
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Constructor
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asDoc">/**
+     *  Constructor.
+     */</span>
+    <span class="asReserved">public</span> <span class="asFunction">function</span> CollapsiblePanel<span class="asBracket">()</span>
+    <span class="asBracket">{</span>
+        <span class="asReserved">super</span><span class="asBracket">()</span>;
+        
+        tween.addEventListener<span class="asBracket">(</span>EffectEvent.EFFECT_END, tween_effectEndHandler<span class="asBracket">)</span>;        
+    <span class="asBracket">}</span>
+
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Overridden properties
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asComment">//----------------------------------
+</span>    <span class="asComment">//  collapseButtonStyleFilters
+</span>    <span class="asComment">//----------------------------------
+</span>    
+    <span class="asDoc">/**
+     * @private
+     * Storage for the collapseButtonStyleFilters property.
+     */</span>
+    <span class="asReserved">private</span> <span class="asReserved">static</span> <span class="asVar">var</span> _collapseButtonStyleFilters<span class="asOperator">:</span>Object <span class="asOperator">=</span> 
+    <span class="asBracket">{</span>
+        <span class="asString">&quot;collapseButtonUpSkin&quot;</span> <span class="asOperator">:</span> <span class="asString">&quot;collapseButtonUpSkin&quot;</span>, 
+        <span class="asString">&quot;collapseButtonOverSkin&quot;</span> <span class="asOperator">:</span> <span class="asString">&quot;collapseButtonOverSkin&quot;</span>,
+        <span class="asString">&quot;collapseButtonDownSkin&quot;</span> <span class="asOperator">:</span> <span class="asString">&quot;collapseButtonDownSkin&quot;</span>,
+        <span class="asString">&quot;collapseButtonDisabledSkin&quot;</span> <span class="asOperator">:</span> <span class="asString">&quot;collapseButtonDisabledSkin&quot;</span>,
+        <span class="asString">&quot;collapseButtonSkin&quot;</span> <span class="asOperator">:</span> <span class="asString">&quot;collapseButtonSkin&quot;</span>,
+        <span class="asString">&quot;repeatDelay&quot;</span> <span class="asOperator">:</span> <span class="asString">&quot;repeatDelay&quot;</span>,
+        <span class="asString">&quot;repeatInterval&quot;</span> <span class="asOperator">:</span> <span class="asString">&quot;repeatInterval&quot;</span>
+    <span class="asBracket">}</span>;
+    
+     <span class="asDoc">/**
+     *  The set of styles to pass from the Panel to the collapse button.
+     *  @see mx.styles.StyleProxy
+     */</span>
+    <span class="asReserved">protected</span> <span class="asFunction">function</span> <span class="asReserved">get</span> collapseButtonStyleFilters<span class="asBracket">()</span><span class="asOperator">:</span>Object
+    <span class="asBracket">{</span>
+        <span class="asReserved">return</span> _collapseButtonStyleFilters;
+    <span class="asBracket">}</span>
+    
+    <span class="asComment">//----------------------------------
+</span>    <span class="asComment">//  collapsed
+</span>    <span class="asComment">//----------------------------------
+</span>    
+    <span class="asDoc">/**
+     * @private
+     * Storage for the collapsed property.
+     */</span>
+    <span class="asReserved">private</span> <span class="asVar">var</span> _collapsed<span class="asOperator">:</span>Boolean <span class="asOperator">=</span> <span class="asReserved">false</span>;
+    
+    <span class="asDoc">/**
+     * @private
+     * Dirty flag for the collapse property.
+     */</span>
+    <span class="asReserved">private</span> <span class="asVar">var</span> collapsedChanged<span class="asOperator">:</span>Boolean <span class="asOperator">=</span> <span class="asReserved">false</span>;
+    
+    <span class="asDoc">/**
+     * If &lt;code&gt;true&lt;/code&gt;, the component is in its minimized state.
+     */</span>
+    <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">get</span> collapsed<span class="asBracket">()</span><span class="asOperator">:</span>Boolean
+    <span class="asBracket">{</span>
+        <span class="asReserved">return</span> _collapsed;
+    <span class="asBracket">}</span>
+    
+    <span class="asDoc">/**
+     * @private
+     */</span>
+
+     
+    <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> collapsed<span class="asBracket">(</span>value<span class="asOperator">:</span>Boolean<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+    <span class="asBracket">{</span>
+        <span class="asReserved">if</span><span class="asBracket">(</span>_collapsed <span class="asOperator">==</span> value<span class="asBracket">)</span>
+            <span class="asReserved">return</span>;
+            
+        _collapsed <span class="asOperator">=</span> value;
+        collapsedChanged <span class="asOperator">=</span> <span class="asReserved">true</span>;
+        
+        <span class="asReserved">for</span> <span class="asReserved">each</span> <span class="asBracket">(</span><span class="asVar">var</span> x<span class="asOperator">:</span>IUIComponent <span class="asReserved">in</span> <span class="asReserved">this</span>.getChildren<span class="asBracket">())</span>
+        <span class="asBracket">{</span>
+            x.includeInLayout <span class="asOperator">=</span> <span class="asOperator">!</span>value;
+            x.visible <span class="asOperator">=</span> <span class="asOperator">!</span>value;
+        <span class="asBracket">}</span>
+        
+        invalidateSize<span class="asBracket">()</span>;
+        invalidateDisplayList<span class="asBracket">()</span>;    
+        invalidateProperties<span class="asBracket">()</span>;    
+        
+<span class="asComment">//        var l_children:* = this.getChildren();
+</span>    <span class="asBracket">}</span>
+    
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Overridden methods
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asDoc">/**
+     * @private
+     */</span>
+    <span class="asReserved">override</span> <span class="asReserved">protected</span> <span class="asFunction">function</span> createChildren<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+    <span class="asBracket">{</span>
+        <span class="asComment">// Prevent the panel from wasting cycles/memory on the close button
+</span>        <span class="asReserved">if</span><span class="asBracket">(</span><span class="asOperator">!</span>closeButton<span class="asBracket">)</span>
+        <span class="asBracket">{</span>
+            closeButton <span class="asOperator">=</span> <span class="asReserved">new</span> Button<span class="asBracket">()</span>;
+        <span class="asBracket">}</span>
+        
+        <span class="asReserved">super</span>.createChildren<span class="asBracket">()</span>;
+        
+        <span class="asComment">// Configure the titleBar to receive double-click events.
+</span>        <span class="asReserved">if</span><span class="asBracket">(</span>titleBar<span class="asBracket">)</span>
+        <span class="asBracket">{</span>
+            titleBar.doubleClickEnabled <span class="asOperator">=</span> <span class="asReserved">true</span>;
+            titleBar.addEventListener<span class="asBracket">(</span>MouseEvent.DOUBLE_CLICK, titleBar_doubleClickHandler<span class="asBracket">)</span>;
+        <span class="asBracket">}</span>
+        
+        <span class="asReserved">if</span><span class="asBracket">(</span><span class="asOperator">!</span>collapseButton<span class="asBracket">)</span>
+        <span class="asBracket">{</span>
+            collapseButton <span class="asOperator">=</span> <span class="asReserved">new</span> Button<span class="asBracket">()</span>;
+<span class="asComment">//            collapseButton.styleName = new StyleProxy(this, collapseButtonStyleFilters);
+</span><span class="asComment">//            collapseButton.styleName = new StyleEvent.
+</span>            collapseButton.upSkinName <span class="asOperator">=</span> <span class="asString">&quot;collapseButtonUpSkin&quot;</span>;
+            collapseButton.overSkinName <span class="asOperator">=</span> <span class="asString">&quot;collapseButtonOverSkin&quot;</span>;
+            collapseButton.downSkinName <span class="asOperator">=</span> <span class="asString">&quot;collapseButtonDownSkin&quot;</span>;
+            collapseButton.disabledSkinName <span class="asOperator">=</span> <span class="asString">&quot;collapseButtonDisabledSkin&quot;</span>;
+<span class="asComment">//            collapseButton.skinName = &quot;collapseButtonSkin&quot;;
+</span>            collapseButton.explicitHeight <span class="asOperator">=</span> collapseButton.explicitWidth <span class="asOperator">=</span> 16;
+            collapseButton.focusEnabled <span class="asOperator">=</span> <span class="asReserved">false</span>;
+            collapseButton.enabled <span class="asOperator">=</span> enabled;
+             
+            collapseButton.addEventListener<span class="asBracket">(</span>MouseEvent.CLICK, collapseButton_clickHandler<span class="asBracket">)</span>;            
+            
+            titleBar.addChild<span class="asBracket">(</span>collapseButton<span class="asBracket">)</span>;
+            collapseButton.owner <span class="asOperator">=</span> <span class="asReserved">this</span>;
+        <span class="asBracket">}</span>        
+    <span class="asBracket">}</span>
+    
+    <span class="asDoc">/**
+     * @private
+     */</span>
+    <span class="asReserved">override</span> <span class="asReserved">protected</span> <span class="asFunction">function</span> layoutChrome<span class="asBracket">(</span>unscaledWidth<span class="asOperator">:</span>Number, unscaledHeight<span class="asOperator">:</span>Number<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+    <span class="asBracket">{</span>
+        <span class="asReserved">super</span>.layoutChrome<span class="asBracket">(</span>unscaledWidth, unscaledHeight<span class="asBracket">)</span>;
+        
+        <span class="asVar">var</span> em<span class="asOperator">:</span>EdgeMetrics <span class="asOperator">=</span> EdgeMetrics.EMPTY;
+        <span class="asVar">var</span> bt<span class="asOperator">:</span>Number <span class="asOperator">=</span> getStyle<span class="asBracket">(</span><span class="asString">&quot;borderThickness&quot;</span><span class="asBracket">)</span>; 
+        <span class="asReserved">if</span> <span class="asBracket">(</span>getQualifiedClassName<span class="asBracket">(</span><span class="asReserved">this</span>.border<span class="asBracket">)</span> <span class="asOperator">==</span> <span class="asString">&quot;mx.skins.halo::PanelSkin&quot;</span> <span class="asOperator">&amp;&amp;</span>
+            getStyle<span class="asBracket">(</span><span class="asString">&quot;borderStyle&quot;</span><span class="asBracket">)</span> <span class="asOperator">!=</span> <span class="asString">&quot;default&quot;</span> <span class="asOperator">&amp;&amp;</span> bt<span class="asBracket">)</span> 
+        <span class="asBracket">{</span>
+            em <span class="asOperator">=</span> <span class="asReserved">new</span> EdgeMetrics<span class="asBracket">(</span>bt, bt, bt, bt<span class="asBracket">)</span>;
+        <span class="asBracket">}</span>
+        
+        <span class="asVar">var</span> bm<span class="asOperator">:</span>EdgeMetrics <span class="asOperator">=</span>
+<span class="asComment">//            FlexVersion.compatibilityVersion &lt; FlexVersion.VERSION_3_0 ?
+</span><span class="asComment">//            borderMetrics :
+</span>            em;      
+        
+        <span class="asVar">var</span> headerHeight<span class="asOperator">:</span>int <span class="asOperator">=</span> getHeaderHeight<span class="asBracket">()</span>;
+        <span class="asVar">var</span> x<span class="asOperator">:</span>Number <span class="asOperator">=</span> bm.left;
+        <span class="asVar">var</span> y<span class="asOperator">:</span>Number <span class="asOperator">=</span> bm.top;
+        
+        <span class="asReserved">if</span><span class="asBracket">(</span>collapseButton<span class="asBracket">)</span>
+        <span class="asBracket">{</span>
+            collapseButton.setActualSize<span class="asBracket">(</span>collapseButton.getExplicitOrMeasuredWidth<span class="asBracket">()</span>, 
+                                            collapseButton.getExplicitOrMeasuredHeight<span class="asBracket">())</span>;
+            
+            collapseButton.move<span class="asBracket">(</span>x <span class="asOperator">+</span> 10, <span class="asBracket">(</span>headerHeight <span class="asOperator">-</span> collapseButton.getExplicitOrMeasuredHeight<span class="asBracket">())</span> <span class="asOperator">/</span> 2<span class="asBracket">)</span>;
+            
+            <span class="asVar">var</span> h<span class="asOperator">:</span>Number;
+            <span class="asVar">var</span> offset<span class="asOperator">:</span>Number;
+            <span class="asVar">var</span> rightOffset<span class="asOperator">:</span>Number <span class="asOperator">=</span> 10;
+            
+    <span class="asComment">//        if (FlexVersion.compatibilityVersion &lt; FlexVersion.VERSION_3_0)
+</span>    <span class="asComment">//            h = titleTextField.nonZeroTextHeight;
+</span>    <span class="asComment">//        else 
+</span>                h <span class="asOperator">=</span> titleTextField.getUITextFormat<span class="asBracket">()</span>.measureText<span class="asBracket">(</span>titleTextField.text<span class="asBracket">)</span>.height;
+            offset <span class="asOperator">=</span> <span class="asBracket">(</span>headerHeight <span class="asOperator">-</span> h<span class="asBracket">)</span> <span class="asOperator">/</span> 2;
+            
+            <span class="asVar">var</span> titleX<span class="asOperator">:</span>Number <span class="asOperator">=</span> x <span class="asOperator">+</span> 10 <span class="asOperator">+</span> collapseButton.getExplicitOrMeasuredWidth<span class="asBracket">()</span>;
+            titleTextField.move<span class="asBracket">(</span>titleX, offset <span class="asOperator">-</span> 1<span class="asBracket">)</span>;
+            
+            <span class="asVar">var</span> borderWidth<span class="asOperator">:</span>Number <span class="asOperator">=</span> bm.left <span class="asOperator">+</span> bm.right; 
+            <span class="asVar">var</span> statusX<span class="asOperator">:</span>Number <span class="asOperator">=</span> unscaledWidth <span class="asOperator">-</span> rightOffset <span class="asOperator">-</span> 4 <span class="asOperator">-</span>
+                                 borderWidth <span class="asOperator">-</span> statusTextField.textWidth;
+            statusTextField.move<span class="asBracket">(</span>statusX, offset <span class="asOperator">-</span> 1<span class="asBracket">)</span>;
+            statusTextField.setActualSize<span class="asBracket">(</span>statusTextField.textWidth <span class="asOperator">+</span> 8,
+                                            statusTextField.textHeight <span class="asOperator">+</span> UITextField.TEXT_HEIGHT_PADDING<span class="asBracket">)</span>;
+
+            <span class="asComment">// Make sure the status text isn&apos;t too long.
+</span>            <span class="asComment">// We do simple clipping here.
+</span>            <span class="asVar">var</span> minX<span class="asOperator">:</span>Number <span class="asOperator">=</span> titleTextField.x <span class="asOperator">+</span> titleTextField.textWidth <span class="asOperator">+</span> 8;
+            <span class="asReserved">if</span> <span class="asBracket">(</span>statusTextField.x <span class="asOperator">&lt;</span> minX<span class="asBracket">)</span>
+            <span class="asBracket">{</span>
+                <span class="asComment">// Show as much as we can.
+</span>                statusTextField.width <span class="asOperator">=</span> Math.max<span class="asBracket">(</span>statusTextField.width <span class="asOperator">-</span>
+                                        <span class="asBracket">(</span>minX <span class="asOperator">-</span> statusTextField.x<span class="asBracket">)</span>, 0<span class="asBracket">)</span>;
+                statusTextField.x <span class="asOperator">=</span> minX;
+            <span class="asBracket">}</span>
+        <span class="asBracket">}</span>        
+    <span class="asBracket">}</span>
+    
+    <span class="asDoc">/**
+     * @private
+     */</span>
+    <span class="asReserved">override</span> <span class="asReserved">protected</span> <span class="asFunction">function</span> updateDisplayList<span class="asBracket">(</span>unscaledWidth<span class="asOperator">:</span>Number, unscaledHeight<span class="asOperator">:</span>Number<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+    <span class="asBracket">{</span>
+        <span class="asReserved">super</span>.updateDisplayList<span class="asBracket">(</span>unscaledWidth, unscaledHeight<span class="asBracket">)</span>;
+        
+        <span class="asReserved">if</span><span class="asBracket">(</span>collapsedChanged<span class="asBracket">)</span>
+        <span class="asBracket">{</span>
+            collapsedChanged <span class="asOperator">=</span> <span class="asReserved">false</span>;
+            
+            <span class="asReserved">if</span><span class="asBracket">(</span>_collapsed<span class="asBracket">)</span>
+            <span class="asBracket">{</span>
+<span class="asComment">/*                 // Store expanded values
+                originalVScrollPolicy = verticalScrollPolicy;
+                expandedHeight = unscaledHeight;
+                
+                verticalScrollPolicy = ScrollPolicy.OFF;
+                tween.heightTo = getHeaderHeight(); */</span>
+            <span class="asBracket">}</span>    
+            <span class="asReserved">else</span>
+            <span class="asBracket">{</span>
+<span class="asComment">/*                 
+
+                
+                tween.heightTo = expandedHeight;
+                 */</span>
+            <span class="asBracket">}</span>
+            
+<span class="asComment">/*             if(tween.isPlaying)
+        //        tween.stop();
+            
+            
+            if(getStyle(&quot;collapseDuration&quot;))
+                tween.duration = getStyle(&quot;collapseDuration&quot;) as Number;
+                
+            tween.hideChildrenTargets = [this];        
+            tween.play(); */</span>
+        <span class="asBracket">}</span>
+    <span class="asBracket">}</span>
+    
+    <span class="asComment">//--------------------------------------------------------------------------
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//  Asset event handlers
+</span>    <span class="asComment">//
+</span>    <span class="asComment">//--------------------------------------------------------------------------
+</span>    
+    <span class="asDoc">/**
+     * @private
+     * Handles user click on the collapse button.
+     */</span>
+    <span class="asReserved">private</span> <span class="asFunction">function</span> collapseButton_clickHandler<span class="asBracket">(</span>event<span class="asOperator">:</span>MouseEvent<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+    <span class="asBracket">{</span>
+        collapsed <span class="asOperator">=</span> <span class="asOperator">!</span>_collapsed;
+        
+        <span class="asReserved">if</span><span class="asBracket">(</span>_collapsed<span class="asBracket">)</span>
+            dispatchEvent<span class="asBracket">(</span><span class="asReserved">new</span> Event<span class="asBracket">(</span><span class="asString">&quot;minimize&quot;</span><span class="asBracket">))</span>;
+        <span class="asReserved">else</span>
+            dispatchEvent<span class="asBracket">(</span><span class="asReserved">new</span> Event<span class="asBracket">(</span><span class="asString">&quot;restore&quot;</span><span class="asBracket">))</span>;
+    <span class="asBracket">}</span>
+    
+    <span class="asDoc">/**
+     * @private
+     * Handles user double-click on the header area.
+     */</span>
+    <span class="asReserved">private</span> <span class="asFunction">function</span> titleBar_doubleClickHandler<span class="asBracket">(</span>event<span class="asOperator">:</span>MouseEvent<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+    <span class="asBracket">{</span>
+        <span class="asReserved">if</span><span class="asBracket">(</span><span class="asOperator">!</span>enabled<span class="asBracket">)</span>
+            <span class="asReserved">return</span>;
+            
+        collapsed <span class="asOperator">=</span> <span class="asOperator">!</span>_collapsed;
+        
+        <span class="asReserved">if</span><span class="asBracket">(</span>_collapsed<span class="asBracket">)</span> 
+            dispatchEvent<span class="asBracket">(</span><span class="asReserved">new</span> Event<span class="asBracket">(</span><span class="asString">&quot;minimize&quot;</span><span class="asBracket">))</span>;
+        <span class="asReserved">else</span>
+            dispatchEvent<span class="asBracket">(</span><span class="asReserved">new</span> Event<span class="asBracket">(</span><span class="asString">&quot;restore&quot;</span><span class="asBracket">))</span>;
+    <span class="asBracket">}</span>
+    
+    <span class="asReserved">private</span> <span class="asFunction">function</span> tween_effectEndHandler<span class="asBracket">(</span>event<span class="asOperator">:</span>EffectEvent<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+    <span class="asBracket">{</span>
+        verticalScrollPolicy <span class="asOperator">=</span> originalVScrollPolicy;
+    <span class="asBracket">}</span>
+<span class="asBracket">}</span>
+<span class="asBracket">}</span></pre></body>
+</html>

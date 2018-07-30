@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Image xmlns:mx="http://www.adobe.com/2006/mxml"  
+	   	  xmlns:ns1="visualComponents.GridComponents.*"
+		  source="HR/images/expand_tree.gif" click="onClick()" width="13" maxWidth="13"> 
+	<mx:Script>
+		<![CDATA[
+			import mx.events.DynamicEvent;
+		
+			private var _isOpen:Boolean;
+			public function set isOpen(value:Boolean):void
+			{
+				_isOpen = value;
+				setIcon();				
+			}
+			public function get isOpen():Boolean
+			{
+				return _isOpen;
+			}
+		
+			private function onClick():void
+			{
+				// First change the icon, then dispatch the event
+				var event:DynamicEvent = new DynamicEvent("showItems", true);
+				
+				_isOpen = !isOpen;		
+				
+				// Set the icon to open or closed
+				setIcon();
+			
+				event.isOpen = isOpen;
+				this.dispatchEvent(event);
+			}
+			
+			private function setIcon():void
+			{
+				if (_isOpen)
+				{
+					this.source='HR/images/contract_tree.gif';	
+					this.toolTip = "Collapse line";			
+				}
+				else
+				{
+					this.source='HR/images/expand_tree.gif';
+					this.toolTip = "Expand line";
+				}				
+			}
+			
+			
+		]]>
+	</mx:Script>
+    <mx:Metadata>
+       	[Event(name="showItems", type="mx.events.DynamicEvent")]
+   </mx:Metadata>
+</mx:Image>
+

@@ -1,0 +1,262 @@
+sap.ui.define([
+  "nuk/sap/timesheet/controller/BaseController",
+  "nuk/sap/timesheet/util/TimesheetAPI",
+  "nuk/sap/timesheet/util/Message",
+  "sap/m/MessageBox",
+  "sap/ui/model/ValidateException",
+  "sap/ui/model/Filter",
+  "sap/ui/model/Sorter",
+  ],
+  function (Controller, TimesheetAPI, Message, MessageBox, ValidateException) {
+    "use strict";
+
+    return Controller.extend("nuk.sap.timesheet.controller.TimesheetList", {
+      _oPopoverComment: null,
+      _oSettingsDialog: null,
+
+      onInit: function() {
+        var oView = this.getView();
+        this._setModels();
+
+        this.setValidationHandlers();
+
+        // Default the dates
+        // Start = Saturday of the week one months ago, End = end of next week (Friday)
+        //var sDateFrom = moment(new Date()).subtract(1, 'months').startOf('week').subtract(1, 'day').format('YYYY-MM-DD');
+        //var sDateTo = moment(new Date()).endOf('week').subtract(1, 'day').format('YYYY-MM-DD');
+        //var oTimesheetFilterModel = new sap.ui.model.json.JSONModel({
+        //  "date_from": sDateFrom,
+        //  "date_to": sDateTo,
+        //  "status": "awaitapp"
+        //});
+        var oTimesheetFilterModel = new sap.ui.model.json.JSONModel(this._getDefaultFilterDates());
+        oView.setModel(oTimesheetFilterModel, "timesheetFilter");
+
+        // So that we filter the table on initial display
+        oView.addEventDelegate({
+          onAfterRendering: function()  {
+            this._afterRendering();
+          },
+          onBeforeShow: function() {
+            this._beforeShow();
+          }
+        }, this);
+
+      },
+
+      /**
+       * onAfterRendering delegate
+       * @return {[type]} [description]
+       */
+      _afterRendering: function() {
+        this.applyFilter();
+      },
+
+      _beforeShow: function() {
+        // We refresh every time - if performance bad, change this
+        this.loadTimesheets();
+      },
+
+      onExit: function() {
+        if (this._oDialog) {
+          this._oSettingsDialog.destroy();
+        }
+      },
+
+      onAdjustFromDate: function(oEvent) {
+        var oModel = this.getView().getModel("timesheetFilter");
+        var sDate = oModel.getProperty("/date_from");
+        var sDateFrom = moment(sDate).subtract(1, 'months').startOf('week').subtract(1, 'day').format('YYYY-MM-DD');
+        oModel.setProperty("/date_from", sDateFrom);
+        this.loadTimesheets();
+      },
+
+      onAdjustToDate: function(oEvent) {
+        var oModel = this.getView().getModel("timesheetFilter");
+        var sDate = oModel.getProperty("/date_to");
+        var sDateTo = moment(sDate).add(1, 'months').endOf('week').subtract(1, 'day').format('YYYY-MM-DD');
+        oModel.setProperty("/date_to", sDateTo);
+        this.loadTimesheets();
+      },
+
+      onGotoThisWeek: function(oEvent) {
+        var oFilter = this._getDefaultFilterDates();
+        var oModel = this.getView().getModel("timesheetFilter");
+        oModel.setProperty("/date_to", oFilter.date_to);
+        oModel.setProperty("/date_from", oFilter.date_from);
+        this.loadTimesheets();
+      },
+
+      onListFilterChange: function(oEvent) {
+        // dates have already been validated
+        this.loadTimesheets();
+      },
+
+      onListFilterDateValidate: function(oEvent) {
+
+        var oView = this.getView();
+        var oModel = oView.getModel("timesheetFilter");
+        var oFilter = oModel.getData();
+        if (moment(oFilter.date_from) > moment(oFilter.date_to)) {
+          oView.byId("dateFrom").setValueState(sap.ui.core.ValueState.Error);
+          oView.byId("dateTo").setValueState(sap.ui.core.ValueState.Error);
+        } else {
+          oView.byId("dateFrom").setValueState(sap.ui.core.ValueState.None);
+          oView.byId("dateTo").setValueState(sap.ui.core.ValueState.None);
+        }
+      },
+
+      onRefreshTimesheetList: function(oEvent) {
+        this.loadTimesheets();
+      },
+
+      /**
+       * Navigate to a timesheet. If it's been submitted, we go in display
+       * mode, otherwise if creating it's in edit mode.
+       *
+       * @param  {[type]} oEvent [description]
+       * @return {[type]}        [description]
+       */
+      onGotoTimesheet: function(oEvent) {
+        var oItem, oCtx;
+
+        oItem = oEvent.getSource();
+        oCtx = oItem.getBindingContext("timesheetList");   // NB to mention model name
+        this.getRouter().navTo("timesheet",{
+          index: oCtx.getProperty("index"),
+          id: oCtx.getProperty("id")
+        });
+      },
+
+      onDisplayComments: function(oEvent) {
+        var oView = this.getView();
+        var oPath = oEvent.getSource().getBindingContext("timesheetList");
+        var oModel = oView.getModel("timesheetList");
+
+        if (! this._oPopoverComment) {
+          this._oPopoverComment = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.TimesheetCommentPopover", this);
+          oView.addDependent(this._oPopoverComment);
+        }
+
+        var oComment = {
+          submitter_comment: oModel.getProperty(oPath.sPath + '/submitter_comment'),
+          approver_comment: oModel.getProperty(oPath.sPath + '/approver_comment')
+        };
+        var oCommentModel = new sap.ui.model.json.JSONModel(oComment);
+        this._oPopoverComment.setModel(oCommentModel, "timesheetComments");
+
+        var oControl = oEvent.getSource();
+        jQuery.sap.delayedCall(0, this, function() {
+          this._oPopoverComment.openBy(oControl);
+        });
+
+      },
+
+      onWithdrawTimesheet: function(oEvent) {
+        var that = this;
+        var oView = this.getView();
+        var sMessage = Message.getText(oView, "timesheet-withdraw-warning");
+        var sTitle = Message.getText(oView, "timesheet-withdraw-warning-title");
+
+        // Path of the row clicked on
+        var oTimesheetPath = oEvent.getSource().getBindingContext('timesheetList');
+        if (!oTimesheetPath)
+          return;
+
+        MessageBox.show(sMessage, {
+          icon: sap.m.MessageBox.Icon.WARNING,
+          title: sTitle,
+          actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+          onClose: function(oAction) {
+            if (oAction === sap.m.MessageBox.Action.YES) {
+              that._withdrawTimesheet(oTimesheetPath.getPath());
+            }
+          }
+        });
+      },
+
+      onDisplaySettings: function(oEvent) {
+        if (!this._oSettingsDialog) {
+          this._oSettingsDialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.TimesheetDisplaySettings", this);
+        }
+        // toggle compact style
+        jQuery.sap.syncStyleClass("sapUiSizeCompact", this.getView(), this._oSettingsDialog);
+        this._oSettingsDialog.open();
+      },
+
+      onDownloadTimesheetList: function(oEvent) {
+      // see sap.m.sample.TableExport.zip
+      },
+
+      applyFilter: function() {
+
+      },
+
+      loadTimesheets: function(oEvent) {
+        var oView = this.getView();
+        var oFilter = oView.getModel("timesheetFilter");
+
+        var oBusyDialog = new sap.m.BusyDialog({
+          text: Message.getText(oView, "timesheetlist-refresh-dialog-text")
+        });
+        oBusyDialog.open();
+
+        TimesheetAPI.getTimesheet({
+          date_from: oFilter.getProperty("/date_from"),
+          date_to: oFilter.getProperty("/date_to")
+        }, function(oData) {
+          var oModel = new sap.ui.model.json.JSONModel(oData);
+          oView.setModel(oModel, "timesheetList");
+          sap.ui.getCore().setModel(oModel, "timesheetList");
+          oBusyDialog.close();
+         }, function(oXhr, sStatus, sErrorThrown) {
+          oBusyDialog.close();
+         });
+      },
+
+      _getDefaultFilterDates: function(oEvent) {
+        var oFilter = {
+          "date_from": moment(new Date()).subtract(1, 'months').startOf('week').subtract(1, 'day').format('YYYY-MM-DD'),
+          "date_to": moment(new Date()).endOf('week').subtract(1, 'day').format('YYYY-MM-DD'),
+          "status": "awaitapp"
+        };
+        return oFilter;
+      },
+
+      _withdrawTimesheet: function(sPath) {
+        var bError;
+        var that = this;
+        var oPayload = {};
+        var oView = this.getView();
+
+        // Build the payload
+        var oTimesheet = oView.getModel("timesheetList").getProperty(sPath);
+        if (!oTimesheet)
+          return;
+        oTimesheet.action = 'withdraw';
+        oPayload.timesheets = [];
+        oPayload.timesheets.push(oTimesheet);
+
+        TimesheetAPI.withdrawTimesheet(oPayload,
+          function(oResponse) {
+            bError = false;
+            for (var i = 0; i < oResponse.length; i++) {
+              if (oResponse[i].is_error === 'true') {
+                bError = true;
+                Message.addMessage(oView, oResponse[i].text, "Error");
+              }
+            }
+            if (!bError) {
+              sap.m.MessageToast.show(Message.getText(oView, 'timesheet-withdraw-successful'));
+              that.loadTimesheets();
+            }
+          },
+          function(oXhr, sStatus, sErrorThrown) {
+            Message.addMessage(oView, sErrorThrown, "Error");
+          }
+        );
+      }
+
+    });
+  }
+);

@@ -1,0 +1,13 @@
+<mvc:View
+  controllerName="nuk.sap.timesheet.controller.NotFound"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc">
+    <MessagePage
+      title="{i18n>notfound-title}"
+      text="{i18n>notfound-text}"
+      description="{i18n>notfound-description}"
+      icon="sap-icon://message-error"
+      showNavButton="true"
+      navButtonPress="onNavBack"
+    />
+</mvc:View>

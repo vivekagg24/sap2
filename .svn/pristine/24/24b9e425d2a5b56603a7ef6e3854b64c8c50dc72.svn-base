@@ -1,0 +1,42 @@
+jQuery.sap.declare('nuk.sap.driverportal.util.Formatter');
+
+/**
+  Return string for a boolean. Designed for use in XML views
+
+  @param sVal String value
+  @return Boolean representation of the string
+*/
+nuk.sap.driverportal.util.Formatter = {
+  stringToBoolean: function(sVal) {
+      if (sVal === 'true') {
+        return true;
+      } else {
+      }
+  },
+
+  /**
+    Format the title of a map Point
+
+    @param sName Customer name
+    @param sAddress address
+    @return Formatted title
+  */
+  formatPinTitle: function(sItinerary, sPriority, sName, sAddress) {
+    var CSS =
+      "<style>" +
+      ".iw-column-left {" +
+        "float: left;" +
+        "margin-right: 5px;" +
+        "font-size: 3em;" +
+      "}" +
+      ".iw-column {" +
+        "float: left;" +
+        "width: 70%;"+
+      "}" +
+      "</style>";
+
+    return CSS + '<div class="iw-column-left">' + sItinerary + "</div>" +
+            '<div class="iw-column">' + '<strong>' + sName + "</strong>" + "<br>" +
+            sAddress.replace(/, /g, '<br>') + "</div>"
+  }
+}

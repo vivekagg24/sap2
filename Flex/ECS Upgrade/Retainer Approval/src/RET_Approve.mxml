@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="utf-8"?>	
+<mx:Application    xmlns:mx="http://www.adobe.com/2006/mxml" 
+					backgroundColor="#D4D4D4"
+					layout="absolute" 
+			    	initialize="init();"
+					creationComplete="creationComplete();"
+					xmlns:ns1="*"
+					creationPolicy="all"
+					xmlns:CMS="CMS.Components.*"
+					xmlns:VDG="VDG.*">  
+<mx:Style source="ECS.css"/>
+<mx:SetStyle name="backgroundColor" value="#D4D4D4"/>
+
+<mx:Script source="Processing.as"/> 
+<mx:Script source="TabHandling.as"/> 
+
+	    <mx:Script>
+        <![CDATA[
+        
+        	
+        
+     
+        	import mx.controls.ToolTip;
+        	import mx.controls.TextInput;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import mx.rpc.events.ResultEvent;
+            import flash.events.MouseEvent;
+            import mx.events.CloseEvent;
+            import flash.external.ExternalInterface;
+            import flash.system.Security;
+            
+            
+            // The Variant DataGrid classes are in the VDG_Library project. You need to import this project
+  			// into your workspace in order to run this program, otehrwise you will see messages telling you 
+   			// that Flex cannot find the class VariantdataGrid.
+		   import VDG.*;
+
+
+			include "DataGridColumnSortFunctions.as";
+		
+		    public const c_test_server:String = "http://saptest.ni.ad.newsint:8001";
+			public const c_dev_server:String = "http://sapr3d.ni.ad.newsint:8080";
+			public const c_sap_client:String = "sap-client=007&";
+			public const c_wsdl_sicf_prefix:String = "/sap/bc/soap/wsdl11?"; 
+		
+			[Bindable]
+			public var wsdl_prefix:String;
+
+            
+            //Constants
+            public const c_approving:String = "Approving";
+            public const c_rejecting:String = "Rejecting";
+            public const c_multiple_cc:String = "Multiple Cost Centres";
+
+            // Table of contracts
+            [Bindable]
+            public var tableReturned:XMLList;  // Contracts returned from SAP
+            [Bindable]
+            public var table:XMLList;          // Contracts in the current tab
+            
+            
+            // Table of selected contracts  (used in processing)
+            [Bindable]
+            public var table_selected:Array;
+            [Bindable]
+            public var table_selected_XMLList:XMLList;
+                        
+            // Gui Type for displaying Retainer screen in SAP
+            public const c_winGui:String = 'WinGUI';
+            public const c_HTMLGui:String = 'HTMLGUI';
+            public var guiType:String = c_winGui;
+            
+            // Editing mode for displaying Retainer screen in SAP
+            public const c_SAP_display:String = 'DISP';
+            public const c_SAP_change:String = 'CHAN';
+            public var guiMode:String = c_SAP_display;
+            
+            // Global variables for processing selected contracts (processing = approving or rejecting)
+            public var count_selected:int;    // Number of contracts selected for processing
+            public var processsing_index:int; // Index of record currently being processed, starts at 1
+            [Bindable]
+            public var mode:String;           // What are we doing, approving or rejecting
+            public var processing:Boolean;    // Are we processing
+            
+            // Key fields to identify a contract. Used when approving or rejecting a contract to
+            // tell SAP which contract to approve or reject
+			[Bindable]
+			public var PUB_ID:String;
+			[Bindable]
+			public var CONTRACT_ID:String;
+			
+			// Flag to indicate if the user is an MD
+			// Note that if a user has access to approve contracts for more than one publication
+			// then this result is unpredicatable, but this shouldn't happen in a live environment.
+			// Nevertheless, don't use this field for anything important. Its only used for setting 
+			// the default tab.
+			public var md_flag:Boolean;
+			
+			// Retainer flag popup
+			public var rejText:RejectionText;
+			[Bindable]
+			private var rejectionReason:String
+			
+			// Array of result messages
+			private var resultMessages:Array;
+			private var errorMessages:Array;
+			
+			public function init():void {
+				// Called at the "init" event of the application
+				// We need to tell the web services where to get their WSDls from.
+				
+				
+				if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    			wsdl_prefix = c_wsdl_sicf_prefix
+				                 + "services=";
+	     	    	
+				else  // Running locally
+			 	   wsdl_prefix = c_dev_server       // Which SAP server should we connect to?
+			              	    + c_wsdl_sicf_prefix
+			             	    + c_sap_client       // Which SAP client should we connect to?
+			            	    + "services=" ;   	
+	    	}
+			
+
+			public function creationComplete():void {
+				// Called at the "creationComplete" event of the application
+				// Set everything up visually and go get data.
+				
+				tabSelection.enabled = false;
+				registerPortalFunctions();
+				processing = false;
+				getContracts();
+				
+				// Hide approval & rejection button unless running locally
+				if (Security.sandboxType == Security.REMOTE)
+				{
+					buttonReject.visible = false;
+					buttonApprove.visible = false;
+				}
+				
+				// Set dataprovider
+		//		contractsDataGrid.dataProvider = table;
+			}
+			
+            
+            public function getContracts():void {
+            // Gets the contracts that this user can approve
+            // This function is run when the application is first opened	
+            	wsGetContractsToApprove.Z_ECS_GET_RET_CNTRCTS_2_APPRV.send();
+         	 //  	contractsDataGrid.dataProvider = table;
+          
+          	// clear the output messages
+         	 resultMessages = new Array();
+             errorMessages = new Array();
+
+            }
+            
+            private function registerPortalFunctions():void {
+				if (ExternalInterface.available) {
+					ExternalInterface.addCallback("Approve", doApprove);
+					ExternalInterface.addCallback("Reject", doReject);
+					ExternalInterface.addCallback("Refresh", doRefresh);
+					Security.allowDomain("*");
+				}				
+			}
+			
+			
+			public function doRefresh():void
+			{
+				// Clear data
+				table = new XMLList;
+				table_selected_XMLList = new XMLList;
+				table_selected = new Array;
+				// Refresh display
+				currentState = '';
+				buttonSelectAll.enabled = false;
+            	buttonDeselectAll.enabled = false;
+            	tabSelection.enabled = false;
+				// Get Contracts
+				getContracts();
+				// Rerfresh messages
+				resultMessages = new Array();
+                errorMessages = new Array();
+				
+			}
+            
+            public function showResults(event:ResultEvent):void {
+            	// This is the result of the webservice called by getContracts();
+            	// Show the contracts that a user can approve
+            	
+            	var result:XML = new XML(event.result[0]);
+            	
+            	if (result.EX_MD_FLAG == 'X')
+            		 md_flag = true;
+            	else
+            		 md_flag = false;
+            		 
+	            tableReturned = new XMLList(result.RE_T_CONTRACTS.item);
+            	getTabsToDisplay();
+            	table = getTableCurrentTab();           	
+            	//table = new XMLList(result.RE_T_CONTRACTS.item);
+            	
+            	if (table == null) {
+            		buttonSelectAll.enabled = false;
+            		buttonDeselectAll.enabled = false;
+            	} 
+            	else
+            	{
+            		buttonSelectAll.enabled = true;
+            		buttonDeselectAll.enabled = true;
+            	}
+
+            }
+            
+ 
+            
+            public function webServiceFault(event:Event,service:String):void {
+            	var alert_text:String = 'Error with web service ' + service;
+            	Alert.show(alert_text);
+            }      
+            
+
+            
+            public function doSelectAll():void {
+            	for ( var i:String in table) {
+            		table[i].SELECTED = true;
+            	}
+            }
+            
+			public function doDeselectAll():void {
+     	       	for ( var i:String in table) {
+            		table[i].SELECTED = false;
+            	}            	
+            }
+            
+            private function statusDataTip( item:Object ) : String {
+            	var x:Object = item.STATUS_LONG;
+    			 if(item.STATUS_LONG && item.STATUS_LONG  != "" ) 
+    			 	return item.STATUS_LONG;
+    			 
+     			else return null;
+			}
+            
+
+            public function callSAP():void {
+            	// Call a portal iview to display the contract in a SAP transaction
+            	// Build the url
+            	//var hostname:String = 'http://sappod.ni.ad.newsint/';
+            	var hostname:String = '<protocolAndHost>';
+            	var root:String = '/irj/servlet/prt/portal/prtroot/';
+            	var app:String = 'com.sap.portal.appintegrator.sap.Transaction';
+            	var params:String = '?System=SAP_ERP&Technique=SSD&TCode=ZIPC_DISP_OO&GUIType=' + guiType;
+            	params += '&OKCode=' + guiMode + '&AutoStart=true';
+            	params += '&com.sap.portal.navigation.ShowType=1';
+            	params += '&DebugMode=true&DebugMode.default=true';
+            //	params += '&com.sap.portal.navigation.ExtWindowHeight=1000';
+          //  	params += '&com.sap.portal.iview.Height=1000';
+            	params += '&resizable=yes';
+            	var R3params:String = '&ApplicationParameter=ZIPCONTRACT_ENTRY-PUBID%3d' + PUB_ID  + ';ZIPCONTRACT_ENTRY-CONTRACT%3d' + CONTRACT_ID;
+            	if (guiMode == c_SAP_change) R3params  += ';R_CHAN%3dX';  // In change mode tick the change checkbox
+            	var url:String = hostname + root + app + params + R3params;
+            	ExternalInterface.call("showUrl",url);
+//http://sappod.ni.ad.newsint/irj/servlet/prt/portal/prtroot/com.sap.portal.appintegrator.sap.Transaction?System=SAP_ERP_D11&Technique=SSD&TCode=ZIPC_DISP_OO&GUIType=WinGUI&ApplicationParameter=ZIPCONTRACT_ENTRY-PUBID%3d<contract_id>
+            }
+           
+        ]]>
+    </mx:Script>
+   <mx:WebService id="wsGetContractsToApprove"
+ 		wsdl="{wsdl_prefix + 'Z_ECS_GET_RET_CNTRCTS_2_APPRV'}"
+     	useProxy="false" 
+    	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetContractsToApprove')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_ECS_GET_RET_CNTRCTS_2_APPRV"  
+	    	 resultFormat="e4x" concurrency="last">
+		</mx:operation> 
+</mx:WebService>
+
+<mx:WebService id="wsDoApprove"
+ 		wsdl="{wsdl_prefix + 'Z_ECS_APPROVE_RET_PAYMENTS'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doReject')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_ECS_APPROVE_RET_PAYMENTS"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+				<IM_PUBID>{PUB_ID}</IM_PUBID>
+	    	 	<IM_CONTRACT>{CONTRACT_ID}</IM_CONTRACT>
+	    	 </mx:request>
+		</mx:operation> 
+</mx:WebService>
+	
+<mx:WebService id="wsDoReject"
+ 		wsdl="{wsdl_prefix + 'Z_ECS_REJECT_RET_PAYMENTS'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doReject')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_ECS_REJECT_RET_PAYMENTS"  
+	    	 resultFormat="e4x" concurrency="last">
+	   	     <mx:request>
+				<IM_PUBID>{PUB_ID}</IM_PUBID>
+	    	 	<IM_CONTRACT>{CONTRACT_ID}</IM_CONTRACT>
+	    	 	<IM_REASON>{rejectionReason}</IM_REASON>
+	    	 </mx:request>
+		</mx:operation> 
+</mx:WebService>	
+
+	<mx:WipeRight id="textEffect" duration="150"/> 
+ 
+<!-- Custom Data Grid Components - we create them here rather than as separate classes --> 	 
+    <mx:Component id="showContractInSap">
+    	<CMS:Button1 label="View/Edit Contract" enabled="true" click="doClick()"> 
+    	<mx:Script>
+    		<![CDATA[
+    			public function doClick():void {
+    				outerDocument.CONTRACT_ID = data.CONTRACT;
+    				outerDocument.PUB_ID = data.PUBID;
+    				outerDocument.callSAP();
+    			}
+    		]]>
+    	</mx:Script>
+    	</CMS:Button1>
+    </mx:Component>
+    
+    <mx:Component id="showNotes">
+    	<CMS:Button1 label="Notes" enabled="true" click="doClick()"> 
+    	<mx:Script>
+    		<![CDATA[
+    		 	import mx.controls.Alert;
+    		 	import mx.managers.PopUpManager;    		 	
+    		 
+    			
+    			public function doClick():void {
+    				var message:Message =  PopUpManager.createPopUp(this, Message) as Message;
+    				message.message = data.NOTES;
+ 					//var alert:Alert = Alert.show(data.NOTES, "Contract Notes");
+ 					//alert.width = 500;
+    			}
+    			
+    			override public function set data(value:Object):void
+    			{
+    				super.data = value;
+    				
+    				if (value && value != "" && value.NOTES)
+    				{
+    					if (value.NOTES == "")
+    					{
+    						this.enabled = false;
+    						this.label = "No notes";
+    					}    						
+    					else
+    					{
+    						this.enabled = true;
+    						this.label = "Notes";
+    					}    						    					
+    				}
+    				
+    			}
+    			
+    		]]>
+    	</mx:Script>
+    	</CMS:Button1>
+    </mx:Component>
+    
+    <mx:Canvas id="outerCanvas" minWidth="1200">
+
+	<VDG:VariantDataGrid x="10" id="contractsDataGrid"
+		 editable="true"
+		 selectable="false"
+		 dataProvider ="{table}"
+		 allowMultipleSelection="false" 
+		 top="160" bottom="213" width="1136" minHeight="300"
+		 xmlns:mx="http://www.adobe.com/2006/mxml" 
+		 hideShowColumns="true"
+		 columnHideShowDuration="400"
+		 columnShowAfterDuration="0"
+		 columnHideShowGradual="true"
+		 columnHideColor="0xFFF0F0"
+		 columnShowColor="0xF0FFF0"
+		 horizontalScrollPolicy="off"
+		 
+		 
+		 >
+		<VDG:columns>
+            <VDG:VariantDataGridColumn  headerText="X"
+            	                        dataField="SELECTED"
+            	                        dataTipField="SELECTED"          	                
+            	                        rendererIsEditor="true" 
+                				        textIndent="5"
+                			         	id="selectColumn"
+                						width="15"
+                			    		itemRenderer="VDG.ListCheckbox"
+                			    		editable="true"
+                			    		visible="true"
+                			    	    hideable="false"
+                			    	    textAlign="center"
+                			    	    sortable="false"
+                			    	    resizable="false"
+                			    	    showDataTips="true"
+                			     /> 
+            <VDG:VariantDataGridColumn headerText="Publication" dataField="PUBID_TEXT" dataTipField="PUBID_TEXT" editable="false" width="84" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>
+			<VDG:VariantDataGridColumn headerText="Cost Centre (Desk)" dataField="KOSTL_TEXT" dataTipField="KOSTL_TEXT" editable="false" width="109" itemRenderer="CostCentreDataGridCell" showDataTips="true" headerRenderer="VDG.TipRenderer" fontWeight="bold"/>
+			<VDG:VariantDataGridColumn headerText="Contributor Name" dataField="NAME1" dataTipField="NAME1" editable="false" visible="true" width="133" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>
+		    <VDG:VariantDataGridColumn headerText="Contract Description" dataField="SHORTDESC" dataTipField="SHORTDESC" editable="false" width="177" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>
+			<VDG:VariantDataGridColumn headerText="Valid From" dataField="DATAB" dataTipField="DATAB" editable="false" width="77" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>
+			<VDG:VariantDataGridColumn headerText="Valid To" dataField="DATBI" dataTipField="DATBI" editable="false" width="77" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>		        				
+			<VDG:VariantDataGridColumn headerText="Currency" dataField="WAERS" dataTipField="WAERS"  editable="false" visible="false" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>	    
+			<VDG:VariantDataGridColumn headerText="Total Payments" dataField="TOTAL_PAYMENTS2" dataTipField="TOTAL_PAYMENTS2" editable="false" textAlign="right" sortCompareFunction="sortByTOTAL_PAYMENTS2" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>
+			<VDG:VariantDataGridColumn headerText="Previous Contract Value" dataField="Z_PREV_VAL" dataTipField="Z_PREV_VAL" editable="false" textAlign="right" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>		
+			<VDG:VariantDataGridColumn headerText="No. of Payments" dataField="NO_OF_PAYMENTS" dataTipField="NO_OF_PAYMENTS" editable="false" sortCompareFunction="sortByNO_OF_PAYMENTS" width="24" showDataTips="true" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>
+			<VDG:VariantDataGridColumn headerText="Standard Terms" dataField="ZNS_TERMS" dataTipField="ZNS_TERMS" editable="false"  itemRenderer="VDG.ListCheckbox" width="21" resizable="false" showDataTips="true" headerRenderer="VDG.TipRenderer" />
+			<VDG:VariantDataGridColumn headerText="Written Contract" dataField="ZWRIT_CON" dataTipField="ZWRIT_CON" editable="false" width="21"  itemRenderer="VDG.ListCheckbox" showDataTips="true" headerRenderer="VDG.TipRenderer" />
+			<VDG:VariantDataGridColumn headerText="Status" dataField="STATUS" dataTipField="STATUS" editable="false" showDataTips="true" dataTipFunction="statusDataTip" width="72" headerRenderer="VDG.TipRenderer" itemRenderer="VDG.SafeDataGridItemRenderer"/>
+	    	<VDG:VariantDataGridColumn headerText="Notes" itemRenderer="{showNotes}"  editable="false" width="70" showDataTips="false" headerRenderer="VDG.TipRenderer"/>
+	        <VDG:VariantDataGridColumn headerText="View Contract" itemRenderer="{showContractInSap}"  editable="false" width="73" showDataTips="false" headerRenderer="VDG.TipRenderer"/>		    
+		</VDG:columns>
+	</VDG:VariantDataGrid>
+  
+  
+  	
+	
+	
+
+	<mx:TabNavigator x="0" y="0" width="100%" height="116" fillColors="[#D4D4D4, #D4D4D4]"
+		 id="tabSelection" creationPolicy="all" change="handleTabSelect()" enabled="false">
+		<mx:Canvas label="RETAINER APPROVAL" width="100%" height="74" backgroundColor="#F2F2F2"  horizontalScrollPolicy="off" verticalScrollPolicy="off" id="tabStrip" focusEnabled="false">
+			<mx:Image source="@Embed('CMS/images/Logo_bgr.gif')" id="image1" x="1073" y="0"/>
+			<mx:TextArea x="10" y="10" backgroundAlpha="0" borderSides="0" width="601" id="textarea1" height="72" focusThickness="0" focusEnabled="false">
+				<mx:text><![CDATA[The table below lists retainer contracts which are ready for either approval or pre-approval. Contracts requiring MD approval will be sent to the MD for final approval once they have been preapproved  
+
+Please select retainer contracts to approve or reject and press "Approve" or "Reject" as appropriate.]]></mx:text>
+			</mx:TextArea>
+			
+		</mx:Canvas>
+		<mx:Canvas label="PRE_APPROVED CONTRACTS" width="100%" height="100%" id="canvas2">
+			<mx:Canvas label="RETAINER PRE-APPROVAL" width="100%" height="100%">
+				<mx:Canvas label="RETAINER APPROVAL" width="100%" height="57" backgroundColor="#F2F2F2"  horizontalScrollPolicy="off" verticalScrollPolicy="off">
+					<mx:Image source="@Embed('CMS/images/Logo_bgr.gif')" id="image2" x="1073" y="0"/>
+					<mx:TextArea x="10" y="3" backgroundAlpha="0" borderSides="0" width="498" id="textarea2">
+						<mx:text><![CDATA[The table below lists retainer contracts which have been pre-approved by the Managing Editor and are awaiting approval. ]]></mx:text>
+					</mx:TextArea>
+					
+				</mx:Canvas>
+			</mx:Canvas>
+		</mx:Canvas>
+	</mx:TabNavigator>
+	<mx:MenuBar x="10" y="124" width="203" height="22" id="menubar1" focusEnabled="false"></mx:MenuBar>
+	<CMS:Button1 x="20" y="124" label="Select All" click="doSelectAll();" id="buttonSelectAll" enabled="false"/>
+	<CMS:Button1 x="109" y="124" label="Deselect All" click="doDeselectAll();" id="buttonDeselectAll" enabled="false"/>
+	
+	<!-- These buttons are only shown when we run the flex app locally.
+	   If we run in Portal or a BSP they won't be displayed -->
+	<CMS:Button1 y="428" click="doReject();" label="Reject" id="buttonReject" left="37"/>
+	<CMS:Button1 x="108" y="428" click="doApprove();" label="Approve" id="buttonApprove"/>
+
+    	
+  </mx:Canvas>
+	
+
+</mx:Application>

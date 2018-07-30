@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	AmountInput.mxml
+		Item renderer for the amount field on the payment items data grid
+	
+	Includes:
+		validation on the entry  - sets error counter in parent  application
+		event handlers for focus events - e.g. save without entering any amounts or highlighting an errored field
+		dispatches event to parent application when the amount is changed in order to calculate the total	
+-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+	     xmlns:ni="ni.components.*"
+         width="100%" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         verticalScrollPolicy="off" 
+         creationComplete="initComponent();"
+         removed="">
+    <mx:Script>
+        <![CDATA[
+        import mx.events.DragEvent;
+        import mx.controls.dataGridClasses.DataGridColumn;
+        import ecs.generalClasses.CPRItem;    
+
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+		public var amount:String="";						//grid gets this value to bind to dataprovider
+        //CSS style for the input - e.g. disabled
+        [Bindable]
+        private var cssStyle:String="";
+        //Editable flag
+        [Bindable]
+        private var isEditable:Boolean=true;
+		
+		// Last amount and currency, so we don't validate the same amount twice
+		private var lastValidate:Object = new Object();
+		
+		// Decmial places - depends on currency		
+		private var currency:String;
+		[Bindable]
+		private var decimals:uint = 2;
+		
+        private var retData:Object;							//required for grid not jumble the lines up
+        private var isValid:Boolean=true;					//entry id valid flag
+        private var previousValidState:Boolean=true;		//before change - was it valid?
+            
+        public function initComponent():void{
+        	// Important - use weak references, otherwise garbage collection won't work 
+        	// and we could get memory leaks.
+        	
+        	//Event listener - receive focus if the entry is not valid
+        	parentApplication.addEventListener("AmountErrorFocus",setErrorFocus, false, 0, true);
+
+        	//Event listener - receive focus into the first amount field
+        	parentApplication.addEventListener("FirstAmountFocus",setFirstFocus, false, 0, true);
+        	
+        	// Initialise the LAST VALIDATE object
+        	lastValidate.currency = "";
+        	lastValidate.amount = "";
+        }
+        
+        //Receive focus if no entry was made and the user is saving (line 1)
+        //Parent applicaiton raises the FirstAmountFocus event
+        private function setFirstFocus(event:Event):void{
+            if (retData.index==0){
+            	focusManager.setFocus(txtAmount); 
+            	//Only receive focus into the first amount field - stop the event from propagating to the other rows          	
+            	event.stopPropagation();
+            }	            
+        }
+        
+        //Receive focus if the user is trying to save and there is an error in the amount field - parent 
+        //application raises the AmountErrorFocus event
+        private function setErrorFocus(event:Event):void{
+        	if (!isValid){           	
+				focusManager.setFocus(txtAmount);
+            	event.stopPropagation();	
+            } 
+        }
+        
+        //Set data for the item renderer
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	amount=String(value.amount);   //Grid gets this field to update the data provider
+						txtAmount.text=amount;		
+						//The DG jumbles the rows !!! Unless we store the row and return in get data
+						retData=value;				   
+						//Stylename and editable can depend on whether field is disabled or "held" or "set"
+						cssStyle=value.amountStyleName;
+						isEditable=value.amountEditable;
+						// Validate the field, which also sets the border correclty if using hold data
+						valAmount.validate();
+						// Register the renderer for validation
+						(value as CPRItem).amountRenderer = this;
+						// Precision (number of decimals)
+						currency = (value as CPRItem).currency
+						var precision:String = parentApplication.initXml.CH_T_CURRENCIES.item.(DATA==currency).DECIMALS;
+						this.decimals = uint(precision);
+						// Validation
+						lastValidate.currency = (value as CPRItem).currency;
+        				lastValidate.amount = (value as CPRItem).amount;
+						
+                    }
+        		}
+        }
+		
+		//Return the row to stop the jumbling -  occurs because the grid reuses the conponents when  scrolling
+		override public function get data():Object{
+			return retData;
+		}
+		
+		//Change handler for text field : update the amount property and return data structure 
+		private function handleChange():void{
+			txtAmount.text = txtAmount.text.replace(/ /, ''); // Remove any spaces
+			amount=txtAmount.text;
+			if (retData!=null) retData.amount = txtAmount.text;
+			parentApplication.setDataChanged(true);
+		}
+		
+		//Dispatch a change event if necessary : total needs calculating etc. 
+		//Setting valid flag in parent application stops a bad save 
+		public function raiseChange():Boolean{			
+			try {
+				if (this.data.currency == lastValidate.currency 
+				    && this.data.amount == lastValidate.amount)
+				    {
+				    	lastValidate.currency = (this.data as CPRItem).currency;
+				    	lastValidate.amount = (this.data as CPRItem).amount;
+				    	
+				    	/** Problem ticket 232 -  Sometimes when you clicked or tabbed out of the 
+				    	amount field the total didn't update, because the "amountChanged" event wasn't triggered.
+				    	When debugging, we discovered that the lastValidate.amount had already been updated, so 
+				    	the event wasn't triggered. 
+				    	
+				    	The fix is to cause the amountChanged event to be triggered even when
+				    	 lastValidate.amount = this.data.amount by adding a single line of code
+				    	*/
+				    	parentApplication.dispatchEvent(new Event("amountChanged")); // New code to fix Problem ticket 232
+				    	
+				    	return false; // No need to validate
+				    }
+				else // Different to old value, so validate
+					{
+						valAmount.validate();
+						parentApplication.dispatchEvent(new Event("amountChanged"));
+				   	 	lastValidate.currency = (this.data as CPRItem).currency;
+				    	lastValidate.amount = (this.data as CPRItem).amount;					
+					}    
+				}
+			catch (e:Error)
+				{
+				if (this.data is CPRItem)
+					{
+						lastValidate.currency = (this.data as CPRItem).currency;
+				   	 	lastValidate.amount = (this.data as CPRItem).amount;
+					}				
+					valAmount.validate();
+					parentApplication.dispatchEvent(new Event("amountChanged"));	
+				}
+			
+			return true;		
+		}
+		
+
+         ]]>
+    </mx:Script>
+     
+   <mx:CurrencyValidator	 
+   	 id="valAmount"
+   	  source="{txtAmount}"
+   	  property="text" 
+   	  required="false"   
+   	  valid="isValid=true;"
+   	  invalid="isValid=false;"	 
+   	  allowNegative="false"
+   	  precision="{decimals}">
+   </mx:CurrencyValidator>
+   <ni:TextInputPlus
+   	 id="txtAmount"
+   	 width="70"
+   	 listWidth="70"
+   	 recentEntries="{parentApplication.last20Amounts}"    	 
+   	 change="handleChange()"
+   	 focusOut="raiseChange()"
+   	 editable="{isEditable}"   	   	 
+   	 styleName="{cssStyle}"
+   	 tabEnabled="{isEditable}" 
+   	 maxChars="21">
+   	</ni:TextInputPlus>
+               
+   
+</mx:HBox>
+

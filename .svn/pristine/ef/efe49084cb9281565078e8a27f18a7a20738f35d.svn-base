@@ -1,0 +1,36 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  <Dialog title="{i18n>EditDropDialogTitle} - {editDrop>/drop/customer_name} ({i18n>EditDropDialogDropNo} {editDrop>/drop/itinerary})" resizable="false" id="dialogDropEdit">
+    <content>
+      <Panel>
+        <HBox>
+          <VBox alignItems="Start" justifyContent="SpaceBetween">
+            <HBox alignItems="Center">
+              <Label text="{i18n>EditDropDialogProblem}"/>
+              <Select
+                selectedKey="{editDrop>/drop/change_reason}"
+                items="{editDrop>/reasons}"
+                class="sapUiSmallMarginBegin sapUiTinyMarginEnd">
+                <core:Item key="{editDrop>key}" text="{editDrop>name}"/>
+              </Select>
+            </HBox>
+            <HBox alignItems="Center">
+              <Label text="{i18n>EditDropDialogComment}"/>
+              <TextArea
+                cols="80"
+                rows="4"
+                class="sapUiSmallMarginBegin sapUiTinyMarginEnd"
+                placeholder="{i18n>EditDropDialogCommentPlaceholder}"
+                value="{editDrop>/drop/change_comment}"/>
+            </HBox>
+          </VBox>
+        </HBox>
+      </Panel>
+    </content>
+    <buttons>
+        <Button text="{i18n>ButtonOk}" type="Accept" press="onEditDropOk"/>
+        <Button text="{i18n>ButtonCancel}" type="Reject" press="onEditDropCancel"/>
+    </buttons>
+  </Dialog>
+</core:FragmentDefinition>

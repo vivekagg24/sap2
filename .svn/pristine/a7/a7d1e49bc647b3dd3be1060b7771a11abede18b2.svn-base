@@ -1,0 +1,40 @@
+<mvc:View controllerName="nuk.sap.timesheet.controller.Timesheets" displayBlock="true" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.ui">
+  <Page title="{i18n>timesheets-title}" enableScrolling="false">
+
+    <content>
+      <Table
+        rows="{timesheets>/Timesheets}"
+        title="{i18n>timesheets-table-title}"
+        selectionMode="MultiToggle"
+        visibleRowCount="10">
+
+        <columns>
+
+          <Column width="12rem">
+            <Label text="Project" />
+            <template>
+              <m:ComboBox value="{Project}" items="{/Projects}">
+                <c:Item text="{ProjectName}"/>
+              </m:ComboBox>
+            </template>
+          </Column>
+
+          <Column width="12rem">
+            <Label text="Supplier" />
+            <template>
+              <m:ComboBox value="{Project}" items="{/Projects}">
+                <c:Item text="{ProjectName}"/>
+              </m:ComboBox>
+            </template>
+          </Column>
+
+
+
+        </columns>
+
+      </Table>
+    </content>
+
+
+  </Page>
+</mvc:View>

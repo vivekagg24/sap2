@@ -1,0 +1,131 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+
+  <ResponsivePopover
+    id="popoverTimesheet"
+    title="{i18n>common-timesheet}"
+    showHeader="true"
+    class="sapUiPopupWithPadding"
+    placement="Bottom"
+    afterClose="onAfterCloseDisplayTimesheet">
+
+    <!--
+      was:
+    title="{approval>submitter_name} -
+      { parts: [
+        { path: 'approval>date_from' },
+        { path: 'approval>date_to' }
+      ],
+      formatter: 'nuk.sap.timesheet.util.Formatter.formatTimesheetPeriod'
+    }"
+    -->
+
+    <content>
+      <Table
+        id="tblTimesheet"
+        backgroundDesign="Solid"
+        class="tableZebra"
+        mode="None"
+        noDataText="{i18n>timesheet-table-no-data}"
+        items="{
+          path: 'approval>time_worked'
+        }">
+
+        <columns>
+          <Column width="5em">
+            <Text text="{i18n>timesheet-table-project}"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'approval>date_from', 'i18n>timesheet-day1' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'approval>date_from', 'i18n>timesheet-day2' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'approval>date_from', 'i18n>timesheet-day3' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'approval>date_from', 'i18n>timesheet-day4' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'approval>date_from', 'i18n>timesheet-day5' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'approval>date_from', 'i18n>timesheet-day6' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'approval>date_from', 'i18n>timesheet-day7' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Label text="{i18n>timesheet-table-project-total}" design="Bold"/>
+          </Column>
+
+        </columns>
+
+        <items>
+          <ColumnListItem>
+            <cells>
+              <ComboBox
+                id="selProject"
+                selectionChange="onProjectChange"
+                selectedKey="{approval>project_id}"
+                enabled="true"
+                editable="false"
+                width="100%"
+                placeholder="{i18n>timesheet-table-project-placeholder}"
+                items="{approval>/assigned_projects}">
+                <core:Item key="{approval>project_id}" text="{approval>name}" />
+              </ComboBox>
+
+              <Text text="{approval>time/0}"/>
+              <Text text="{approval>time/1}"/>
+              <Text text="{approval>time/2}"/>
+              <Text text="{approval>time/3}"/>
+              <Text text="{approval>time/4}"/>
+              <Text text="{approval>time/5}"/>
+              <Text text="{approval>time/6}"/>
+              <Label text="{
+                path: 'approval>time',
+                formatter: 'nuk.sap.timesheet.util.Formatter.calculateProjectTotal'
+                }"
+                design="Bold"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+
+  </ResponsivePopover>
+
+</core:FragmentDefinition>

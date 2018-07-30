@@ -1,0 +1,13 @@
+<Bar xmlns="sap.m">
+
+  <contentLeft>
+    <Label text="{user>/full_name}" design="Bold"/>
+  </contentLeft>
+
+  <contentRight>
+    <Button icon="sap-icon://sys-help" tooltip="{i18n>header-help-tooltip}" press="doHelp"/>
+    <Button icon="sap-icon://log" tooltip="{i18n>header-logout-tooltip}" press="doLogout"/>
+    <Image src="images/230x60_NewsUK1.png" width="115px" height="30px" alt="{i18n>header-image-logo-alt}" />
+  </contentRight>
+</Bar>
+

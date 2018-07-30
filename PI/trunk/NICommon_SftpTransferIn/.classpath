@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="ejbModule"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JDK-1.6.0"/>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.generic.runtimeTarget.sap/sapruntime"/>
+	<classpathentry exported="true" kind="lib" path="R:/workspace/sshlib/ganymed-ssh2-build251beta1.jar"/>
+	<classpathentry kind="lib" path="R:/workspace/pilib/com.sap.aii.af.ms.ifc_api.jar"/>
+	<classpathentry kind="lib" path="R:/workspace/pilib/com.sap.aii.proxy.ejb.jar"/>
+	<classpathentry kind="lib" path="R:/workspace/pilib/com.sap.aii.proxy.gen.jar"/>
+	<classpathentry kind="lib" path="R:/workspace/pilib/com.sap.aii.proxy.svc_api.jar"/>
+	<classpathentry kind="lib" path="R:/workspace/pilib/com.sap.aii.utilxi.core.jar"/>
+	<classpathentry kind="lib" path="R:/workspace/pilib/com.sap.aii.utilxi.server.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="R:/workspace/pilib/com.sap.aii.af.lib.mod.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>

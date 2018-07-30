@@ -1,0 +1,77 @@
+sap.ui.define([], function() {
+  "use strict";
+  var _iCount = 0;
+  var _aMessages = [];
+
+  return {
+
+    /**
+     * Return text from the resource bundle model
+     * @param  {sap.ui.core.mvc.view} oView View instance
+     * @param  {String} sResourceId Resource ID
+     * @return {String} Text
+     */
+    getText: function(oView, sResourceId) {
+      var sMessage = oView.getModel("i18n").getResourceBundle().getText(sResourceId);
+      return sMessage;
+    },
+
+    /**
+     * Add a message to the message container
+     * @param {[type]} oView          Parent view
+     * @param {[type]} sMessage       Message text
+     * @param {[type]} sMessageType   Message type (defaults to "Information" if not provided)
+     * @param {[type]} sContainerName Message container name
+     */
+    addMessage: function(oView, sMessage, sMessageType, sContainerName) {
+      var sType = sMessageType || "Information";
+      var sContainer = sContainerName || "messageContainer";
+      var oParent = oView.byId(sContainer);
+      if (!oParent) {
+        oParent = sap.ui.getCore().byId(sContainer);
+      }
+
+      if (oParent) {
+        var oMessageStrip = new sap.m.MessageStrip("messageStrip_" + _iCount++, {
+          text: sMessage,
+          showCloseButton: true,
+          showIcon: true,
+          type: sType
+        });
+        oMessageStrip.addStyleClass("sapUiTinyMarginTopBottom");
+        oMessageStrip.attachClose(null, function(oEvent) {
+          oParent.removeContent(oMessageStrip);
+          oMessageStrip.destroy();
+        });
+        oParent.addContent(oMessageStrip);
+        _aMessages.push(oMessageStrip);
+      } else {
+        // fall back to MessageBox
+  //      sap.m.MessageBox.show(sMessage);
+      }
+
+    },
+
+    /**
+     * Clear all messages
+     * @param  {sap.ui.core.mvc.view} oView View instance
+     * @return {[type]}       [description]
+     */
+    clearMessages: function(oView, sContainerName) {
+      var sContainer = sContainerName || "messageContainer";
+      var oParent = oView.byId(sContainer);
+      if (!oParent) {
+        oParent = sap.ui.getCore().byId(sContainer);
+      }
+
+      if (oParent) {
+        for (var i = 0; i < _aMessages.length; i++) {
+          if (typeof _aMessages[i] !== 'undefined')  {
+            _aMessages[i].destroy();
+          }
+        }
+      }
+    }
+
+  };
+});

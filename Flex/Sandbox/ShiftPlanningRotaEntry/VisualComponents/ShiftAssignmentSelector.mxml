@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	     borderStyle="outset" borderThickness="1" width="948" xmlns:ns1="*" height="62"
+	     show="onShowHandler()">
+
+	<mx:Metadata>
+		  [Event(name="shiftAssignment", type="events.ShiftAssignmentEvent")]
+	</mx:Metadata>
+
+	<mx:Object id="employee" />
+	<mx:XMLListCollection id="rotas" />
+	<mx:XMLListCollection id="colorKey" />
+	<mx:Number id="index" />
+	
+	<mx:Label x="10" y="2" text="Employee: {employee.STEXT_OUT}"
+		       width="166" />
+	<mx:Label x="10" y="23" text="Payroll no.: {employee.OBJID_OUT}"
+		       width="166" />
+	<mx:ComboBox id="cbRotaSelection"
+		         labelField="val"
+		         dataProvider="{getShiftsFromXML(rotas)}"
+		         change="onChange()"  x="285" width="116" />
+	<mx:ComboBox id="cbDaySelection"
+		         dataProvider="{getDaysFromXML(rotas, cbRotaSelection.selectedIndex )}"
+		         change="onChange()"  x="285" width="116" y="20"/>
+	<ns1:FastShiftGrid x="508" id="fsg1"
+		               height = "40" width="423" labelField="val" 
+		               showRowLabel="false"
+		               colorKey="{colorKey}"		              
+		               dataProvider="{showRota(rotas, cbRotaSelection.selectedIndex, cbDaySelection.selectedIndex) } "  y="0"/>
+	<mx:Label x="184" y="2" text="Select Rota"/>
+	<mx:Label x="184" y="24" text="Select Start Day"/>
+	<mx:CheckBox x="412" y="2" id="cbWorksBH" label="Works BH" toolTip="Work bank holidays" change="onChange()"/>
+	
+	
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.*;
+			import events.ShiftAssignmentEvent;
+		
+			/** Takes a dataprovider which contains all the sfhits and returns the names of the shifts
+			 * 
+			 */ 
+			public function getShiftsFromXML(source:Object):XMLList
+			{
+				var return_xml:XML = new XML(<vals/>);
+				return_xml.appendChild("None");
+				var i:int = 0;
+				for each (var x:XML in source)
+				{
+					if (i > 0) // Skip first line as this is just the header
+					{
+						var y:XML = x.children()[0];
+						var s:String = new String(y.val);
+						if (s.length > 0) // Only add non-blank lines
+							return_xml.appendChild(y);							
+					}
+					i++
+	
+				}				
+				return return_xml.children();
+			}
+			
+			public function getDaysFromXML(rotas:Object, index:int ):Array
+			{
+				var collection:IList = rotas as IList;
+				if (!collection || index < 1) return [];
+				
+				var data:XML = collection.getItemAt(index ) as XML;
+				
+				var ret_array:Array = new Array();
+				var children:XMLList = data.children()
+				for (var i:String in children)
+				{
+					if (i != "0")
+					{
+						var s:String = "Day " + i + " - " + children[i].val;
+						ret_array.push(new String(s)); 						
+					}						
+				}	
+				
+				return ret_array;
+			}	
+			
+			
+			// Despatch the even to say that data has changed
+			public function onChange():void
+			{
+				var e:ShiftAssignmentEvent;
+				e = new ShiftAssignmentEvent("shiftAssignment", true, true, this.index, cbRotaSelection.selectedIndex, cbDaySelection.selectedIndex, cbRotaSelection.selectedLabel , cbWorksBH.selected);
+				this.dispatchEvent(e);
+			}
+				
+			// Display the selected rota, taking into accoun the chosen start position
+			private function showRota(data:Object, rotaSelection:int, daySelection:int):XMLList
+			{	
+				var colec:XMLListCollection = data as XMLListCollection;
+				if (!colec || rotaSelection < 0  || daySelection < 0) return new XMLList();
+
+				// Step 1 - Get the rota
+				var x:XML = colec.getItemAt(rotaSelection ) as XML;
+				
+				// Step 2 - Go as far as the first blank entry
+				var ret:XMLListCollection
+				ret = new XMLListCollection(x.children());
+				ret.disableAutoUpdate();
+				for (var i:int = 1; i < ret.length; i++)
+				{
+					var o:Object = ret.getItemAt(i);
+					if (!o || o.toLocaleString().length == 0) // If its a null entry, remove it and every item after it
+					{
+						for (var j:int = i; j < ret.length; j++)
+						{
+							ret.removeItemAt(j) 
+						}						
+					}					
+				}
+				
+				
+				// Step 3 - Rotate it
+				
+				if (daySelection == 0)
+				{
+					
+					ret.removeItemAt(0); // Get rid of the first element, as this is the label
+				}
+				else
+				{
+					var l:Array = ret.toArray();
+					l.splice(0,1); // / Get rid of the first element, as this is the label
+					var newFront:Array = l.slice(daySelection);
+					var newBack:Array = l.slice(0, daySelection);
+					
+					ret = new XMLListCollection();
+					ret.disableAutoUpdate();
+					for each (o in newFront)
+					{
+						ret.addItem(o);
+					}				
+					for each (o in newBack)
+					{
+						ret.addItem(o);
+					}			
+				}				
+
+								
+				var ret2:XMLList = new XMLList(<row/>);
+				ret2[0].appendChild(ret.source);			
+								
+				return ret2;
+				
+				
+			}
+			
+			private function onShowHandler():void
+			{
+				// Refresh everything - not yet working though :o(
+				cbRotaSelection.dataProvider = getShiftsFromXML(rotas);
+				cbDaySelection.dataProvider = getDaysFromXML(rotas, cbRotaSelection.selectedIndex );
+				fsg1.dataProvider = showRota(rotas, cbRotaSelection.selectedIndex, cbDaySelection.selectedIndex);	
+			}
+				
+				
+				
+			
+			
+		]]>
+	</mx:Script>
+
+</mx:Canvas>

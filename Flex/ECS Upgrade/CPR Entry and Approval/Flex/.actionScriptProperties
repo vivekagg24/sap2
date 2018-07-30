@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actionScriptProperties version="1" mainApplicationPath="CPREntry.mxml">
+  <compiler additionalCompilerArguments="-locale en_US" copyDependentFiles="false" generateAccessible="true" strict="true" warn="true" htmlGenerate="true" htmlPlayerVersionCheck="true" htmlPlayerVersion="9.0.0" htmlExpressInstall="true" htmlHistoryManagement="false" outputFolderPath="bin">
+    <compilerSourcePath/>
+    <libraryPath>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/playerglobal.swc" linkType="2"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/utilities.swc" linkType="1"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/flex.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/framework.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/rpc.swc" linkType="1"/>
+      <libraryPathEntry kind="3" path="${FRAMEWORKS}/libs/charts.swc" linkType="2" sourcepath="${FRAMEWORKS}/source"/>
+      <libraryPathEntry kind="1" path="${FRAMEWORKS}/locale/{locale}" linkType="1"/>
+      <libraryPathEntry kind="3" path="/ReusableComponents1/bin/ReusableComponents1.swc" linkType="1" sourcepath="/ReusableComponents1/src"/>
+      <libraryPathEntry kind="3" path="/VDG_Library/bin/VDG_Library.swc" linkType="1" sourcepath="/VDG_Library/src"/>
+    </libraryPath>
+    <sourceAttachmentPath>
+      <sourceAttachmentPathEntry kind="3" path="${FRAMEWORKS}/libs/flex.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <sourceAttachmentPathEntry kind="3" path="${FRAMEWORKS}/libs/framework.swc" linkType="1" sourcepath="${FRAMEWORKS}/source"/>
+      <sourceAttachmentPathEntry kind="3" path="${FRAMEWORKS}/libs/charts.swc" linkType="2" sourcepath="${FRAMEWORKS}/source"/>
+      <sourceAttachmentPathEntry kind="3" path="/ReusableComponents1/bin/ReusableComponents1.swc" linkType="1" sourcepath="/ReusableComponents1/src"/>
+      <sourceAttachmentPathEntry kind="3" path="/VDG_Library/bin/VDG_Library.swc" linkType="1" sourcepath="/VDG_Library/src"/>
+    </sourceAttachmentPath>
+  </compiler>
+  <applications>
+    <application path="main.mxml"/>
+    <application path="Approval.mxml"/>
+    <application path="ContributorSearch.mxml"/>
+    <application path="CPREntry.mxml"/>
+    <application path="PaymentsViewer.mxml"/>
+    <application path="CPR Entry and Approval\ecs\popups\ContributorSearch.mxml"/>
+  </applications>
+  <buildCSSFiles/>
+</actionScriptProperties>

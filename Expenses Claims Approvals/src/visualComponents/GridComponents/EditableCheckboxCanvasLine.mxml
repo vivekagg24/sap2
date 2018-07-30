@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       xmlns:ns1="visualComponents.GridComponents.*"
+	       implements="mx.controls.listClasses.IDropInListItemRenderer">
+	 <mx:Style>
+	 	EditableCheckBox {
+            fontWeight: bold;
+            iconColor: red;
+        }
+	 	.unselectedStyle {
+			   fillAlphas: 1, 1, 0.75, 0.75;
+			   fillColors: #ffffff, #ffffff, #ffffff, #ffffff;   
+        }
+	 	.selectedStyle {
+			   fillAlphas: 1, 1, 0.75, 0.750;
+			   fillColors: #ff6666, #ff6666, #ff6666, #ff6666; 
+        }
+	 </mx:Style>
+	 <mx:Script>
+	 	<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+        
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			cb.data = value;
+	 		}
+	 		
+	 		public function set listData(value:BaseListData):void
+	 		{
+	 			cb.listData = value;
+	 		}
+
+	 		public function get listData():BaseListData
+	 		{
+	 			return cb.listData;
+	 		}
+	 		
+	 		private function checkBox_change(evt:Event):void {
+                var tgt:EditableCheckbox = evt.currentTarget as EditableCheckbox;
+                if (tgt.selected) {
+                    tgt.styleName = "selectedStyle";
+                } else {
+                    tgt.styleName = "unselectedStyle";
+                }
+            }
+	 				 		
+	 	]]>
+	 </mx:Script>
+	       
+	<ns1:EditableCheckbox x="10" y="10" id="cb" useHandCursor="true" buttonMode="true" styleName="unselectedStyle" mouseChildren="false" toolTip="Select to reject" change="checkBox_change(event);">
+	</ns1:EditableCheckbox>
+</mx:Canvas>

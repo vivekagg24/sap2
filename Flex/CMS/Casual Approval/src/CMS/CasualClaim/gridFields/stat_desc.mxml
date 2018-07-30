@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         horizontalScrollPolicy="off"
+         width="100%" 
+         >
+
+	<mx:Script source="../scripts/Common.as"></mx:Script>
+	
+    <mx:Script>
+        <![CDATA[
+        import mx.controls.dataGridClasses.DataGridColumn;
+            
+
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+		public var status:String="";
+        private var retData:Object;
+        
+        public function initComponent():void{}
+        
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	status=String(value.STAT_DESC);
+						txtStatus.text=status;
+	
+						if(value.ZZAPPROVAL == cRejectStatus){
+					
+							txtStatus.toolTip = value.REJECT_TEXT;
+						}else{
+							txtStatus.toolTip = "";							
+						}
+						
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+			return retData;
+		}
+		
+		private function handleChange():void{
+			status=txtStatus.text;
+			if (retData!=null) retData.amount = txtStatus.text;
+		}
+		
+         ]]>
+    </mx:Script>
+     
+
+   <mx:TextInput
+   	 id="txtStatus"
+   	 width="70"
+	 enabled="false"
+	 styleName="inputECS"     
+   	 change="handleChange()"
+   	 maxChars="21">
+   	</mx:TextInput>
+   
+</mx:HBox>
+
+

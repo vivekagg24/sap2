@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="18" height="42">
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+	 			notesIcon.data = value;
+	 			notesIcon.enabled = false;
+			
+				if (value && value.NOTES == "X"){
+					notesIcon.enabled = true;
+					notesIcon.visible = true;
+					notesIcon.toolTip = "Additonal information available for claim";
+				}
+				else {
+		 			notesIcon.enabled = false;
+					notesIcon.visible = false;
+				}
+	 		}
+	 		
+	 		public function set listData(value:BaseListData):void
+	 		{
+	 			notesIcon.listData = value;
+	 		}
+	 		
+	 		public function get listData():BaseListData
+	 		{
+	 			return notesIcon.listData;
+	 		}				
+		]]>
+	</mx:Script>
+		
+	<mx:Image id="notesIcon" source="@Embed('../../HR/images/Notes.gif')"
+		 click="onClick()" resize="false" useHandCursor="true" buttonMode="true" toolTip="Notes exist on expense claim"> 
+		<mx:Script>
+			<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+  		 	import mx.managers.PopUpManager;  
+  		 	//import mx.controls.listClasses.BaseListData;  		 	
+			
+			private function onClick():void
+			{
+/*   				var messagePopup:Notes =  PopUpManager.createPopUp(this, Notes) as Notes;
+  				messagePopup.notesTab = parentApplication.getNotes(this.data.PARENT_WIID); */
+  				var notesPopup:Notes =  PopUpManager.createPopUp(this, Notes) as Notes;
+  				notesPopup.notesTab = parentApplication.getNotes(this.data.PARENT_WIID);  				
+			}		
+			]]>
+		</mx:Script> 
+	</mx:Image>
+
+    <mx:Metadata>
+        [Event(name="displayNotes", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+</mx:Canvas>

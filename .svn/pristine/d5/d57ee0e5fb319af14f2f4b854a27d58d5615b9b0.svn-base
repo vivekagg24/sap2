@@ -1,0 +1,61 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>EditableCheckbox.as</title>
+<link rel="stylesheet" type="text/css" href="../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="asPackage">package</span> visualComponents.GridComponents
+<span class="asBracket">{</span>
+    <span class="asReserved">import</span> mx.controls.CheckBox;
+    <span class="asReserved">import</span> mx.controls.listClasses.BaseListData;
+    <span class="asReserved">import</span> flash.events.Event;
+    <span class="asReserved">import</span> mx.controls.Alert;
+    <span class="asReserved">import</span> mx.controls.dataGridClasses.DataGridListData;
+
+    <span class="asReserved">public</span> <span class="asClass">class</span> EditableCheckbox <span class="asReserved">extends</span> CheckBox
+    <span class="asBracket">{</span>
+        <span class="asComment">// Constructor
+</span>        <span class="asReserved">public</span> <span class="asFunction">function</span> EditableCheckbox<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+        <span class="asBracket">{</span>
+            <span class="asReserved">super</span><span class="asBracket">()</span>;
+            <span class="asReserved">this</span>.addEventListener<span class="asBracket">(</span>Event.CHANGE, _onChange<span class="asBracket">)</span>;
+        <span class="asBracket">}</span>
+        
+        <span class="asReserved">override</span> <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> listData<span class="asBracket">(</span>value<span class="asOperator">:</span>BaseListData<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+        <span class="asBracket">{</span>
+            <span class="asReserved">super</span>.listData <span class="asOperator">=</span> value;
+            
+            <span class="asReserved">if</span> <span class="asBracket">(</span>value <span class="asOperator">&amp;&amp;</span> value.label <span class="asOperator">==</span> <span class="asString">&quot;X&quot;</span><span class="asBracket">){</span>
+                <span class="asReserved">this</span>.selected <span class="asOperator">=</span> <span class="asReserved">true</span>;
+            <span class="asBracket">}</span>
+            <span class="asReserved">else</span> <span class="asBracket">{</span>
+                <span class="asReserved">this</span>.selected <span class="asOperator">=</span> <span class="asReserved">false</span>;
+            <span class="asBracket">}</span>
+        <span class="asBracket">}</span>
+        
+         <span class="asComment">// When data changes, update data provider
+</span>        <span class="asReserved">protected</span> <span class="asFunction">function</span> _onChange<span class="asBracket">(</span>event<span class="asOperator">:</span>Event<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+        <span class="asBracket">{</span>    
+            <span class="asReserved">if</span> <span class="asBracket">(</span>listData<span class="asBracket">)</span>
+            <span class="asBracket">{</span>                
+                <span class="asReserved">if</span> <span class="asBracket">(</span><span class="asReserved">this</span>.selected<span class="asBracket">)</span>
+                <span class="asBracket">{</span>
+                    listData.label <span class="asOperator">=</span> <span class="asString">&apos;X&apos;</span>;                    
+                <span class="asBracket">}</span>
+                <span class="asReserved">else</span>
+                <span class="asBracket">{</span>
+                    listData.label <span class="asOperator">=</span> <span class="asString">&apos; &apos;</span>;
+                <span class="asBracket">}</span>
+                <span class="asVar">var</span> ld<span class="asOperator">:</span>DataGridListData <span class="asOperator">=</span> listData <span class="asReserved">as</span> DataGridListData;
+                <span class="asReserved">if</span> <span class="asBracket">(</span>ld<span class="asBracket">)</span>
+                <span class="asBracket">{</span>
+                    <span class="asReserved">this</span>.data<span class="asBracket">[</span>ld.dataField<span class="asBracket">]</span> <span class="asOperator">=</span> listData.label;
+                <span class="asBracket">}</span>        
+            <span class="asBracket">}</span>
+        <span class="asBracket">}</span>
+    <span class="asBracket">}</span>
+<span class="asBracket">}</span></pre></body>
+</html>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TextArea xmlns:mx="http://www.adobe.com/2006/mxml" 
+			 wordWrap="true"
+			 maxChars="255"
+			 maxHeight="40"
+			 maxWidth="117"
+			 focusOut="_onChange(event)">
+			 
+	 <mx:Script>
+	 	<![CDATA[
+	 		import mx.controls.dataGridClasses.DataGridListData;
+	 	
+	 		// When data changes, update data provider
+			protected function _onChange(event:Event):void
+			{	
+				if (listData)
+				{				
+					listData.label = this.text;
+
+					var ld:DataGridListData = listData as DataGridListData;
+					if (ld)
+					{
+						this.data[ld.dataField] = listData.label;
+					}
+				}
+			}
+	 	]]>
+	 </mx:Script>
+</mx:TextArea>

@@ -1,0 +1,97 @@
+sap.ui.define([
+  "nuk/sap/timesheet/controller/BaseController",
+  "nuk/sap/timesheet/util/TimesheetAPI",
+  "nuk/sap/timesheet/util/Message"
+  ], function (Controller, TimesheetAPI, Message) {
+  "use strict";
+  return Controller.extend("nuk.sap.timesheet.controller.Launchpad", {
+    _bTilesSet: false,      // only adjust tile visibility once
+
+    onInit: function() {
+      var oView = this.getView();
+
+      oView.setModel(sap.ui.getCore().getModel("user"), "user");
+      oView.addEventDelegate({
+        onBeforeShow: function() {
+          this._beforeShow();
+        }
+      }, this);
+
+    },
+
+    _beforeShow: function() {
+      this.loadOverview();
+    },
+
+    onPressTile: function(oEvent) {
+      // get the target from our custom data
+      var sTarget = oEvent.getSource().data("target");
+      this.navigateTo(sTarget);
+    },
+
+    /**
+     * Merge overview data from SAP ECC with the "tile" model information
+     * so that the counters are correct.
+     * @param  {Object} oOverview Overview data
+     */
+    updateTiles: function(oOverview) {
+      var that = this;
+      var oView = this.getView();
+      var oTiles = oView.getModel("tiles");
+      var oTileContainer = oView.byId("tileContainer");
+      var i = -1, count = 0;
+
+      var oCollection = oTiles.getProperty("/TileCollection");
+      ['timesheets', 'approval', 'projects'].forEach(function(sValue){
+        oCollection[sValue].number = oOverview[sValue + '_count'];
+        oCollection[sValue].info = oOverview[sValue + '_info'];
+        oCollection[sValue].infoState = oOverview[sValue + '_infostate'];
+
+        if (!that._bTilesSet && oOverview[sValue + '_visible'] != 'true') {
+          i = +oCollection[sValue].index;
+          // As we delete, the tiles shift left, so we keep track of the
+          // count and adjust the index accordingly
+          if (i >= 0) {
+            try {
+              oTileContainer.deleteTile(oTileContainer.getTiles()[i - count]);
+              oTileContainer.removeTile(i - count);
+            } catch (TypeError) {
+              // avoid spurious exception
+            }
+            count+=1;
+          }
+        }
+      });
+      oCollection = oTiles.setProperty("/TileCollection", oCollection);
+      that._bTilesSet = true;
+    },
+
+    loadOverview: function() {
+      var that = this;
+      var oView = this.getView();
+      var oFilter = oView.getModel("timesheetFilter");
+
+      var oBusyDialog = new sap.m.BusyDialog({
+        text: Message.getText(oView, "overview-refresh-dialog-text")
+      });
+      oBusyDialog.open();
+
+      TimesheetAPI.getOverview({
+        }, function(oData) {
+          that.updateTiles(oData);
+          var oModel = new sap.ui.model.json.JSONModel(oData);
+          oView.setModel(oModel, "overview");
+          sap.ui.getCore().setModel(oModel, "overview");
+          oBusyDialog.close();
+        }, function(oXhr, sStatus, sErrorThrown) {
+          oBusyDialog.close();
+        });
+      }
+
+  });
+
+});
+
+
+
+

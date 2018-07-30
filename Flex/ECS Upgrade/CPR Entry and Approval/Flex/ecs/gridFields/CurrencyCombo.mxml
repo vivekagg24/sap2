@@ -1,0 +1,152 @@
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	CurrencyCombo
+		Item renderer for the currency field on the payment items data grid
+	
+	A straightforward dropdown!!	
+-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         width="100%" 
+         horizontalAlign="center"
+         horizontalScrollPolicy="off" 
+         dataChange="checkLoaded()"
+         verticalScrollPolicy="off" 
+         tabEnabled="false"
+         implements="mx.core.IDataRenderer" >
+        <!--  -->
+         
+    <mx:Script source="../Scripts/Utilities.as"/>
+    <mx:Script>
+        <![CDATA[
+        	
+        	import mx.core.Application;
+            import mx.controls.listClasses.ListData;
+            import mx.controls.dataGridClasses.DataGridListData;
+            import mx.controls.listClasses.BaseListData;
+            import mx.controls.DataGrid;
+            import mx.events.FlexEvent;
+            import mx.collections.ArrayCollection;
+            import mx.controls.dataGridClasses.DataGridColumn;
+            
+            private var _listData:BaseListData;
+            [Bindable]
+            public function set listData(value:BaseListData):void
+            {
+            	_listData =  listData;
+            }
+            public function get listData():BaseListData
+            {
+            	return _listData;
+            }
+                 
+            //CSS style for the input - e.g. disabled
+            [Bindable]
+            private var cssStyle:String="";
+            //Editable flag
+            [Bindable]
+            private var isEditable:Boolean=true;            
+            [Bindable]
+            public var currency:String = new String();	//Property is returned to data grid after editing
+			 //Row data returned  by get data to data grid (stops rows being jumbled when reused by the DG)
+           // [Bindable]
+            private var retData:Object;
+                                                  
+            //Called if item renderer is being re-used when scrolling
+            private function checkLoaded():void{
+            	retData=data;
+            	setSelectedItem(null);
+            }
+            
+        //    [Bindable]
+            //Return the row to stop the jumbling - occurs because the grid reuses the conponents when  scrolling		
+			override public function get data():Object{
+				return retData;
+			}
+			
+			override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	//The DG jumbles the rows !!! Unless we store the row and return in get data
+						retData=value;
+						setSelectedItem(null);	//Set value on dropdown list box - selected item
+						
+						comboCurrency.enabled = check(parentApplication.applicationEditable , this.data.currencyEditable );
+						cssStyle=value.currencyStyleName;
+                    }
+        		}
+        	}
+        	
+        	//Set the selected index of the combobox
+            private function setSelectedItem(event:Event):void
+            {         	
+            	if (parentApplication.currencies==null)return;
+            	try{
+	                for(var i:Number = 0; i < parentApplication.currencies.length; i++)
+	                {
+	                    if(parentApplication.currencies[i].data == data.currency)
+	                    {
+	                    	comboCurrency.selectedIndex = i;
+	                    }
+	                }
+             	}
+             	catch(err:Error)
+             	{
+             		
+             	}
+            }
+            //Change handler for the combobox : update the currency property and return data structure 
+            private function handleChange():void{
+				currency=comboCurrency.selectedItem.data;
+				if (retData!=null) retData.currency = currency;
+				parentApplication.currencyChange(this);
+				
+				// Revalidate ammount when currency changes
+				(this.data as CPRItem).currency = this.currency;
+				(this.data as CPRItem).amountRenderer.data = this.data;
+				(this.data as CPRItem).amountRenderer.valAmount.validate();
+			
+			}
+			
+			//When the currency is changed the total needs to be re-calculated in the parent app
+			private function raiseCurrencyChange():void{
+				this.currency = parentApplication.currencies[comboCurrency.selectedIndex].data;
+				parentApplication.currencyChange(this);
+				parentApplication.dispatchEvent(new Event("amountChanged"));
+				
+				// Revalidate ammount when currency changes
+				(this.data as CPRItem).currency = this.currency;
+				(this.data as CPRItem).amountRenderer.data = this.data;
+				(this.data as CPRItem).amountRenderer.valAmount.validate();
+				
+			}
+			
+			private function check( a:Boolean, b:Boolean):Boolean
+			{
+				if (a && b)
+					return true;
+				else
+					return false;
+			}
+             // 
+        ]]>
+    </mx:Script>
+   
+    <mx:ComboBox id="comboCurrency" 
+    			 x="2"
+                 dataProvider="{parentApplication.currencies}"
+                 change="handleChange()"
+                 tabEnabled="false"
+                 labelField="label"
+                 textAlign="left"
+                 close="this.comboCurrency.focusManager.hideFocus()" focusRect="null"
+				 styleName="{cssStyle}" 	
+                 focusOut="raiseCurrencyChange()" />
+</mx:HBox>

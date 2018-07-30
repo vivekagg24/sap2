@@ -1,0 +1,116 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>onHold.mxml</title>
+<link rel="stylesheet" type="text/css" href="../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:TitleWindow</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot;
+    label=&quot;<span class="mxmlString">Rejection text</span>&quot;
+       styleName=&quot;<span class="mxmlString">titlewindow</span>&quot; 
+    creationComplete=&quot;DoInit<span class="asBracket">()</span>&quot; x=&quot;<span class="mxmlString">50</span>&quot; y=&quot;<span class="mxmlString">150</span>&quot;
+    width=&quot;<span class="mxmlString">433</span>&quot; height=&quot;<span class="mxmlString">284</span>&quot;
+    xmlns:HR=&quot;<span class="mxmlString">HR.Components.*</span>&quot;
+    backgroundColor=&quot;<span class="mxmlString">#dceefc</span>&quot; borderColor=&quot;<span class="mxmlString">#A7B6EB</span>&quot; layout=&quot;<span class="mxmlString">absolute</span>&quot; title=&quot;<span class="mxmlString">Hold Item</span>&quot;<span class="mxmlComponent">&gt;</span>
+    
+    <span class="mxmlTag">&lt;mx:Script&gt;</span>
+        <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+              <span class="asReserved">import</span> mx.managers.PopUpManager;
+            <span class="asReserved">import</span> mx.controls.Alert;
+              
+              <span class="asReserved">private</span> <span class="asFunction">function</span> DoInit<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+                <span class="asReserved">if</span> <span class="asBracket">(</span>data.RESUB <span class="asOperator">!=</span> <span class="asString">&quot;&quot;</span><span class="asBracket">)</span> <span class="asBracket">{</span>
+                    btnSave.label <span class="asOperator">=</span> <span class="asString">&quot;Remove hold&quot;</span>;
+                    <span class="asReserved">this</span>.holduntil.text <span class="asOperator">=</span> data.RESUB;
+                    <span class="asReserved">this</span>.taRejText.text <span class="asOperator">=</span> data.HOLD_REASON;
+                    holduntil.enabled <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                    taRejText.enabled <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                    btnSave.setFocus<span class="asBracket">()</span>;
+                <span class="asBracket">}</span>
+                <span class="asReserved">else</span>
+                <span class="asBracket">{</span>
+                    btnSave.label <span class="asOperator">=</span> <span class="asString">&quot;Put on hold&quot;</span>;
+                    holduntil.enabled <span class="asOperator">=</span> <span class="asReserved">true</span>;                    
+                    taRejText.enabled <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                    taRejText.setFocus<span class="asBracket">()</span>;
+                <span class="asBracket">}</span>
+              <span class="asBracket">}</span>    
+              
+              <span class="asReserved">private</span> <span class="asFunction">function</span> SetSaveButton<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+                  <span class="asReserved">if</span><span class="asBracket">(</span>taRejText.text <span class="asOperator">!=</span> <span class="asString">&quot;&quot;</span><span class="asBracket">){</span>
+                      btnSave.enabled <span class="asOperator">=</span> <span class="asReserved">true</span>;                  
+                  <span class="asBracket">}</span><span class="asReserved">else</span><span class="asBracket">{</span>
+                      btnSave.enabled <span class="asOperator">=</span> <span class="asReserved">false</span>;                      
+                  <span class="asBracket">}</span>
+              <span class="asBracket">}</span>
+
+            <span class="asReserved">private</span> <span class="asFunction">function</span> handleClose<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+                PopUpManager.removePopUp<span class="asBracket">(</span><span class="asReserved">this</span><span class="asBracket">)</span>;
+                <span class="asReserved">this</span>.focusManager.deactivate<span class="asBracket">()</span>;
+                parentApplication.focusManager.activate<span class="asBracket">()</span>;
+                <span class="asReserved">if</span> <span class="asBracket">(</span>parentApplication.hasOwnProperty<span class="asBracket">(</span><span class="asString">&quot;focusField&quot;</span><span class="asBracket">)</span> <span class="asOperator">&amp;&amp;</span>
+                   parentApplication.focusField<span class="asOperator">!=</span><span class="asReserved">null</span><span class="asBracket">)</span>
+                <span class="asBracket">{</span>    
+                    parentApplication.focusField.setFocus<span class="asBracket">()</span>;
+                    <span class="asTrace">trace</span><span class="asBracket">(</span>parentApplication.focusField.id<span class="asBracket">)</span>;
+                <span class="asBracket">}</span>
+                <span class="asReserved">if</span> <span class="asBracket">(</span>parentApplication.hasOwnProperty<span class="asBracket">(</span><span class="asString">&quot;focusEvent&quot;</span><span class="asBracket">)</span> <span class="asOperator">&amp;&amp;</span> parentApplication.focusEvent<span class="asOperator">!=</span><span class="asString">&quot;&quot;</span><span class="asBracket">)</span> 
+                <span class="asBracket">{</span>
+                    parentApplication.dispatchEvent<span class="asBracket">(</span><span class="asReserved">new</span> Event<span class="asBracket">(</span>parentApplication.focusEvent<span class="asBracket">))</span>;
+                <span class="asBracket">}</span>
+            <span class="asBracket">}</span>
+            
+            <span class="asReserved">private</span> <span class="asFunction">function</span> doOK<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span>
+            <span class="asBracket">{</span>    
+                <span class="asReserved">if</span> <span class="asBracket">(</span>data.RESUB <span class="asOperator">==</span> <span class="asString">&quot;&quot;</span><span class="asBracket">)</span> <span class="asBracket">{</span>
+                    <span class="asComment">// check a reason for putting the item on hold has been entered
+</span>                    <span class="asReserved">if</span> <span class="asBracket">(</span><span class="asReserved">this</span>.taRejText.text <span class="asOperator">==</span> <span class="asString">&quot;&quot;</span> <span class="asOperator">||</span> <span class="asReserved">this</span>.taRejText.text <span class="asOperator">==</span> <span class="asReserved">null</span><span class="asBracket">)</span> 
+                    <span class="asBracket">{</span>
+                        Alert.show<span class="asBracket">(</span><span class="asString">&quot;please enter a reason for putting the item on hold&quot;</span><span class="asBracket">)</span>;
+                    <span class="asBracket">}</span>
+                    <span class="asReserved">else</span>
+                    <span class="asBracket">{</span>
+                        <span class="asComment">// put the item on hold 
+</span>                        parentApplication.setOnHold<span class="asBracket">(</span>data.WIID, <span class="asReserved">this</span>.holduntil.value, <span class="asReserved">this</span>.taRejText.text<span class="asBracket">)</span>;
+
+                        <span class="asComment">// change the icon to be closed
+</span>                        <span class="asReserved">if</span> <span class="asBracket">(</span><span class="asReserved">this</span>.holduntil.value <span class="asOperator">==</span> <span class="asString">&apos;&apos;</span><span class="asBracket">)</span> <span class="asBracket">{</span>
+                            data.RESUB <span class="asOperator">=</span> <span class="asString">&apos;INDEFINITE&apos;</span>;
+                        <span class="asBracket">}</span>
+                        <span class="asReserved">else</span>
+                        <span class="asBracket">{</span>
+                            data.RESUB <span class="asOperator">=</span> <span class="asReserved">this</span>.holduntil.value;                            
+                        <span class="asBracket">}</span>
+    
+                        <span class="asComment">// close the window
+</span>                        handleClose<span class="asBracket">()</span>;
+                    <span class="asBracket">}</span>
+                <span class="asBracket">}</span>
+                <span class="asReserved">else</span>
+                <span class="asBracket">{</span>
+                    <span class="asComment">// take off hold
+</span>                    parentApplication.setOnUnHold<span class="asBracket">(</span>data.WIID, <span class="asString">&quot;&quot;</span>, <span class="asString">&quot;&quot;</span><span class="asBracket">)</span>;
+                    
+                    <span class="asComment">// change the icon to be closed
+</span>                    <span class="asBracket">(</span>data <span class="asReserved">as</span> XML<span class="asBracket">)</span>.replace<span class="asBracket">(</span><span class="asString">&quot;RESUB&quot;</span>, <span class="asReserved">new</span> XML<span class="asBracket">(</span><span class="asOperator">&lt;</span>x<span class="asOperator">/&gt;</span><span class="asBracket">))</span>;
+                    data.RESUB <span class="asOperator">=</span> <span class="asString">&quot;&quot;</span>;
+                    data.HOLD_REASON <span class="asOperator">=</span> <span class="asString">&quot;&quot;</span>;
+                    
+                    <span class="asComment">// close the window
+</span>                    handleClose<span class="asBracket">()</span>;
+                <span class="asBracket">}</span>
+            <span class="asBracket">}</span>
+        <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+    <span class="mxmlTag">&lt;/mx:Script&gt;</span>
+
+    <span class="mxmlComponent">&lt;mx:Label</span> x=&quot;<span class="mxmlString">10</span>&quot; y=&quot;<span class="mxmlString">8</span>&quot; text=&quot;<span class="mxmlString">Date to hold until</span>&quot; fontWeight=&quot;<span class="mxmlString">bold</span>&quot; toolTip=&quot;<span class="mxmlString">This is the date the request will be held until</span>&quot; <span class="mxmlComponent">/&gt;</span>
+    <span class="mxmlComponent">&lt;HR:DateField1</span> x=&quot;<span class="mxmlString">121</span>&quot; y=&quot;<span class="mxmlString">6</span>&quot; width=&quot;<span class="mxmlString">117</span>&quot; id=&quot;<span class="mxmlString">holduntil</span>&quot; enabled=&quot;<span class="mxmlString">true</span>&quot; editable=&quot;<span class="mxmlString">true</span>&quot; formatString=&quot;<span class="mxmlString">DD.MM.YYYY</span>&quot;<span class="mxmlComponent">/&gt;</span>
+    <span class="mxmlComponent">&lt;mx:Label</span> x=&quot;<span class="mxmlString">10</span>&quot; y=&quot;<span class="mxmlString">46</span>&quot; text=&quot;<span class="mxmlString">Reason for putting on hold</span>&quot; fontWeight=&quot;<span class="mxmlString">bold</span>&quot;<span class="mxmlComponent">/&gt;</span>
+    <span class="mxmlComponent">&lt;mx:TextArea</span> fontSize=&quot;<span class="mxmlString">12</span>&quot; id=&quot;<span class="mxmlString">taRejText</span>&quot; x=&quot;<span class="mxmlString">12.5</span>&quot; y=&quot;<span class="mxmlString">63</span>&quot;  maxChars=&quot;<span class="mxmlString">255</span>&quot; width=&quot;<span class="mxmlString">388</span>&quot; height=&quot;<span class="mxmlString">143</span>&quot; change=&quot;SetSaveButton<span class="asBracket">()</span>&quot;<span class="mxmlComponent">/&gt;</span>
+    <span class="mxmlComponent">&lt;mx:Button</span> id=&quot;<span class="mxmlString">btnCancel</span>&quot; fontWeight=&quot;<span class="mxmlString">bold</span>&quot; label=&quot;<span class="mxmlString">Cancel</span>&quot; x=&quot;<span class="mxmlString">118</span>&quot; y=&quot;<span class="mxmlString">212</span>&quot; click=&quot;handleClose<span class="asBracket">()</span>&quot;<span class="mxmlComponent">/&gt;</span>
+    <span class="mxmlComponent">&lt;mx:Button</span> id=&quot;<span class="mxmlString">btnSave</span>&quot; enabled=&quot;<span class="mxmlString">true</span>&quot; label=&quot;<span class="mxmlString">Remove hold</span>&quot; fontWeight=&quot;<span class="mxmlString">bold</span>&quot;  x=&quot;<span class="mxmlString">10</span>&quot; y=&quot;<span class="mxmlString">212</span>&quot; click=&quot;doOK<span class="asBracket">()</span>&quot;<span class="mxmlComponent">/&gt;</span>
+<span class="mxmlComponent">&lt;/mx:TitleWindow&gt;</span></pre></body>
+</html>

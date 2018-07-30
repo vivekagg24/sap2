@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Box xmlns:mx="http://www.adobe.com/2006/mxml"		
+	horizontalScrollPolicy="off"
+	verticalScrollPolicy="off"
+    horizontalGap="0"
+    verticalGap="0"
+	>
+<!-- Grid for displaying shifts
+     Each shift is an editable cell
+
+-->
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ScrollEvent;
+			import mx.controls.TileList;
+			import mx.core.UIComponent;
+			import mx.controls.listClasses.TileBase;
+			import mx.controls.listClasses.ListBase;
+			import mx.controls.listClasses.TileBaseDirection;
+			import mx.collections.ICollectionView;
+			import mx.core.Repeater;
+			import mx.binding.utils.*;
+		
+		    [Bindable]
+			public var dataProvider:ICollectionView;		
+			
+			[Bindable]
+			protected var inverseDirection:String;
+			
+			[Bindable]
+			protected var mr:Number;
+
+			[Bindable]
+			protected var mc:Number;
+			
+			protected var _selectedItem:Object;
+			[Bindable]
+			public function set selectedItem(value:Object):void
+			{
+				_selectedItem = value;
+				// Need to fully implement this method so it actuall does something
+			}
+			public function get selectedItem():Object
+			{
+				return _selectedItem;
+			}
+			
+			
+			
+			/** This sets the number of cells in the grid. Setting this later doesn't change anything
+		 	* 
+		 	*/ 
+			[Bindable]
+			public var num_cols:uint  = 52 * 7; // 52 weeks
+			
+			/* The width of the cells in the grid
+			*/
+			[Bindable]
+			public var columnWidth:Number;
+			
+			override public function addChildAt(child:DisplayObject, index:int):DisplayObject
+			{				
+				
+				if (child is TileList)
+				{
+					ChangeWatcher.watch(child, "selectedItem", setSelected);
+				}		
+				
+				return super.addChildAt(child, index);			
+			}
+			
+			
+			/*** If we select an item in one grid, all selectins in other grids should be removed
+			*    In other words, there should only be one item selected in all the grids
+			*
+			*    Also, we set the "selectedItem" property of this object
+			*/
+			private function setSelected(event:Event):void
+			{
+				// We're only concerned if a new item is selected
+				if (event.target.selectedIndices.length == 0)
+				{
+					
+					return;
+				}
+							
+				
+				for each (var x:DisplayObject in this.getChildren())
+				{
+					if (x is TileList && x != event.target)
+					{
+						var y:TileList = x as TileList;
+						y.selectedIndex = -1;
+						y.selectedIndices = [];
+						
+					}
+					
+				}
+			}
+			
+			
+			// Make sure that whatever direction the Box is set to, 
+			// the girds go the opposite way
+			override public function set direction(value:String):void
+			{
+				//if (value == direction) return ; // No change - do nothing
+				
+				super.direction = value;
+				
+				if (value == TileBaseDirection.VERTICAL) 
+				{
+					inverseDirection = TileBaseDirection.HORIZONTAL;		
+					mr = 1;
+					mc = 0;		
+				}
+				else if (value == TileBaseDirection.HORIZONTAL)
+				{
+					inverseDirection = TileBaseDirection.VERTICAL;
+					mr = 0;
+					mc = 1;
+
+				}
+				else
+				{
+					inverseDirection = "";
+				}
+
+// Need to sort this out later so we can switch from horizontal to vertical 				
+/* 				this.invalidateProperties();
+				this.invalidateDisplayList();					
+				this.invalidateSize();
+				for each (var o:UIComponent in this.getChildren())
+				{
+					var s:TileList = o as TileList;
+					s.selectedItems = [];
+				} */
+			}
+			
+			// If we get an XML object, we want to use its children as the dataprovider, not
+			// the object itself
+			private function dataProviderHandler(val:Object):Object
+			{
+				var count:int;
+				var ret:Object
+				
+				
+				if (val is XML)
+				{
+					ret =  (val as XML).children()	
+					count = (ret as XMLList).length();
+				}
+				else if (val is Array)
+				{
+					 ret =  val;
+					 count = (val as Array).length;
+				}
+				else
+				{
+						 ret =  val;
+				}
+				return ret;
+			}	
+				
+			/***
+			* 	Make the first row/column not editable
+			*				 
+			*   Using ClassFactories, we can tell Flex to set certain properties
+			*   of the item renderer AFTER the constructor of that renderer has finished.
+			*
+			*   We also provide each grid in the cell with a link back to this top-level container
+			*/			
+			private function chooseRenderer(r:Repeater):IFactory
+			{
+				var f:ClassFactory;
+				
+				if (r.currentIndex == 0)
+				{
+					f  = new ClassFactory(GridCell);
+					f.properties = {isHeader: true , topGrid:this }
+				}	
+				else
+				{
+					f  = new ClassFactory(GridCell);
+					f.properties = {isHeader: false , topGrid:this }
+				}		
+					
+				return f;
+			}	
+			
+			/** Scroll all the lists (together)s
+			*
+			*/
+			private function onScroll(event:ScrollEvent):void
+			{								
+				for each (var x:UIComponent in this.getChildren())
+				{
+					var tl:TileList = x as TileList;
+					if (tl)
+					{
+						tl.horizontalScrollPosition = event.position;
+					}
+				}
+			}
+			
+			
+		
+			
+				
+		]]>
+	</mx:Script>
+			         	
+	<mx:Repeater id="rpt"
+		         dataProvider="{this.dataProvider}"
+		         >
+		<mx:TileList dataProvider="{dataProviderHandler(rpt.currentItem)}"
+			         itemRenderer="{chooseRenderer(rpt)}"
+			         labelField="val"
+			         direction="{inverseDirection}"			         		         
+			         horizontalScrollPolicy="off"
+			         verticalScrollPolicy="off"	
+			         paddingTop="0"
+			         paddingBottom="0"	
+			         width="100%"	         
+			         columnWidth="{columnWidth}"
+			         dragEnabled="true"
+			         dropEnabled="true"
+			         dragMoveEnabled="true"
+			         borderThickness="0"
+			         
+			         maxColumns="{mc}"
+			         columnCount="{mc}"
+			         maxRows="{mr}"
+			         rowCount="{mr}"
+			         
+			          >	
+
+		</mx:TileList>
+	</mx:Repeater>	
+	<mx:HScrollBar  id="scrollbar"  width="100%" 
+	                minScrollPosition="0"
+	                maxScrollPosition="{num_cols - 1}"	                
+		            scroll="onScroll(event)"
+		            pageScrollSize="8"
+		            pageSize="8"
+		            
+	
+	/>
+	
+	
+</mx:Box>

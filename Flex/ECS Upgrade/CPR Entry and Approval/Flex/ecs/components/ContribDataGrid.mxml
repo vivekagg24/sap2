@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--	
+Name:        ContribDataGrid.mxml: 
+Description: Contributor details data grid (used by search and last 20 contributors data grids)
+
+Application:  				Developer: 	 	Date:		 Action:
+=======================================================================
+CPR Entry and Approval		DJ McNamara 	March 2007   original code
+      - "" -                N Wilson        July 2007    column adjustment, tidy up
+
+-->
+
+<mx:DataGrid xmlns:mx         = "http://www.adobe.com/2006/mxml" doubleClickEnabled="true"
+	         resizableColumns = "true" 
+	         showHeaders      = "true" 
+	         sortableColumns  = "false" 
+	         dragMoveEnabled  = "true" 
+	         draggableColumns = "true" 
+	         editable         = "false" 
+	         enabled          = "true"
+	         width            = "850"
+	         styleName        = "dataGrid"
+	         x                = "8" 
+	         y                = "8">
+
+	<mx:columns>
+
+		<mx:DataGridColumn width="83"  headerText="ID"            dataField="LIFNR"/>
+		<mx:DataGridColumn width="38"  headerText="Type"          dataField="CONTRIB_TYPE"/>
+		<mx:DataGridColumn width="119" headerText="Name1"         dataField="NAME1"/>
+		<mx:DataGridColumn width="119" headerText="Name2"         dataField="NAME2"/>
+		<mx:DataGridColumn width="83"  headerText="House/Flat"    dataField="NAME3"/>
+		<mx:DataGridColumn width="80"  headerText="Town"          dataField="NAME4"/>
+		<mx:DataGridColumn width="80"  headerText="City"          dataField="ORT01"/>
+		<mx:DataGridColumn width="83"  headerText="Post Code"     dataField="PSTLZ" />		
+		<mx:DataGridColumn width="57"  headerText="Country"       dataField="LAND1"/>
+		<mx:DataGridColumn width="48"  headerText="Post block"    dataField="SPERR"  headerWordWrap="TRUE"/>
+		<mx:DataGridColumn width="60"  headerText="Deletion Flag" dataField="LOEVM" headerWordWrap="TRUE"/>
+				
+	</mx:columns>
+			
+</mx:DataGrid>

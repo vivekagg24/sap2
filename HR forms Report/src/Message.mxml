@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" title="Messages" 
+	creationComplete="doInit();" height="348">
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.managers.PopUpManager;
+		import visualComponents.GridComponents.DateLabel;
+	
+		protected var _messageTab:XMLList;
+		[Bindable]
+		public function set messageTab(value:XMLList):void
+		{
+			_messageTab = value;
+			if (mess) mess.dataProvider = _messageTab;
+		}
+		public function get messageTab():XMLList
+		{
+			return _messageTab;
+		}
+
+		public var error:Boolean;
+	
+		[Bindable]
+		private var textStyle:String="";	
+		
+		private function doInit():void {
+			this.move(100, 100); // For some reason, PoUpManager.centre doesn't work very well,
+			this.alpha = 1.0;
+			this.mess.dataProvider = messageTab;
+			this.mess.rowCount = 10;
+			this.mess.showHeaders = true;			
+			this.setStyle("borderAlpha", 1.0);
+			if (error)textStyle="error";
+			btnOK.setFocus();		 
+		}
+		
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			super.updateDisplayList(unscaledWidth, unscaledHeight);		
+		}
+	
+		private function handleClose():void{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			parentApplication.focusManager.activate();
+			if (parentApplication.hasOwnProperty("focusField") &&
+			   parentApplication.focusField!=null)
+			{	
+				parentApplication.focusField.setFocus();
+				trace(parentApplication.focusField.id);
+			}
+			if (parentApplication.hasOwnProperty("focusEvent") && parentApplication.focusEvent!="") 
+			{
+				parentApplication.dispatchEvent(new Event(parentApplication.focusEvent));
+			}
+		}
+		]]>
+	</mx:Script>
+	<mx:Style>
+		.error{color:red}
+	</mx:Style>
+
+	<mx:DataGrid id="mess" height="224" width="674" headerColors="0xC6EFF7">
+		<mx:columns>
+			<mx:DataGridColumn dataField="MSG_TYPE" headerText="Type" width="40"/>
+			<mx:DataGridColumn dataField="LINE" headerText="Text" width="200" wordWrap="true"/>
+		</mx:columns>
+	</mx:DataGrid>
+
+	<mx:Canvas height="40" width="100%"
+		      horizontalScrollPolicy="off"
+		       verticalScrollPolicy="off">	
+		<mx:ControlBar horizontalAlign="center" id="bar2"  width="60" horizontalCenter="0">
+			<mx:HBox defaultButton="{btnOK}">
+				<mx:Button 
+					click="handleClose()" 
+					id="btnOK" 
+					label="OK"  />
+			</mx:HBox>
+		</mx:ControlBar>
+	</mx:Canvas>
+</mx:TitleWindow>

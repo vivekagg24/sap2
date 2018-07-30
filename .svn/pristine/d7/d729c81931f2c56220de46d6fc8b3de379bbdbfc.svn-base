@@ -1,0 +1,17 @@
+DTC Driver Portal
+=================
+Source for DTC Driver Portal. Requires [SAPUI5](https://sapui5.netweaver.ondemand.com/sdk/) (developed against 1.22). See NOTES for some development notes.
+
+**ABAP Classes**  
+The backend code is in the following classes:
+- `ZCL_SD_DTC_DRIVER_PORTAL` - login/visit list update
+- `ZCL_SD_DTC_DRIVER_PORTAL_HND` - ICF handler
+
+
+**Notes**  
+- Google Maps API key can be set in Component.js
+
+
+**External libraries**
+- openui5-googlemaps: https://github.com/jasper07/openui5-googlemaps
+- Map icons are from https://mapicons.mapsmarker.com/ (we don't use them anymore - Google's generated ones are better)

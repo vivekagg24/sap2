@@ -1,0 +1,630 @@
+sap.ui.define([
+  "nuk/sap/timesheet/controller/BaseController",
+  "nuk/sap/timesheet/util/Message",
+  "nuk/sap/timesheet/util/TimesheetAPI",
+  "sap/m/MessageBox",
+  "sap/m/MessageToast"
+  ],
+  function (Controller, Message, TimesheetAPI, MessageBox) {
+    "use strict";
+    return Controller.extend("nuk.sap.timesheet.controller.ProjectList", {
+      _oProjectEditDialog: null,
+      _oSelectPmDialog: null,
+      _oResourceAddDialog: null,
+      _oResourceEditDialog: null,
+
+      onInit: function() {
+        this._setModels();
+
+        this.getView().addEventDelegate({
+          onBeforeShow: function() {
+            this._beforeShow();
+          }
+        }, this);
+
+      },
+
+      _beforeShow: function() {
+        this.loadProjects();
+      },
+
+      onDisplayProject: function(oEvent) {
+        var oView = this.getView();
+        var sPath = oEvent.getParameter("listItem").getBindingContextPath();
+        var oDetail = oView.byId("detail");         // was: "listResources"
+        oDetail.bindElement("projectList>" + sPath);
+      },
+
+      /**
+       * Validate project before saving
+       * @return {boolean} Error?
+       */
+      editProjectValidate: function() {
+        var oCore = sap.ui.getCore();
+        var oView = this.getView();
+        var oModel = this._oProjectEditDialog.getModel("projectEdit");
+        var oProject = oModel.getProperty("/project");
+        var bError = false;
+
+        if (typeof oProject.name === 'undefined' || oProject.name.trim() === '') {
+          bError = true;
+          oCore.byId("projectName").setValueState(sap.ui.core.ValueState.Error);
+        } else {
+          bError = false;
+          oCore.byId("projectName").setValueState(sap.ui.core.ValueState.None);
+        }
+
+        if (typeof oProject.description === 'undefined' || oProject.description.trim() === '') {
+          bError = true;
+          oCore.byId("projectDescription").setValueState(sap.ui.core.ValueState.Error);
+        } else {
+          bError = false;
+          oCore.byId("projectDescription").setValueState(sap.ui.core.ValueState.None);
+        }
+
+        if ((typeof oProject.start_date === 'undefined') ||  (typeof oProject.end_date === 'undefined') ||
+           (moment(oProject.start_date) > moment(oProject.end_date))) {
+          bError = true;
+          oCore.byId("projectDateFrom").setValueState(sap.ui.core.ValueState.Error);
+          oCore.byId("projectDateTo").setValueState(sap.ui.core.ValueState.Error);
+        } else {
+          bError = false;
+          oCore.byId("projectDateFrom").setValueState(sap.ui.core.ValueState.None);
+          oCore.byId("projectDateTo").setValueState(sap.ui.core.ValueState.None);
+        }
+
+        if (typeof oProject.cost_ass === 'undefined' || oProject.cost_ass.trim() === '') {
+          bError = true;
+          oCore.byId("projectCostAss").setValueState(sap.ui.core.ValueState.Error);
+        } else {
+          bError = false;
+          oCore.byId("projectCostAss").setValueState(sap.ui.core.ValueState.None);
+        }
+
+        return bError;
+      },
+
+      /**
+       * Refresh project list from the SAP ECC system
+       */
+      onRefreshProjectList: function() {
+        this.loadProjects();
+      },
+
+      /**
+       * Add a new project
+       * @param  {Object} oEvent Event instance
+       */
+      onAddProject: function(oEvent) {
+        // must match backend ZCA_PROJECT_HEADER_API structure
+        var oEmptyProject = {
+          "title": "",
+          "project": {
+            "project_id": "",
+            "name": "",
+            "description": "",
+            "start_date": "",
+            "end_date": "",
+            "cost_ass": "",
+            "cost_ass_type": "capex",
+            "project_manager": "",
+            "project_manager_name": ""
+          }
+        };
+
+        var oView = this.getView();
+
+        // Default the project manager to the currently logged-in user
+        var oUserModel = oView.getModel("user");
+        oEmptyProject.project.project_manager = oUserModel.getProperty("/personnel_no");
+        oEmptyProject.project.project_manager_name = oUserModel.getProperty("/full_name");
+
+        // Set the dialog title
+        oEmptyProject.title = Message.getText(oView, "dialog-add-project-title-add");
+
+        this.editProject(oEmptyProject);
+      },
+
+      onEditProject: function(oEvent) {
+        var oView = this.getView();
+        var oModel = this.getView().getModel("projectList");
+        var oList = this.byId("listProjects");
+        var oItem = oList.getSelectedItem();
+        var oProject = {}, oProjectEdit = {};
+        if (oItem) {
+          // Map to the format needed by the edit dialog
+          oProject = JSON.parse(JSON.stringify(oModel.getProperty(oItem.getBindingContextPath())));   // clone the current project
+          oProjectEdit.title = Message.getText(oView, "dialog-add-project-title-edit").replace("{0}", oProject.name);
+          oProjectEdit.project = {};
+          oProjectEdit.project.project_id = oProject.project_id;
+          oProjectEdit.project.name = oProject.name;
+          oProjectEdit.project.description = oProject.description;
+          oProjectEdit.project.start_date = oProject.start_date;
+          oProjectEdit.project.end_date = oProject.end_date;
+          oProjectEdit.project.cost_ass = oProject.cost_assignment.id;
+          oProjectEdit.project.cost_ass_type = oProject.cost_assignment.type;
+          oProjectEdit.project.project_manager = oProject.project_manager;
+          oProjectEdit.project.project_manager_name = oProject.project_manager_name;
+          this.editProject(oProjectEdit);
+        } else {
+          sap.m.MessageToast.show(Message.getText(oView, 'project-list-not-selected'));
+        }
+      },
+
+      /**
+       * Display the project edit dialog
+       * @param  {Object} oProject Project to edit
+       */
+      editProject: function(oProject) {
+        var oView = this.getView();
+        var oProjectEditModel = {};
+
+        // Clear any project messages
+        Message.clearMessages(oView, "messageContainerProject");
+
+        if (!this._oProjectEditDialog) {
+          this._oProjectEditDialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.ProjectEditDialog", this);
+          oProjectEditModel = new sap.ui.model.json.JSONModel();
+          this._oProjectEditDialog.setModel(oProjectEditModel, "projectEdit");
+          oView.addDependent(this._oProjectEditDialog);
+        } else {
+          oProjectEditModel = this._oProjectEditDialog.getModel("projectEdit");
+        }
+        oProjectEditModel.setProperty("/", oProject);
+        oProjectEditModel.refresh();
+
+        this._oProjectEditDialog.open();
+      },
+
+
+      onEditProjectOk: function(oEvent) {
+        var bError = false;
+        var that = this;
+        var oView = this.getView();
+
+        // Validate first
+        if (this.editProjectValidate()) {
+          return;
+        }
+
+        var oProject = this._oProjectEditDialog.getModel("projectEdit").getProperty("/project");
+
+        Message.clearMessages(oView, "messageContainerProject");
+        TimesheetAPI.updateProject(oProject,
+          function(oResponse) {
+            bError = false;
+            for (var i = 0; i < oResponse.length; i++) {
+              if (oResponse[i].is_error=== 'true') {
+                bError = true;
+                Message.addMessage(oView, oResponse[i].text, "Error", "messageContainerProject");
+              }
+            }
+            if (!bError) {
+              that.loadProjects();
+              that._oProjectEditDialog.close();
+              var sMessage = Message.getText(oView, 'project-updated-ok');
+              sap.m.MessageToast.show(sMessage);
+            }
+          },
+          function() {
+            sMessage = Message.getText(oView, 'project-update-error') + '\n' + sErrorThrown;
+            Message.addMessage(oView, sMessage, "Error");
+          }
+        );
+      },
+
+      onEditProjectCancel: function(oEvent) {
+        this._oProjectEditDialog.close();
+      },
+
+      onSelectPm: function(oEvent) {
+        var oView = this.getView();
+        var oModel = new sap.ui.model.json.JSONModel();
+        oView.setModel(oModel, "selectPm");
+
+        if (!this._oSelectPmDialog) {
+          this._oSelectPmDialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.ProjectManagerSelectDialog", this);
+          oView.addDependent(this._oSelectPmDialog);
+        }
+        Message.clearMessages(oView, "messageContainerSelectPm");
+        this._oSelectPmDialog.open();
+      },
+
+      onSelectPmSearch: function(oEvent) {
+        var oView = this.getView();
+        var oModel = oView.getModel("selectPm");
+        var sName = oModel.getProperty("/searchName") || "";
+        var sUsername = oModel.getProperty("/searchUsername") || "";
+        var sDate;
+        var sMessage;
+
+        if (sName === "" && sUsername === "") {
+          sap.m.MessageToast.show(Message.getText(oView, 'project-select-pm-empty-search'));
+          return;
+        }
+
+        var oBusyDialog = new sap.m.BusyDialog({
+          text: Message.getText(oView, "project-add-resource-search-dialog-text")
+        });
+        oBusyDialog.open();
+
+        TimesheetAPI.getResources(sName, sUsername, sDate,
+          function(oData) {
+            oModel.setProperty("/searchResults", oData);
+            oBusyDialog.close();
+          },
+          function() {
+            oBusyDialog.close();
+            sMessage = Message.getText(oView, 'project-select-pm-error-reading') + '\n' + sErrorThrown;
+            Message.addMessage(oView, sMessage);
+          }
+        );
+      },
+
+
+      /**
+       * Project manager selected - update our model with the new value
+       * @param  {Object} oEvent Event instance
+       */
+      onSelectPmOk: function(oEvent) {
+        var oView = this.getView();
+        var oList = sap.ui.getCore().byId("listMatchingPms");     // in a dialog, so not child of view
+        var oPmModel = oView.getModel("selectPm");
+        var oModel = this._oProjectEditDialog.getModel("projectEdit");
+        var oSelected = {};
+
+        // And then the people we're adding
+        oList.getSelectedContexts().forEach(function(oContext)  {
+          oSelected = oPmModel.getProperty(oContext.sPath);
+
+          oModel.setProperty("/project/project_manager", oSelected.personnel_no);
+          oModel.setProperty("/project/project_manager_name", oSelected.display_name);
+       });
+
+        this._oSelectPmDialog.close();
+
+      },
+
+      onSelectPmCancel: function(oEvent) {
+        this._oSelectPmDialog.close();
+      },
+
+
+      onEditProjectClearPm: function(oEvent) {
+        var oModel = this._oProjectEditDialog.getModel("projectEdit");
+        oModel.setProperty("/project/project_manager");
+        oModel.setProperty("/project/project_manager_name", "None specified");
+      },
+
+      /**
+       * Set default project manager
+       * @param  {Object} oEvent Event instance
+       */
+      onEditProjectDefaultPm: function(oEvent) {
+        var oUserModel = this.getView().getModel("user");
+        var oModel = this._oProjectEditDialog.getModel("projectEdit");
+        oModel.setProperty("/project/project_manager", oUserModel.getProperty("/personnel_no"));
+        oModel.setProperty("/project/project_manager_name", oUserModel.getProperty("/full_name"));
+      },
+
+      onAddResource: function(oEvent) {
+        var oView = this.getView();
+        var oModel = new sap.ui.model.json.JSONModel();
+        oView.setModel(oModel, "resourceAdd");
+
+        if (!this._oResourceAddDialog) {
+          this._oResourceAddDialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.ResourceAddDialog", this);
+          oView.addDependent(this._oResourceAddDialog);
+        }
+        Message.clearMessages(oView, "messageContainerResourceAdd");
+        this._oResourceAddDialog.open();
+      },
+
+      onResourceSearch: function(oEvent) {
+        var oView = this.getView();
+        var oModel = oView.getModel("resourceAdd");
+        var sName = oModel.getProperty("/searchName") || "";
+        var sUsername = oModel.getProperty("/searchUsername") || "";
+        var sDate;
+        var sMessage;
+
+        if (sName === "" && sUsername === "") {
+          sap.m.MessageToast.show(Message.getText(oView, 'project-add-resource-empty-search'));
+          return;
+        }
+
+        var oBusyDialog = new sap.m.BusyDialog({
+          text: Message.getText(oView, "project-add-resource-search-dialog-text")
+        });
+        oBusyDialog.open();
+
+        TimesheetAPI.getResources(sName, sUsername, sDate,
+          function(oData) {
+            oModel.setProperty("/searchResults", oData);
+            oBusyDialog.close();
+          },
+          function() {
+            oBusyDialog.close();
+            sMessage = Message.getText(oView, 'project-add-resource-error-reading') + '\n' + sErrorThrown;
+            Message.addMessage(oView, sMessage);
+          }
+        );
+      },
+
+      onAddResourceOk: function(oEvent) {
+        var that = this;
+        var oView = this.getView();
+        var oModel = oView.getModel("resourceAdd");
+        var oProjectModel = oView.getModel("projectList");
+        var oList = sap.ui.getCore().byId("listMatchingResources");     // in a dialog, so not child of view
+        var bError = false;
+        var oSelected = {};
+        var aResources = [];
+        var oResourceUpdate = {};
+
+        // Get the project ID
+        var oProjectList = oView.byId("listProjects");
+        if (!oProjectList || !oProjectList.getSelectedContexts()) {
+          // message
+          return;
+        }
+        var oProject = oProjectModel.getProperty(oProjectList.getSelectedContexts()[0].sPath);
+
+        // And then the people we're adding
+        oList.getSelectedContexts().forEach(function(oContext)  {
+          oSelected = oModel.getProperty(oContext.sPath);
+          aResources.push({
+            action: 'add',
+            personnel_no: oSelected.personnel_no
+          });
+        });
+
+        if (aResources.length === 0) {
+          return;
+        }
+
+        Message.clearMessages(oView, "messageContainerResourceAdd");
+        TimesheetAPI.updateResources(oProject.project_id, aResources,
+          function(oResponse) {
+            bError = false;
+            for (var i = 0; i < oResponse.length; i++) {
+              if (oResponse[i].is_error=== 'true') {
+                bError = true;
+                Message.addMessage(oView, oResponse[i].text, "Error", "messageContainerResourceAdd");
+              }
+            }
+            if (!bError) {
+              that.loadProjects();
+              that._oResourceAddDialog.close();
+              var sMessage = Message.getText(oView, 'project-resources-updated-ok');
+              sap.m.MessageToast.show(sMessage);
+            }
+          },
+          function() {
+
+          }
+        );
+
+      },
+
+      onAddResourceCancel: function(oEvent) {
+        this._oResourceAddDialog.close();
+      },
+
+      onEditResource: function(oEvent) {
+        var oResourceEditModel;
+        var oView = this.getView();
+        var oModel = oView.getModel("projectList");
+
+        if (!this._oResourceEditDialog) {
+          this._oResourceEditDialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.ResourceEditDialog", this);
+          oResourceEditModel = new sap.ui.model.json.JSONModel();
+          this._oResourceEditDialog.setModel(oResourceEditModel, "resourceEdit");
+          oView.addDependent(this._oResourceEditDialog);
+        } else {
+          oResourceEditModel = this._oResourceEditDialog.getModel("resourceEdit");
+        }
+
+        // We support both clicking on the row and the edit button
+        // If we just use the event source to read the context, when clicking on a row
+        // we get the wrong item
+        var sPath = oEvent.getSource().getBindingContext("projectList").sPath;
+        if (sPath.indexOf('resource') <= 0) {
+          // use current list row
+          var oResourceList = this.byId("listResources");
+          sPath = oResourceList.getSelectedContextPaths()[0];
+        }
+
+        var oResource = JSON.stringify(oModel.getProperty(sPath));
+        oResourceEditModel.setProperty("/path", oEvent.getSource().getBindingContext("projectList").sPath);
+        oResourceEditModel.setProperty("/resource", JSON.parse(oResource));
+        oResourceEditModel.setProperty("/resourcePrev", JSON.parse(oResource)); // before editing
+        oResourceEditModel.refresh();
+
+//    was:
+//    this._oResourceEditDialog.bindElement('projects>' + oEvent.getSource().getBindingContext("projects").sPath);
+        this._oResourceEditDialog.open();
+      },
+
+      onEditResourceOk: function(oEvent) {
+        var oView = this.getView();
+        var oModel = oView.getModel("projectList");
+
+        // Get the values from the dialog and store them back in our project model
+        var oResourceEditModel = this._oResourceEditDialog.getModel("resourceEdit");
+        var oResource = oResourceEditModel.getProperty('/resource');
+        var oResourcePrev = oResourceEditModel.getProperty('/resourcePrev');  // original values
+        oModel.setProperty(oResourceEditModel.getProperty("/path"), oResource);
+        this._oResourceEditDialog.close();
+
+        // Get the project ID
+        var sProjectId = this._getSelectedProject();
+
+        // Update the resource assignment
+        this._editResourceAssignment(sProjectId, oResource.personnel_no, oResource.start_date, oResource.end_date, oResourcePrev.start_date, oResourcePrev.end_date);
+      },
+
+      onEditResourceCancel: function(oEvent) {
+        this._oResourceEditDialog.close();
+      },
+
+      onDeleteResource: function(oEvent) {
+        var that = this;
+        var oView = this.getView();
+        var bError = false;
+        var aResources = [];
+        var oResourceUpdate = {};
+
+        // Get the project ID
+        var sProjectId = this._getSelectedProject();
+
+        // And resource ID
+        var oModel = oView.getModel("projectList");
+        var oSelected = oModel.getProperty(oEvent.getSource().getBindingContext("projectList").sPath);
+
+        var sMessage = Message.getText(oView, "project-delete-resource-warning").replace('{0}', oSelected.name);
+        var sTitle = Message.getText(oView, "project-delete-resource-warning-title");
+        MessageBox.show(sMessage, {
+            icon: sap.m.MessageBox.Icon.WARNING,
+            title: sTitle,
+            actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+            onClose: function(oAction) {
+              if (oAction === sap.m.MessageBox.Action.YES) {
+                that._deleteResourceAssignment(sProjectId, oSelected.personnel_no);
+              }
+            }
+          }
+        );
+      },
+
+      onEmailResource: function(oEvent) {
+
+      },
+
+      loadProjects: function(oEvent) {
+        var oView = this.getView();
+        var sMessage;
+        var oFilter = oView.getModel("projectFilter");
+        var oList = oView.byId("listProjects");
+        if (oList) {
+          var oSelected = oList.getSelectedItem();
+        }
+
+        Message.clearMessages(oView);
+
+        var oBusyDialog = new sap.m.BusyDialog({
+          text: Message.getText(oView, "project-list-refresh-dialog-text")
+        });
+        oBusyDialog.open();
+
+        TimesheetAPI.getProjects(function(oData) {
+          var oModel = new sap.ui.model.json.JSONModel(oData);
+          oView.setModel(oModel, "projectList");
+          sap.ui.getCore().setModel(oModel, "listProjects");
+          if (oSelected) {
+            oList.setSelectedItem(oSelected);
+          } else {
+            oList.setSelectedItemById(0);
+          }
+          oBusyDialog.close();
+         }, function(oXhr, sStatus, sErrorThrown) {
+            oBusyDialog.close();
+            sMessage = Message.getText(oView, 'project-list-error-reading') + '\n' + sErrorThrown;
+            Message.addMessage(oView, sMessage, "Error");
+         });
+      },
+
+      onAddMonth: function(oEvent) {
+        var oDate;
+        var oDateField = sap.ui.getCore().byId(oEvent.getSource().data("targetField"));
+        if (oDateField) {
+          oDate = moment(oDateField.getValue());
+          oDateField.setValue(oDate.add(1, "M").format("YYYY-MM-DD"));
+        }
+      },
+
+      _editResourceAssignment: function(sProjectId, sPersonnelNo, sStartDate, sEndDate, sPrevStartDate, sPrevEndDate) {
+        var aResources = [];
+
+        // Entry we want to change
+        aResources.push({
+          action: 'change',
+          personnel_no: sPersonnelNo,
+          start_date: sStartDate,
+          end_date: sEndDate,
+          prev_start_date: sPrevStartDate,
+          prev_end_date: sPrevEndDate
+        });
+        this._updateResourceAssignment(sProjectId, aResources);
+      },
+
+      /**
+       * Remove resource from project
+       * @param  {String} sProjectId   Project ID
+       * @param  {String} sPersonnelNo Personnel number
+       */
+      _deleteResourceAssignment: function(sProjectId, sPersonnelNo) {
+        var aResources = [];
+        // Entry we want to delete
+        aResources.push({
+          action: 'delete',
+          personnel_no: sPersonnelNo
+        });
+        this._updateResourceAssignment(sProjectId, aResources);
+      },
+
+      /**
+       * Update resource assigned to project
+       * @param  {Array}  aResources    Resources to update
+       */
+      _updateResourceAssignment: function(sProjectId, aResources) {
+        var that = this;
+        var oView = this.getView();
+        var bError = false;
+        var oResourceUpdate = {};
+        var sMessage;
+
+        Message.clearMessages(oView);
+        TimesheetAPI.updateResources(sProjectId, aResources,
+          function(oResponse) {
+            bError = false;
+            for (var i = 0; i < oResponse.length; i++) {
+              if (oResponse[i].is_error=== 'true') {
+                bError = true;
+                Message.addMessage(oView, oResponse[i].text, "Error");
+              }
+            }
+            if (!bError) {
+              that.loadProjects();
+              sMessage = Message.getText(oView, 'project-updated-ok');
+              sap.m.MessageToast.show(sMessage);
+            }
+          },
+          function(oXhr, sStatus, sErrorThrown) {
+            sMessage = Message.getText(oView, 'project-list-error-reading') + '\n' + sErrorThrown;
+            Message.addMessage(oView, sMessage);
+          }
+        );
+      },
+
+      /**
+       * Get the ID of the selected project
+       * @return {String} Project ID
+       */
+      _getSelectedProject: function() {
+        var oView = this.getView();
+        var oProjectModel = oView.getModel("projectList");
+
+        // Get the project ID
+        var oProjectList = oView.byId("listProjects");
+        if (!oProjectList || !oProjectList.getSelectedContexts()) {
+          MessageToast.show(Message.getText(oView, "project-not-selected"));
+          return;
+        }
+        var oProject = oProjectModel.getProperty(oProjectList.getSelectedContexts()[0].sPath);
+        return oProject.project_id;
+      }
+
+  });
+
+});

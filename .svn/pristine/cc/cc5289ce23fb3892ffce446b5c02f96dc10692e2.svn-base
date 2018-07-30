@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	       xmlns:shift="visual.*"
+	       implements="mx.controls.listClasses.IDropInListItemRenderer"
+	       width="178" height="70"
+	       click="clickHandler(event)"
+	       removed="garbageCollect()">
+
+	 <mx:ComboBox  x="10" y="10"
+	 	           id="cbbox"
+	 	           dataProvider="{allowed_shifts}" ></mx:ComboBox>
+	 <mx:TextInput x="10" y="40"
+	 	           id="tibox"	 	           
+	 	           />	         
+	         
+	 <mx:Script>
+	 	<![CDATA[
+	 	import mx.collections.XMLListCollection;
+		import mx.controls.listClasses.IDropInListItemRenderer;
+		import mx.controls.listClasses.BaseListData;
+		import mx.containers.Canvas;
+	
+		// Static variables (same for every shift)
+		public static var selectedShifts:Array = new Array();
+	
+		// Instance variables
+		protected var list_data:BaseListData;	
+		protected var list_data_value:XML;		
+		
+		protected var shift_code:String;
+		protected var shift_comment:String;
+		
+		protected var selected:Boolean = false;
+		
+		[Bindable]
+		public  var allowed_shifts:XMLListCollection;
+		
+		public function get listData():BaseListData
+		{
+			return list_data;
+		}
+		
+		public function set listData(value:BaseListData):void
+		{
+			list_data = value;
+			try 
+			{
+				list_data_value = new XML(value.label);				
+			}
+			catch (e:Error)
+			{
+				list_data_value = null;
+			}
+				
+			
+			if (list_data_value)
+			{
+				shift_code = list_data_value.code;
+				
+				cbbox.text = shift_comment = list_data_value.comment;
+			}
+		}
+		
+		// Handles mouse click events
+	    protected function clickHandler(event:MouseEvent):void
+	    {
+	    	if (event.target == this.cbbox || event.target == this.tibox)
+	    		return;
+	    	
+	    	
+	    }
+	    
+	    private function garbageCollect():void
+	    {
+	    	removeMeFromArrayOfSelectedItems();
+	    	
+	    }
+	    	
+	    	
+	    	
+	    	
+	    	
+	    
+	    /** The handler functions for selecting items are static
+	    *
+	    */
+	    
+	    // Remove this instance from the static array
+	    protected function removeMeFromArrayOfSelectedItems():void
+	    {
+	    	var x:SunShift;
+	    	for (var i:String in selectedShifts)
+	    	{
+	    		x = selectedShifts[i];
+	    		if (x == this)
+	    		{
+	    			selectedShifts.splice(i,1); // Remove from array
+	    		}	    	
+	    	}	    		
+	    }
+
+	 	]]>
+	 </mx:Script>
+
+</mx:Canvas>

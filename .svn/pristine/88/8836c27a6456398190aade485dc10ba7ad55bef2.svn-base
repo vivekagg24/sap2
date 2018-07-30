@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+	     xmlns:local="*" xmlns:ns1="model.*"
+	     creationComplete="createDataProvider()"
+	     horizontalGap="0"
+	     paddingLeft="0"
+	     paddingRight="0"
+	     
+	      >
+	<mx:TileList direction="vertical"		          
+	             itemRenderer="GridCell"
+	             dataProvider="{dp_headers}" 
+	             maxColumns="8"
+	             labelField="val"
+	             columnCount="8"
+	             rowCount="{dp_headers.length}"
+	             maxRows="{dp_headers.length}"
+	             columnWidth="115"
+	             width="120"
+	      		 horizontalScrollPolicy="off"
+			     verticalScrollPolicy="off"	     
+			     id="headersList"  
+			     paddingTop="0"
+			     paddingBottom="0"
+	             
+	             />
+	<local:ShiftGrid direction="vertical"
+		             dataProvider="{dp_rotas}"
+		             width="100%"
+		             columnWidth="30"
+		             id="shiftList"
+		             
+	                 />  
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.collections.XMLListCollection;
+		
+		
+		[Bindable]
+		private var dp_headers:XMLListCollection;
+		
+		[Bindable]
+		private var dp_rotas:XMLListCollection;
+			
+		
+		[Bindable]
+		protected var num_cols:int = 52 * 7; // 1 year
+			
+
+			
+		/** Create the grid data
+		 * 
+		 */
+		protected function createDataProvider():void
+		{
+				
+			var num_rows:uint = 8; // 8 Shift Patterns
+			
+			// Row headers
+			var colH:XMLListCollection = new XMLListCollection();
+			colH.disableAutoUpdate();
+				var head:XML = new XML('<header></header>');
+				head.width = 150;
+				head.val = "";
+				colH.addItem(head);			
+			
+			for (var i_header:int = 0; i_header < num_rows; i_header++)
+			{
+				head = new XML('<header></header>');
+				head.width = 150;
+				head.val = i_header;
+				colH.addItem(head);
+				
+			}
+			colH.enableAutoUpdate();
+			dp_headers = colH;
+			
+			
+
+			var collection:XMLListCollection =  new XMLListCollection();	
+			collection.disableAutoUpdate();	
+			
+			// Days of week
+			var dow:Array = ["Mon" , "Tue" , "Wed" , "Thu" , "Fri" , "Sat" , "Sun"];
+			var dow2:Array = ["Monday" , "Tuesday" , "Wednesday" , "Thursday" , "Friday" , "Saturday" , "Sunday"];
+			
+		
+		    // Add the weeks
+			var x1:XML = new XML("<top_row></top_row>");			
+			for (var i_col:int = 0; i_col < num_cols; i_col++)
+			{
+				var y:XML = new XML("<col />");
+				var week:int = (i_col / 7) + 1;
+				var d_int:int = i_col - ( (week - 1) * 7);
+				
+				
+				
+				// Set the text			
+				var day:String = dow[d_int];
+				y.day = day;
+				y.val = day;
+				
+				// Store the day number
+				y.day_num = i_col + 1;
+				
+				// Hover text - use day week and day number
+				var hover:String = dow2[d_int] + " Week " + new String(week) + " (Day " + new String(i_col + 1) + ")"; 
+				y.hover = hover;
+				
+				
+				// Weekends
+				if (day == "Sun" || day == "Sat")
+				{
+					y.backgroundDisabledColor = "0xCCFFCC";	
+					y.backgroundColor = "0xCCFFCC";			 	
+				}
+				else
+				{
+					y.backgroundDisabledColor = "0xFFFFFF";	
+					y.backgroundColor = "0xFFFFFF";	
+				}
+					
+					
+				
+				
+				x1.appendChild(y);
+
+					
+				
+			}
+			collection.addItem(x1);				    
+	   
+			// Add the shifts
+			for (var i_row:int = 0; i_row < num_rows; i_row++)
+			{
+				var x:XML = new XML("<row></row>");
+				for (i_col = 0; i_col < num_cols; i_col++)
+				{
+					y = new XML("<col />");
+					y.val = i_col;
+					x.appendChild(y);
+					if (i_col == 5)
+					{
+						y.color = "red";
+						y.backgroundDisabledColor = "blue";
+						
+					}
+						
+					
+				}
+				collection.addItem(x);				
+			}
+			
+			collection.enableAutoUpdate();
+			dp_rotas = collection;
+			
+		}			
+			
+			
+		]]>
+	</mx:Script>
+</mx:HBox>

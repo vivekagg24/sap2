@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VDG:SafeDataGridItemRenderer xmlns:mx="http://www.adobe.com/2006/mxml"
+	                     xmlns:VDG="VDG.*"
+	                     selectable="false"
+	                 textDecoration="underline"
+	                   mouseEnabled="true"
+	                      mouseOver="mouseOver(event)"
+	                       mouseOut="mouseOut(event)">
+					<mx:Script>
+  						<![CDATA[
+  						
+					    			    import mx.controls.Alert;
+					    			    import mx.managers.ToolTipManager;
+					    			    import mx.controls.ToolTip;
+					    			    import flash.events.MouseEvent;
+
+					    			    public var multiple:Boolean; // Flag - multiple cost centres so allow popup
+					    			    private var myTip:ToolTip;
+					    			    private const c_multiple_cc:String = "Multiple Cost Centres";
+					    			    
+					    			    override public function set data(value:Object):void {
+					    			    	super.data = value;
+					    			    	var cc_text:String = new String;
+					    			    	if (data && data.KOSTL_TEXT) cc_text = data.KOSTL_TEXT;
+					    			    	if (cc_text == c_multiple_cc)
+					    			    	{
+					    			    		this.setStyle("textDecoration","underline");
+					    			    		multiple = true;
+					    			    		ToolTipManager.enabled = true;					   
+					    			    	}else{
+					    			    		this.setStyle("textDecoration",null);
+					    			    		multiple = false;
+					    			    	}
+					    			    }
+					    			
+					    				private function mouseOver(event:MouseEvent):void {
+					    					if (multiple == true){					    						
+					    						this.textColor=0x0000FF;
+					    						var x:int = event.stageX + 15;
+					    						myTip = ToolTipManager.createToolTip(data.KOSTL_TEXT_LIST,x,event.stageY) as ToolTip;
+					    					}	
+					    				}
+					    				private function mouseOut(event:MouseEvent):void {
+					    					this.textColor=0x000000;
+					    					if (myTip != null) ToolTipManager.destroyToolTip(myTip);
+					    				}
+						]]>
+			</mx:Script>
+	</VDG:SafeDataGridItemRenderer>	

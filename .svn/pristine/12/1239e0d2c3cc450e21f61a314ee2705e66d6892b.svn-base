@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/>
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-client_id" content="853022590353-jrkl9orkomct3i5lc60urtl807307ffd.apps.googleusercontent.com">
+  <title>News UK Timesheets</title>
+  <link rel="apple-touch-icon-precomposed" href="/images/logo.png"/>
+  <link rel="apple-touch-icon-precomposed" sizes="48x48" href="/images/logo_48.png"/>
+  <link rel="apple-touch-icon-precomposed" sizes="128x128" href="/images/logo_128.png"/>
+  <link rel="stylesheet" href="css/timesheet.css" type="text/css"/>
+  <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+  <!--
+    News UK Timesheets
+    48 65 6C 6C 6F 21 :)
+  -->
+
+  <!--
+    src="https://sapui5.hana.ondemand.com/1.32.9/resources/sap-ui-core.js"
+    src="https://sapui5.hana.ondemand.com/1.32.9/resources/sap-ui-cachebuster/sap-ui-core.js"
+  -->
+
+  <!-- CDN URL must be https -->
+  <script id="sap-ui-bootstrap" type="text/javascript"
+    src="https://sapui5.hana.ondemand.com/1.32.11/resources/sap-ui-cachebuster/sap-ui-core.js"
+    data-sap-ui-theme="sap_bluecrystal"
+    data-sap-ui-libs="sap.m"
+    data-sap-ui-debug=false
+    data-sap-ui-loaddbg=false
+    data-sap-ui-xx-bindingSyntax="complex"
+    data-sap-ui-compatVersion="edge"
+    data-sap-ui-resourceroots='{
+      "nuk.sap.timesheet": "./",
+      "nuk.sap.timesheet.util": "./util"
+    }'>
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
+
+  <script>
+    sap.ui.getCore().attachInit(function () {
+      sap.ui.require([
+        "sap/m/Shell",
+        "sap/ui/core/ComponentContainer"
+      ],
+      function(Shell, ComponentContainer) {
+        new Shell({
+          app: new ComponentContainer({
+            name: "nuk.sap.timesheet",
+            height: "100%"
+            }),
+          appWidthLimited: false
+        }
+        ).placeAt("content");
+      });
+    });
+  </script>
+
+</head>
+
+<body class="sapUiBody" role="application" id="content" height: "100%"/>
+
+</html>

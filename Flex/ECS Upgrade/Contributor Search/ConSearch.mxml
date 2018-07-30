@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" width="512" height="300" layout="absolute" title="Select a contributor" horizontalAlign="left" verticalAlign="middle" fontSize="11" xmlns:events="flash.events.*" showCloseButton="true" >
+ <mx:states>
+  <mx:State name="2nd">
+   <mx:RemoveChild target="{Select}"/>
+  </mx:State>
+ </mx:states>
+ <mx:Metadata>
+ [Event(name="contributorChosen", type="mx.events.CloseEvent")]
+ </mx:Metadata>
+	<mx:DataGrid top="0" bottom="28" editable="false" enabled="true" id="contributors_grid" doubleClickEnabled="true" itemDoubleClick="handleGridDoubleClick(event)" right="0" left="0" draggableColumns="false">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Contributor Number" dataField="lifnr" headerWordWrap="true" width = "86" />
+			<mx:DataGridColumn headerText="First Name" dataField="first_name" headerWordWrap="true" width = "56" wordWrap = "true"/>
+			<mx:DataGridColumn headerText="Last Name" dataField="last_name" headerWordWrap="true" width = "56" wordWrap = "true"/>
+			<mx:DataGridColumn headerText="Agent's name" dataField="agent_name" headerWordWrap="true" width = "66" wordWrap = "true"/>
+			<mx:DataGridColumn headerText="Alias" dataField="nom_de_plum" headerWordWrap="true" width = "66" wordWrap = "true"/>		
+			<mx:DataGridColumn headerText="Agency Name" dataField="agency" headerWordWrap="true" width = "66" wordWrap = "true"/>
+			<mx:DataGridColumn headerText="Agency Contact" dataField="agency_contact" headerWordWrap="true" width = "66" wordWrap = "true" />				
+		</mx:columns>
+		<mx:dataProvider>
+					 {contribList}
+		</mx:dataProvider>
+
+	</mx:DataGrid>
+
+
+	<mx:Button label="Select" id="Select" bottom="2" left="2" height="22" click="handleSelectClick()"/>
+	
+
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+		    import mx.events.ListEvent;
+		    import mx.events.CloseEvent;
+		        
+		    
+		//  declare event here so that a listener can be declared in the <nsl:ConSearch> tag    
+		   
+			
+		//	[BINDABLE]
+		//	public var contribList:Object;
+			public function set contribList(value:Object):void {
+				contributors_grid.dataProvider = value;
+			}
+		    public function get contribList():Object {
+		    	return contributors_grid.dataProvider;
+		    }
+		    
+			private function handleGridDoubleClick(event:mx.events.ListEvent):void {
+				    var line:int = event.rowIndex;
+				    raiseLifnrAndClose(line);
+					
+			}
+            private function handleSelectClick():void {
+				    var line:int = contributors_grid.selectedIndex + 1;
+				    if (line > 0) {
+						raiseLifnrAndClose(line);		
+				    }
+			}
+			private function raiseLifnrAndClose(line:int):void {
+					var line_selected:Object;
+				    var lifnr:int;
+				    // Get the Contribtor Number (LIFNR), but it needs to be done differently depending on the data provider
+				    if ( contributors_grid.dataProvider is XML ) { 
+				    	line = line;
+				    	line_selected = contributors_grid.dataProvider.getChildAt( line );
+				    	lifnr = line_selected.lifnr;
+				    }
+				    if ( contributors_grid.dataProvider is ArrayCollection ) {
+				    	line = line - 1;
+				    	line_selected = contributors_grid.dataProvider[line];
+				    	lifnr = line_selected.lifnr;
+				    }
+				    // If a valid Contributor Number is found, raise event
+				    if (lifnr && lifnr > 0) {
+				    	var event:CloseEvent = new CloseEvent("contributorChosen" ,false ,false ,lifnr);
+				    	this.dispatchEvent(event);
+				    } 
+ 				}
+ 			 private function handleCloseClick():void {
+				    var event:CloseEvent = new CloseEvent("noContributorChosen" ,false ,false );
+				    this.dispatchEvent(event);
+			}
+			
+		]]>
+	</mx:Script>
+
+	
+
+</mx:TitleWindow>
+

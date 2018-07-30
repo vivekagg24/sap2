@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" title="Notes" 
+	creationComplete="doInit();" height="348">
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.managers.PopUpManager;
+	
+		protected var _notesTab:XMLList;
+		[Bindable]
+		public function set notesTab(value:XMLList):void
+		{
+			_notesTab = value;
+			if (notes) notes.dataProvider = _notesTab;
+		}
+		public function get notesTab():XMLList
+		{
+			return _notesTab;
+		}
+
+		public var error:Boolean;
+
+		[Bindable]
+		private var textStyle:String="";	
+		
+		private function doInit():void {
+			this.move(100, 100); // For some reason, PoUpManager.centre doesn't work very well,
+			this.alpha = 1.0;
+			this.notes.dataProvider = notesTab;
+			this.notes.rowCount = 10;
+			this.notes.showHeaders = true;
+			this.setStyle("borderAlpha", 1.0);
+			if (error)textStyle="error";
+			btnOK.setFocus();	
+		}
+	
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			super.updateDisplayList(unscaledWidth, unscaledHeight);		
+		}
+	
+		private function handleClose():void{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			parentApplication.focusManager.activate();
+			if (parentApplication.hasOwnProperty("focusField") &&
+			   parentApplication.focusField!=null)
+			{	
+				parentApplication.focusField.setFocus();
+				trace(parentApplication.focusField.id);
+			}
+			if (parentApplication.hasOwnProperty("focusEvent") && parentApplication.focusEvent!="") 
+			{
+				parentApplication.dispatchEvent(new Event(parentApplication.focusEvent));
+			}
+		}
+		]]>
+	</mx:Script>
+	<mx:Style>
+		.error{color:red}
+	</mx:Style>
+
+	<mx:DataGrid id="notes" height="224" width="600" headerColors="0xC6EFF7">
+		<mx:columns>
+			<mx:DataGridColumn dataField="ZDATE" headerText="Date" width="60" itemRenderer="visualComponents.GridComponents.DateLabel"/>
+			<mx:DataGridColumn dataField="ZTIME" headerText="Time" width="45"/>
+			<mx:DataGridColumn dataField="MOD_USER" headerText="User" width="70"/>
+			<!--<mx:DataGridColumn dataField="ACTION" headerText="Action" width="70"/>-->
+			<mx:DataGridColumn dataField="NOTICE_TEXT" headerText="Text" width="200"/>
+		</mx:columns>
+	</mx:DataGrid>
+
+	<mx:Canvas height="40" width="100%"
+		      horizontalScrollPolicy="off"
+		       verticalScrollPolicy="off">	
+		<mx:ControlBar horizontalAlign="center" id="bar2"  width="60" horizontalCenter="0">
+			<mx:HBox defaultButton="{btnOK}">
+				<mx:Button 
+					click="handleClose()" 
+					id="btnOK" 
+					label="OK"  />
+			</mx:HBox>
+		</mx:ControlBar>
+	</mx:Canvas>
+</mx:TitleWindow>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="30" height="42">
+	<mx:Image id="subIcon" source="CMS/images/Notes.gif"
+		 click="onClick()" resize="false"> 
+		<mx:Script>
+			<![CDATA[
+			import mx.events.DynamicEvent;
+			import mx.controls.Alert;
+		
+			private function onClick():void
+			{
+				// First change the icon, then dispatch the event
+				var event:DynamicEvent = new DynamicEvent("displayNotes", true);
+			
+				Alert.show('Display sub name!', 'Alert Box', mx.controls.Alert.OK);			
+				subIcon.dispatchEvent(event);
+			}
+			]]>
+		</mx:Script>
+	</mx:Image>
+<!--    <mx:Metadata>
+        [Event(name="displayNotes", type="mx.events.DynamicEvent")]
+    </mx:Metadata> -->
+</mx:Canvas>

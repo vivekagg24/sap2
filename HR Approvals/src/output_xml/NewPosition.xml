@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+		<fields>
+			<field width="13" name="" type="Label" columnTitle="" />
+			<field width="75" name="I0015_BEGDA" type="Label" columnTitle="Req Date" />
+			<field width="100" name="I0001_ENAME" type="Label" columnTitle="Name" /> 
+			<field width="115" name="I0001_ORGTX" type="Label" columnTitle="Dept." />
+			<field width="70" name="I0008_ANSAL" type="RightLabel" columnTitle="Salary" />
+			<field width="70" name="I0015_BETRG" type="RightLabel" columnTitle="Bonus Amount" />			
+			<field width="40" name="I0015_BETRG" type="RightLabel" columnTitle="% of salary" /> 
+			<field width="35" name="I0015_WAERS" type="Label" columnTitle="Curr." />
+			<field width="115" name="DETAILED_JUSTFICATION" type="Label" columnTitle="Reason" />
+			<field width="80" name="UGNAME" type="Label" columnTitle="Requestor" />
+			<field width="60" name="EMPL_STATUS" type="Label" columnTitle="Emp Stat" /> 			
+			<field width="70" name="Action" type="Label" columnTitle="Action" /> 
+			<field width="120" name="APPREJTEXT" type="textbox" columnTitle="Reason" />
+			<field width="30" name="RESUB" type="SubIcon" columnTitle="Sub" />
+			<field width="30" name="NOTES" type="NoteIcon" columnTitle="Notes" />
+			<field width="30" name="APPREJ" type="checkbox" columnTitle="App/Rej" />			
+		</fields>

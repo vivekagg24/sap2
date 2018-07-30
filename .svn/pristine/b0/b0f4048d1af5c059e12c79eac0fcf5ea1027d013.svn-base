@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mvc:View controllerName="nuk.sap.driverportal.view.App" displayBlock="true" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+  <SplitApp id="idRoot">
+    <masterPages>
+      <mvc:XMLView viewName="nuk.sap.driverportal.view.Master" id="view-master" />
+    </masterPages>
+    <detailPages>
+      <mvc:XMLView viewName="nuk.sap.driverportal.view.Detail" id="view-detail" />
+    </detailPages>
+</SplitApp>
+</mvc:View>

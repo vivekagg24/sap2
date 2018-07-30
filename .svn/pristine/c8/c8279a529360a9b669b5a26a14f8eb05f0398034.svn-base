@@ -1,0 +1,346 @@
+sap.ui.controller("nuk.sap.driverportal.view.Master", {
+    _scrollTo: null,
+    _oDialogRequestMove: null,
+    _oDialogRefreshing: null,
+
+    onInit: function() {
+      var oView = this.getView();
+      this.list = this.byId('drops');
+      sap.ui.getCore().getEventBus().subscribe("placeSelected", this.onPlaceSelected, this);
+      sap.ui.getCore().getEventBus().subscribe("routesLoaded", this.onRoutesLoaded, this);
+
+      // Modules we need
+      $.sap.require('sap.ui.thirdparty.jqueryui.jquery-ui-core');
+      $.sap.require('sap.ui.thirdparty.jqueryui.jquery-ui-widget');
+      $.sap.require('sap.ui.thirdparty.jqueryui.jquery-ui-mouse');
+      $.sap.require('sap.ui.thirdparty.jqueryui.jquery-ui-draggable');
+      $.sap.require('sap.ui.thirdparty.jqueryui.jquery-ui-sortable');
+      $.sap.require("sap.ui.commons.MessageBox");
+
+   },
+
+    /**
+     * List item (drop) selected
+     */
+    handleListSelect: function(oEvent) {
+      sap.ui.getCore().getEventBus().publish("dropSelected", {
+        context: oEvent.getParameter("listItem").getBindingContext()
+      });
+    },
+
+    handleListUpdateFinished: function(oEvent) {
+      var oTop, oView, oDropList;
+
+      // Bit crude, but scroll to the item
+      if (this._scrollTo) {
+          oView = this.getView();
+          oDropList = oView.byId('drops');
+          oTop = oDropList.getItems()[this._scrollTo];
+          if (oTop)
+            oTop.getDomRef().scrollIntoView();
+          this._scrollTo = null;
+      }
+    },
+
+    /**
+     * Drop-down list (route) selection changed
+     */
+    handleRoutesSelectionChange: function(oEvent) {
+      var sRoute = oEvent.getParameter("selectedItem");
+      if (sRoute) {
+        this.refreshDrops(sRoute.getKey(), function() {
+          sap.ui.getCore().getEventBus().publish("routeSelected");
+        });
+      }
+    },
+
+    onRoutesLoaded: function(sChannelId, sEventId, oData) {
+      var oView = this.getView();
+      var oRoutes = oView.getModel("routes");
+      // Default to first route
+      var sFirstDrop = oRoutes.getProperty("/route/0/visit_plan_id");
+      if (sFirstDrop) {
+        var oDropsList = oView.byId('routes');
+        oDropsList.setSelectedKey(sFirstDrop);
+      }
+    },
+
+    onPlaceSelected: function(sChannelId, sEventId, oData) {
+      var that = this;
+      this.list.getItems().forEach(function(item) {
+        if (item.getTitle() === oData.location.customer_name && that.list.getSelectedItem() !== item) {
+          that.list.setSelectedItem(item, true);
+          item.getDomRef().scrollIntoView();
+        }
+      });
+    },
+
+    onDropped: function(oView, oEvent, oUi) {
+      var bChanged = false;
+      var oTop;
+      var oDropList = oView.byId('drops');
+      var iMin = oUi.item.index() < oUi.item.startPos ? oUi.item.index() : oUi.item.startPos;
+      var iMax = oUi.item.index() > oUi.item.startPos ? oUi.item.index() : oUi.item.startPos;
+      var oDrops = oView.getModel().getData();
+      var oModel = oView.getModel();
+      var old = oDrops.drop.splice(oUi.item.startPos, 1)[0];
+      oDrops.drop.splice(oUi.item.index(), 0, old);
+
+      // renumber any drops that have moved as a result of the D&D
+      for (var i = iMin; i <= iMax; i++) {
+        if (oDrops.drop[i].itinerary != i+1) {
+          bChanged = true;
+          oDrops.drop[i].itinerary = i + 1;
+          oModel.setProperty("/drop/" + i + "/itinerary", i + 1);
+        }
+      }
+
+      if (bChanged) {
+        this.getView().getModel('config').setProperty('/isDataChanged', true);
+        this._scrollTo = iMin;
+     }
+
+//      oDrops.drop[oUi.item.startPos] = oDrops.drop[oUi.item.index()];
+//      oDrops.drop[oUi.item.index()] = old;
+//      oDrops.drop[oUi.item.startPos].itinerary = oUi.item.index() + 1;
+//      oDrops.drop[oUi.item.index()].itinerary = old.itinerary;
+
+//      oView.getModel().setData(oDrops, true);
+    },
+
+    onAfterRendering: function() {
+      var sDropList = '#' + this.byId('drops').getId() + '-listUl';
+
+      var oList = this.byId('drops');
+      oList.addEventDelegate({
+        onAfterRendering: function() {
+          if (sap.m.Page.prototype.onAfterRendering) {
+            sap.m.Page.prototype.onAfterRendering.apply(this);
+          }
+
+          $(sDropList).addClass('ui-sortable');
+          $(sDropList).sortable({
+            cancel: '',
+            connectWith: '.ui-sortable',
+            start: function(oEvent, oUi) {
+              oUi.item.startPos = oUi.item.index();
+            },
+            stop: function(oEvent, oUi) {
+              this.onDropped(this.getView(), oEvent, oUi);
+            }.bind(this)
+          }).disableSelection();
+
+          oList.getItems().forEach(function(oItem) {
+              var oContext = oItem.getBindingContext();
+              oItem.$().dblclick(function(oEvent) {
+                alert(oContext.getProperty('customer_name'));
+                oItem.getParent().fireSwipe({listItem: oItem});
+              });
+            }
+          );
+
+          //$(sDropList).dblclick(function(oEvent) {
+          //  sap.ui.commons.MessageBox.alert(this.getBindingContext().getProperty(''));
+          //});
+
+//          var sDropList = '#' + this.byId('drops').getId() + '-listUl';
+//          var oItem = this.byId('drops-listUl');
+//          console.log('Id:' + sDropList);
+//          $(sDropList).addClass('ui-sortable');
+//          oItem.$().sortable({
+//            cancel: '',
+//            connectWith: '.ui-sortable',
+//            stop: this.onDropped
+//          }).disableSelection();
+        }
+      }, this);
+
+      //$(sDropList).addClass('ui-sortable');
+
+      //$(sDropList).sortable({
+      //  connectWith: '.ui-sortable'
+      //}).disableSelection();
+
+    },
+
+    /**
+     * Undo route changes
+     * @param  {[type]} oEvent [description]
+     */
+    onUndoChanges: function(oEvent) {
+      var oConfig = this.getView().getModel('config');
+      var bIsDataChanged = oConfig.getProperty('/isDataChanged');
+      var oView = this.getView();
+
+      if (bIsDataChanged) {
+        var sTitle = oView.getModel("i18n").getResourceBundle().getText('MasterPromptUndoTitle');
+        var sContent = oView.getModel("i18n").getResourceBundle().getText('MasterPromptUndoContent');
+        sap.ui.commons.MessageBox.confirm(sContent,
+            function(bConfirmed) {
+              if (bConfirmed) {
+                var oBackupModel = oView.getModel("backup");
+                var oModel = oView.getModel();
+                oModel.setJSON(oBackupModel.getJSON());
+                oModel.refresh();
+                oConfig.setProperty('/isDataChanged', false);
+                sap.ui.getCore().getEventBus().publish("routeLoaded");
+                sap.m.MessageToast.show(oView.getModel("i18n").getResourceBundle().getText("MasterRouteChangesUndone"));
+              }
+            },
+            sTitle);
+      } else {
+        sap.m.MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("MasterRouteUnchanged"));
+      }
+    },
+
+    /**
+     * Save updated visit list to SAP ECC
+     * @param  {[type]} oEvent [description]
+     */
+    onSaveRoute: function(oEvent) {
+      var oDialog;
+      var oView = this.getView();
+
+      var oConfig = oView.getModel('config');
+      if (oConfig.getProperty('/isDataChanged') !== true) {
+        sap.m.MessageToast.show(oView.getModel("i18n").getResourceBundle().getText("MasterRouteUnchanged"));
+        return;
+      }
+
+      // instantiate dialog
+      if (! oDialog) {
+        oDialog = sap.ui.xmlfragment("nuk.sap.driverportal.fragment.SavingDialog", this);
+        oView.addDependent(oDialog);
+      }
+
+      // open dialog
+      jQuery.sap.syncStyleClass("sapUiSizeCompact", this.getView(), this.oDialog);
+      oDialog.open();
+
+      nuk.sap.driverportal.util.api.saveRoutes(oView.getModel(),
+        function() {
+          sap.ui.getCore().getEventBus().publish("routeSaved");
+          oDialog.close();
+          sap.m.MessageToast.show(oView.getModel("i18n").getResourceBundle().getText("MasterRouteSaveOk"));
+        },
+        function() {
+          oDialog.close();
+          var sTitle = oView.getModel("i18n").getResourceBundle().getText('MasterRouteSaveErrorTitle');
+          var sContent = oView.getModel("i18n").getResourceBundle().getText('MasterRouteSaveErrorContent');
+
+          sap.ui.commons.MessageBox.show(sContent,
+            sap.ui.commons.MessageBox.Icon.ERROR,
+            sTitle,
+            [sap.ui.commons.MessageBox.Action.OK]);
+        });
+    },
+
+    onMoveDropRequested: function(oEvent) {
+      var oEditModel;
+      var oView = this.getView();
+      var oModel = oView.getModel();
+
+      // instantiate dialog
+      if (! this._oDialogRequestMove) {
+        this._oDialogRequestMove = sap.ui.xmlfragment("nuk.sap.driverportal.fragment.EditDrop", this);
+        oEditModel = new sap.ui.model.json.JSONModel();
+        this._oDialogRequestMove.setModel(oEditModel, "editDrop");
+        oView.addDependent(this._oDialogRequestMove);
+      } else {
+        oEditModel = this._oDialogRequestMove.getModel("editDrop");
+      }
+
+      var oDrop = JSON.stringify(oModel.getProperty(oEvent.getSource().getBindingContext().sPath));
+      oEditModel.setProperty("/path", oEvent.getSource().getBindingContext().sPath);
+      oEditModel.setProperty("/drop", JSON.parse(oDrop));
+      oEditModel.setProperty("/reasons", [
+        { "key": "03",
+          "name": "Undeliverable by cutoff time"
+        }, {
+          "key": "02",
+          "name": "Drop on incorrect route"
+        }, {
+          "key": "99",
+          "name": "Other problem"
+        }]
+      );
+      oEditModel.refresh();
+
+      // open dialog
+//      jQuery.sap.syncStyleClass("sapUiSizeCompact", oView, this._oDialogRequestMove);
+      this._oDialogRequestMove.open();
+    },
+
+    onEditDropOk: function(oEvent) {
+      var oView = this.getView();
+      var oModel = oView.getModel();
+
+      // Get the values from the dialog and store them back in our project model
+      var oEditModel = this._oDialogRequestMove.getModel("editDrop");
+      oModel.setProperty(oEditModel.getProperty("/path"), oEditModel.getProperty('/drop'));
+
+      oView.getModel('config').setProperty('/isDataChanged', true);
+
+      this._oDialogRequestMove.close();
+    },
+
+    onEditDropCancel: function(oEvent) {
+      this._oDialogRequestMove.close();
+    },
+
+    refreshDrops: function(sRoute, fnDone) {
+      var that = this;
+      var oView = this.getView();
+
+      // instantiate dialog
+      if (! this._oDialogRefreshing) {
+        this._oDialogRefreshing = sap.ui.xmlfragment("nuk.sap.driverportal.fragment.RefreshingRouteDialog", this);
+        oView.addDependent(this._oDialogRefreshing);
+      }
+
+      // open dialog
+      jQuery.sap.syncStyleClass("sapUiSizeCompact", oView, this._oDialogRefreshing);
+      this._oDialogRefreshing.open();
+
+      nuk.sap.driverportal.util.api.getDrops(sRoute,
+        function(sJSON) {
+          var oModel = oView.getModel(); //.new sap.ui.model.json.JSONModel(sJSON);
+          if (oModel) {
+            oModel.setJSON(JSON.stringify(sJSON));
+            oModel.setSizeLimit(250);
+          } else {
+            oModel = new sap.ui.model.json.JSONModel(sJSON);
+            oModel.setSizeLimit(250);
+            oView.setModel(oModel);
+          }
+
+          var oBackupModel = new sap.ui.model.json.JSONModel(sJSON);
+          if (oBackupModel) {
+            oBackupModel.setJSON(JSON.stringify(sJSON));
+            oBackupModel.setSizeLimit(250);
+          } else {
+              oBackupModel = new sap.ui.model.json.JSONModel(sJSON);
+          }
+          oView.setModel(oBackupModel, "backup");
+          that._oDialogRefreshing.close();
+
+          sap.ui.getCore().getEventBus().publish("routeLoaded");
+
+          if (fnDone)
+            fnDone();
+        },
+        function(oXhr, sStatus, sErrorThrown) {
+          this._oDialogRefreshing.close();
+          var sTitle = oView.getModel("i18n").getResourceBundle().getText('MasterRouteFetchErrorTitle');
+          var sContent = oView.getModel("i18n").getResourceBundle().getText('MasterRouteFetchErrorContent', [sStatus, sErrorThrown]);
+
+          sap.ui.commons.MessageBox.show(sContent,
+            sap.ui.commons.MessageBox.Icon.ERROR,
+            sTitle,
+            [sap.ui.commons.MessageBox.Action.OK]);
+        }
+      );
+
+    }
+
+});

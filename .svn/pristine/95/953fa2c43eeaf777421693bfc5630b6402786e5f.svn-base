@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+    	<formatting>	
+	    	<LeaveRequestOutput>
+		 		<headerFields>
+					<field width="35" dataField="" type="lineImage" columnTitle="" />
+					<field width="22" dataField="RESUB" type="HeldIcon" columnTitle="" />
+					<field width="75" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Req Date" />
+					<field width="100" dataField="REQUESTOR" type="TextArea" columnTitle="Name" /> 
+					<field width="75" dataField="START_DATE" type="dateLabel" columnTitle="Start Date" /> 
+					<field width="75" dataField="START_TIME" type="Label" columnTitle="Start Time" /> 
+					<field width="75" dataField="END_DATE" type="dateLabel" columnTitle="End Date" /> 
+					<field width="75" dataField="END_TIME" type="Label" columnTitle="End Time" /> 
+					<field width="80" dataField="LEAVE_TYPE" type="Label" columnTitle="Type of leave" />
+					<field width="80" dataField="DEL_FLAG" type="RequestType" columnTitle="Request Type" />
+					<field width="80" dataField="DAYS_TAKEN" type="RightLabel" columnTitle="Days taken" /> 
+					<field width="80" dataField="DAYS_REMAIN" type="RightLabel" columnTitle="Days remaining" /> 
+					<field width="52" dataField="Action" type="Action" columnTitle="Action" /> 
+					<field width="140" dataField="APPREJTEXT" type="textbox" columnTitle="App/Rej text" />
+					<field width="22" dataField="NOTES" type="NoteIcon" columnTitle="" />
+					<field width="30" dataField="APPREJ" type="checkbox" columnTitle="App/Rej" />
+				</headerFields>
+				<detailFields>
+					<field width="75" dataField="REQUEST_DATE" type="dateLabel" columnTitle="Req Date" />
+					<field width="90" dataField="REQUESTOR" type="Label" columnTitle="Name" /> 
+					<field width="75" dataField="START_DATE" type="dateLabel" columnTitle="Start Date" /> 
+					<field width="75" dataField="START_TIME" type="Label" columnTitle="Start Time" /> 
+					<field width="75" dataField="END_DATE" type="dateLabel" columnTitle="End Date" /> 
+					<field width="75" dataField="END_TIME" type="Label" columnTitle="End Time" /> 
+					<field width="100" dataField="LEAVE_TYPE" type="Label" columnTitle="Type of leave" />
+					<field width="22" dataField="DEL_FLAG" type="RequestType" columnTitle="Request Type" />
+					<field width="85" dataField="DAYS_TAKEN" type="RightLabel" columnTitle="Days taken" /> 
+
+				</detailFields>				
+	    	</LeaveRequestOutput>
+    	</formatting>

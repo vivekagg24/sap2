@@ -1,0 +1,1456 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ 
+Application: ECS Payment Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+
+Overview:   
+ 
+	This is the main CPR Entry screen for ECS.
+	N.B. The CPREntry swf file must be placed in the mimes folder of the BSP application ZECS_CPR
+	
+	Communication with the backend is done by using web services to call functions in the 
+	function group ZECS_CPR_SOA:
+		Z_ECS_CHECK_DOUBLE_PAYMENT Check for a double payment when creating/ validating 
+		Z_ECS_CHECK_PROJECT_CODE Search project codes 
+		Z_ECS_CONVERT_CURRENCY Convert currency (ECS) 
+		Z_ECS_CPR_GET_CONTRACTS Get the contributor contracts 
+		Z_ECS_CPR_GET_CONTRIBUTOR_DET Get the contribubtor detail 
+		Z_ECS_GET_CONTRIB_RCNT_CPRS Get the contributor's recent paymetns
+		Z_ECS_CPR_GET_EMAIL_TEXT Get the email (html) for the contributor email 
+		Z_ECS_DELETE_CPR Deletes a CPR on ECS 
+		Z_ECS_GETLAST20 Get last 20 contibutors used in CPRs for user 
+		Z_ECS_GET_CPR Get  all data for a CPR  
+		Z_ECS_INITIALISE_CPR_SCREEN Initialize data for CPR Entry 
+		Z_ECS_SAVE_CPR Save a Contributor Payment Request 
+		Z_ECS_SAVE_AS_URGENT Save an ME Approved CPR as Urgent
+		Z_ECS_SEARCH_PROJECT_CODES Search project codes 
+	
+	The screen handles all CPR functionality:
+		Intial create (stage one) by commissioning editors
+		Create stage two (validated) by administrators
+		Validation (when drilled into from the ZECSB batching and validation report)
+		Editing (when drilled into from the ZECSL) payment display report
+	
+	For initial create the application either runs within a BSP (ZECS_CPR) directly within the portal
+	or as a BSP (ZECS_CPR) within the SAP GUI HTML control (transaction	ZECS_CPR_CREATE).
+	
+	For display and editing the BSP application ZECS_CPR runs in an iframe in an HTMLB tabstrip in BSP
+	application ZECS_CPR_PLUS. The second tab is the Create Contributor Flex application.
+	
+	
+	The SAP function module Z_ECS_EMBED_BSP_IN_GUI embeds the BSP applications in the GUI.
+	
+	The BSP page fragment ZECS_GENERIC/DynamicShell.htm is used to generate the HTML page hosting the 
+	Flex application. 
+	
+	Client side Communication with SAP and the Portal:
+		1. Setting a change flag
+			When data is edited a JavaScript function is called on the parent BSP which:
+			a) if running in the Portal uses the EPCF to set the dirty flag and trigger automatic warnings
+				if the user navigates away
+			b) if running in the GUI uses SAP GUI eventing to trigger navigation warnings (handled by 
+			function module Z_ECS_EMBED_BSP_IN_GUI)
+		2. Launch contract display
+			When viewing a contract:
+			a) In the portal launch the iView which shows the contract in the SAP GUI
+			b) In the GUI - trigger a SAP GUI event from JavaScript to launch the contract display (done in 
+				function module Z_ECS_CPR_LAUNCH_CONTRACT_GUI)
+		3. View contributor details
+			To display a contributor:
+			a) In the SAP GUI launch the iView for Contributor display in a separate headerless portal window
+			b) In the SAP GUI switch to the tab with the Contributor Felx app. Contributor number is updated
+			via JavaScript. 
+		4. Print Cash Payment forms
+			a) In the GUI raise a GUI event handled in Z_ECS_EMBED_BSP_IN_GUI which calls ZCL_ECS_CPR->PRINT_CASH_PAYMENT_FORMS
+			b) In the portal call the iView for printing cash payment forms (GUI transaction ZECS_CASH_PAY_PRINT)
+	
+	Code organisation
+		
+		ecs/CPREntryScripts/Data: data declarations for CPREntry.mxml
+		ecs/CPREntryScripts/SAP: calls to SAP and callbacks
+		ecs/CPREntryScripts: logical organisation of script for CPREntry
+		ecs/components:	MXML graphical components 
+		ecs/generalClasses: classes e.g. CPRItem
+		ecs/gridFields: Item renderers for the items data grid
+		ecs/popups: Popup windows (search etc)
+		ecs/scripts: Utility scripts
+		ecs/validators: MXML validator components
+		
+	
+-->
+
+<mx:Application
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:validators="ecs.validators.*" 
+	xmlns:ecs="ecs.components.*" 	
+	xmlns:ns1="ni.components.*"
+	layout="absolute" 
+	height="100%"
+	styleName="application"  
+	fontSize="11"
+	fontFamily="arial" 
+	tabChildren="true"
+    tabEnabled="true"
+	initialize="setWSDLPath(); "
+    creationComplete="trace('CPR Entry creation complete event ' + getTimer());"
+	modalTransparencyDuration="0"
+    keyUp="handleKeyUp(event);"
+     
+    
+    frameRate="60" 
+    deactivate="rememberFocusField()"
+    activate="getRemberedFocusField()"       
+   viewSourceURL="srcview/index.html">
+    
+    <!-- Add this to stop the tab from leaving the application. 
+    <mx:keyFocusChange>appFocusOut(event)</mx:keyFocusChange>
+     -->
+
+	<!--ECS stylesheet -->
+	<mx:Style source="ECS.css"/>
+	<!--Bindable data declarations -->
+	<mx:Script source="ecs/CPREntryScripts/Data/BindableDeclarations.as"/>
+	<!--Constants -->
+	<mx:Script source="ecs/CPREntryScripts/Data/Constants.as"/>	
+	<!--General global (non-bindable) data declations -->
+	<mx:Script source="ecs/CPREntryScripts/Data/GeneralDataDeclarations.as"/>
+	<!--Functions that trigger web service calls to SAP -->
+	<mx:Script source="ecs/CPREntryScripts/SAP/WebServiceCalls.as"/>
+	<!--Callback function handlers for web service calls to SAP  -->
+	<mx:Script source="ecs/CPREntryScripts/SAP/WebServiceCallBacks.as"/>
+	<!--CPREntry script: validation -->
+	<mx:Script source="ecs/CPREntryScripts/validationScripts.as"/>
+	<!--CPREntry script: Setup of and manipulation of screen elements -->
+	<mx:Script source="ecs/CPREntryScripts/ScreenSetup.as"></mx:Script>
+	<!--Utility scripts-->
+	<mx:Script source="ecs/scripts/Utilities.as"></mx:Script>
+	<!--CPREntry script: Functions for handling hold/set/delete data -->
+	<mx:Script source="ecs/CPREntryScripts/HoldDataFunctions.as"/>
+	<!--CPREntry script: Event handlers -->
+	<mx:Script source="ecs/CPREntryScripts/EventHandlers.as"/>
+	<!--CPREntry script: Navigation (external, exiting, launch new contrib screen) -->
+	<mx:Script source="ecs/CPREntryScripts/Navigation.as"/>
+	<!--CPREntry script: Formatting and manipulation of data structures -->
+	<mx:Script source="ecs/CPREntryScripts/DataManipulation.as"/>
+	<!--CPREntry script: building dropdown lists, e.g. recent value lists for TextInputPlus -->
+	<mx:Script source="ecs/CPREntryScripts/BuildDropdowns.as"/>
+	<!--CPREntry script: Messages for user-->
+	<mx:Script source="ecs/CPREntryScripts/Messages.as"/>
+	<!--CPREntry script: handling calls from parent BSP page -->
+	<mx:Script source="ecs/CPREntryScripts/CallsFromExternal.as"/>
+	<!--Utility script: Allow Flash crossdomain functionality -->
+	<mx:Script source="ecs/scripts/CrossDomain.as"/>
+	
+	<mx:Script>
+    <![CDATA[   	
+    	import mx.formatters.DateFormatter;
+    	import mx.controls.dataGridClasses.DataGridColumn;
+    	import mx.formatters.NumberFormatter;
+    	import mx.collections.XMLListCollection;
+    	import mx.messaging.channels.RTMPChannel;
+		import mx.managers.PopUpManager;
+		import mx.collections.ArrayCollection;
+        import mx.events.ListEvent;
+        import mx.events.MenuEvent;
+        import mx.rpc.events.ResultEvent;
+     	import mx.rpc.events.FaultEvent;
+     	import mx.utils.ArrayUtil;
+		import mx.controls.Alert;
+		import flash.events.EventDispatcher;
+		import mx.validators.*;
+		import mx.controls.Menu;
+		import flash.net.LocalConnection;
+		import mx.modules.*;
+		
+
+		//ECS imports
+		import ecs.gridFields.*;
+		import ecs.popups.*;
+		import ecs.validators.ContributorNumberValiditor;
+		import ecs.components.*;
+		
+		// News International Reusable components
+		import ni.components.*
+						
+		// time wsdls loaded
+		private var wsdl_loaded:String;
+		
+		// Icon to show notes are present
+		[Embed(source="notesImg.GIF")]
+		public static var notesImgClass:Class; 
+		
+		// HANDLER TO CONTAINER IF RUNNING IN A POPUP
+		public var containing_popup_window:UIComponent;
+			
+		
+		/* setWSDLPath
+			Set location for the web service WSDL files (based on whether running locally or on the server)
+		 */
+		private function setWSDLPath():void{
+			trace("CPR Entry initialisation event " + getTimer());
+		 
+		 	/// Security.exactSettings = false; // Allow cross-domain access to local objects
+		 	/// If we turn this on (true), we need a crossdomain.xml file
+		 
+			if( Security.sandboxType == Security.REMOTE ){
+				//Running on the SAP WebAS
+				wsdlRoot = WSDL_SICF_PREFIX + "services=";				
+				
+				// Allow cross-domain access (needed since we have load balancing)
+			//	Security.loadPolicyFile("/sap/bc/bsp/sap/zecs_generic/crossdomain.xml");
+				 
+			}
+			else{
+				//Running from the Flex IDE
+				 wsdlRoot = DEV_SERVER       	// Which SAP server should we connect to?
+			              	+ WSDL_SICF_PREFIX
+			             	+ SAP_CLIENT       	// Which SAP client should we connect to?
+			            	+ "services=" ; 
+			}
+			
+			// Also decide where to get Contributor Search from
+			if (Security.sandboxType  == Security.REMOTE)
+				swfmodule_contrib_search = SWFMODULE_CONTRIB_SEARCH;
+			else  // Running locally
+				swfmodule_contrib_search = SWFMODULE_CONTRIB_SEARCH_LOCAL;
+			
+			
+							
+		}	
+		
+		
+
+		
+		/**	
+			initApplication
+			Setup the screen when the application loads: set mode, screen display, handlers for external callbacks
+			Called when the WSDL has loaded, doesn't wait for the application to finish drawing
+		*/
+		public function initApplication():void{
+			
+			//Set security to allow communication across domains
+			//Security.allowDomain("*");	// Deactivated as it causes errors in F11	
+			trace("Init application");
+			
+			//Disable Flash settings menu
+			fscommand("showmenu","false");
+			
+	 		//Application mode (passed in?)
+			if (Application.application.parameters.mode != null)
+				MODE=Application.application.parameters.mode;
+				
+			//Default is create
+			if (MODE==""|| MODE==null)
+			  MODE=CREATE;
+			
+			//CPR number
+			if (Application.application.parameters.cpr != null)
+        		cpr=Application.application.parameters.cpr;
+        		
+        	//Company code
+        	if (Application.application.parameters.company != null)
+        		company=Application.application.parameters.company;
+        		
+        	//Fiscal year
+        	if (Application.application.parameters.year != null)
+        		year=Application.application.parameters.year; 
+        	
+        	//Running in SAP GUI flag
+        	inGUI=Application.application.parameters.gui;
+        	//Running with parent container
+        	//withParent = Application.application.parameters.withParent;
+			
+			//register handler for update contributor number (called from Create contributor flex app via 
+			//the CPR_PLUS parent page
+        	ExternalInterface.addCallback("updateContributorNumber", updateContributorNumber);
+        	ExternalInterface.addCallback("loadNewCPR", loadNewCPR);
+        	ExternalInterface.addCallback("populateScreenFromUploadProgram", populateScreenFromUploadProgram);
+        	ExternalInterface.addCallback("passTabKey", passTabKey);
+        	ExternalInterface.addCallback("focusOnContributorName", focusOnContribName);
+        	ExternalInterface.addCallback("escapeKeyPressed", escapeKeyPressed);
+        	addEventListener("amountChanged",amountChanged);
+
+			//Setup the screen - display mode and menu buttons etc.
+        	setUpScreen();
+        	wsAllNoBusyCursor.Z_ECS_GETLAST20.send();
+        	//Initialise screen - get cpst centres, GL accounts, item categories, user access etc
+			wsAllBusyCursor.Z_ECS_INITIALISE_CPR_SCREEN.send();
+			
+			// Set up message suppression			
+			saveMesageSuppressed.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, saveSaveMessageSuppression);
+		
+
+		} 
+		
+		/** Method to stop tabbing out of the application.
+		*/
+		
+		private function appFocusOut(event:FocusEvent):void
+		{
+			// Check that the focus isn't leaving the application
+			if (!event.relatedObject)
+			{
+				
+				var id:String = ""
+				if (event.target.hasOwnProperty("id"))
+					id = event.target.id;
+				if (id.length == 0 && event.target.parent && event.target.parent.hasOwnProperty("id"))
+					id = event.target.parent.id;				
+				trace("Application attempting to focus out whist leaving component " + id + ", shift key = " + event.shiftKey);
+				event.preventDefault(); //Stop the tab index leaving
+				var first:IFocusManagerComponent = focusManager.getNextFocusManagerComponent(event.shiftKey);
+				if (first && first != event.target)  // Do we have something to move focus to (not the currently focused object)?
+				{
+					first.setFocus();
+								
+				}					
+				else
+				{
+					trace("Focus playing up so re-initialising application focus manager");
+					// For some reason focus is playing up. Try killing and reinitialising the focus manager
+					this.focusManager.deactivate();
+					systemManager.removeFocusManager(this);
+					this.focusManager = new FocusManager(this);
+					systemManager.addFocusManager(this);
+					first = focusManager.getNextFocusManagerComponent(event.shiftKey);
+					if (first)
+						first.setFocus();
+					FocusManager;
+				}
+				
+			}	
+		}
+		
+		/** Cleans up any loaded swf files, otherwise we might run out of memory
+		*
+		*/
+		private function cleanupOnDeactivate():void
+		{
+			var imod:IModuleInfo; // Module swf file that was loaded 
+			
+			// Unload the Contribuor Search module
+			imod = ModuleManager.getModule(SWFMODULE_CONTRIB_SEARCH);
+			if (imod && imod.loaded)
+				imod.unload();
+			
+			// Unload the Communication History module	
+			imod = ModuleManager.getModule(SWFMODULE_COMM_HIST);
+			if (imod && imod.loaded)
+				imod.unload();		
+
+			
+		}
+
+		
+		/** Receive tab key from external javascript container
+		*/ 
+		private function passTabKey(name:String):void
+		{
+			
+			if (name == "false") {
+			// only the TAB key has been pressed
+				focusManager.getNextFocusManagerComponent().setFocus();
+			} else {
+			
+			// the combination of  SHIFT+TAB has been pressed
+				focusManager.getNextFocusManagerComponent(true).setFocus();
+			}
+		}
+		
+		private function focusOnContribName():void
+		{ //Focus on the contributor name field
+			if (messageWindows && messageWindows.length > 0)
+				return;  // Don't bother if popup still open
+			
+			// Make sure flex has focus
+			ExternalInterface.call("giveFocusToFlex");
+			if (focusManager == null) return;
+		
+			focusManager.activate();
+			focusManager.setFocus(txtContributorName); 
+			focusField = txtContributorName; // So that one we close a message, focus goes to here
+			//txtContributorName.dispatchEvent(new Event(MouseEvent.CLICK));
+			setPaymentNotesLabel();
+			if (!txtContributorName.editable) // If not editable, tab to next field
+			{
+				trace("Shift focus from contributor field");
+				var foc:* = focusManager.getNextFocusManagerComponent(true);
+				if (foc != null)
+					foc.setFocus();				
+			}
+			
+		}
+
+        /*
+        	resetApplication
+        	Reset the Application after save
+        */       
+		private function resetApplication():void{
+			if (MODE==CREATE){
+				//Clear out the CPR key
+				 cpr="";
+				 year="";
+				 company="";	
+				 wsAllNoBusyCursor.Z_ECS_GETLAST20.send();//Get the last 20 contributors used		
+			}
+			contractReasonVisible=false;			//Hide non-standard contract reason
+			contractList=null;						//refresh contract list
+			gotContracts = false;
+			if (MODE==CREATE && areAllCostCentresHeld(true) && isContributorHeld(true))
+			{
+				// Get contracts. Contract list is updated when user enters a cost centre or contributor, but
+				// since this won't happen (as data is held/set), we need to get the list now.
+				getContracts();
+			}
+
+			chkNewContributor.selected=false;       //Disable allow new contibutor
+			allowNewContributor=false;
+			if (!isContributorHeld()) 
+				clearContributorDetails();			//Clear out the contributor details
+			cprCurrency = "GBP";
+			focusOnContribName();					//Focus on contributor name field
+			prevContributor="";						//Reset previous contributor number (used for on change check)
+			loadData();								//Load the screen (either current CPR or refresh for new)
+			defaultPublicationDate();
+			setPaymentNotesLabel();			
+			
+		}
+		
+		private function debugt():void 
+		{
+			var x:Object = new Object();
+			x.toString();
+				
+		}
+			
+		public function CheckRequired(Input:int):void
+		{
+			if (Input > 0)
+	  		   validateonbehalfof.required=true;
+			else
+	 		   validateonbehalfof.required=false;
+		}
+           
+    ]]> 
+</mx:Script>
+	
+<!-- EVENT DECLARATIONS-->
+	<!-- Triggered when an amount field changes (to trigger currency conversion and totalling
+		 Triggered by the amount item renderer and handled in the parent application
+	-->
+	<mx:Metadata>[Event(name="amountChanged", type="Event")]</mx:Metadata>
+	<!-- Trigger focus on an GL account error - triggered by parent, handled by item renderer-->
+	<mx:Metadata>[Event(name="GLErrorFocus", type="Event")]</mx:Metadata>
+	<!-- Trigger focus on a blank GL account - triggered by parent, handled by item renderer-->
+	<mx:Metadata>[Event(name="GLFocus", type="Event")]</mx:Metadata>
+	<!-- Trigger focus on blank cost centre - triggered by parent, handled by item renderer-->
+	<mx:Metadata>[Event(name="CostCentreFocus", type="Event")]</mx:Metadata>
+	<!-- Trigger focus on project code error - triggered by parent, handled by item renderer-->
+	<mx:Metadata>[Event(name="ProjectErrorFocus", type="Event")]</mx:Metadata>
+	<!-- Trigger focus on blank amount (first line) - triggered by parent, handled by item renderer-->
+	<mx:Metadata>[Event(name="FirstAmountFocus", type="Event")]</mx:Metadata>
+	<!-- Trigger focus on amount error - triggered by parent, handled by item renderer-->
+	<mx:Metadata>[Event(name="AmountErrorFocus", type="Event")]</mx:Metadata>
+	<!-- Trigger focus on cost centre error - triggered by parent, handled by item renderer-->
+	<mx:Metadata>[Event(name="CostCentreErrorFocus", type="Event")]</mx:Metadata>
+	
+<!-- DATA MODELS-->
+	<!-- Menu structure for the hold options-->
+	<mx:XML format="e4x" id="xmlHoldOptions"> 
+        <root>
+            <editItem label="Set Data" data="set"/> 
+            <editItem label="Hold Data" data="hold"/> 
+            <separator type="separator"/>
+            <editItem label="Delete Data" data="delete"/> 
+        </root>
+    </mx:XML>
+	
+<!-- WEB SERVICE DECLARATIONS-->
+
+<!-- Web service containing calls to all operations that want to show the busy cursor
+     We group multiple calls together so that the WSDL loads faster -->
+     
+	<mx:WebService id="wsAllBusyCursor"
+	  	wsdl="{wsdlRoot}Z_ECS_GET_CPR,Z_ECS_DELETE_CPR,Z_ECS_SAVE_CPR,Z_ECS_INITIALISE_CPR_SCREEN,Z_ECS_CONTRIB_SEARCH,Z_ECS_SAVE_AS_URGENT,Z_ECS_SEARCH_CONTRIBUTORS,Z_ECS_SEARCH_PROJECT_CODES"
+	  	useProxy="false"
+	  	showBusyCursor="{this.visible}"
+	    load="loadCrossPolicyFile(event)"
+	    fault="wsError(event)"
+	    >	 
+	  	
+	<!-- Initialise screen - run once when the application loads-->  	 	
+		 <mx:operation name="Z_ECS_INITIALISE_CPR_SCREEN"  
+	    	 resultFormat="e4x" concurrency="single"
+	    	 result="initDataCallBack(event.result)"
+	    	 fault="callError(event)" >
+	    	<mx:request>
+	    		<IM_UNAME></IM_UNAME>
+	    		<CH_T_PUBLICATIONS></CH_T_PUBLICATIONS>
+	    		<CH_T_PAYMENT_TYPES></CH_T_PAYMENT_TYPES>
+	    		<CH_T_CURRENCIES></CH_T_CURRENCIES>
+	    		<CH_T_COST_CENTRES></CH_T_COST_CENTRES>
+	    		<CH_T_GL_ACCOUNT></CH_T_GL_ACCOUNT>
+	    		<CH_T_ITEMCAT></CH_T_ITEMCAT>
+	    		<CH_T_PUBLICATION_DATES></CH_T_PUBLICATION_DATES>
+	    		<CH_T_PAGENO_CONFIG></CH_T_PAGENO_CONFIG>
+	    	</mx:request>
+		</mx:operation>
+		
+	<!-- Get a CPR -->
+	<!--Get all data for a CPR (or initialise structures if blank)
+	   Concurrency must be 'last' as this webservice may be called 
+	  repeatedly by external javascript calls to loadNewCPR();	     
+	 -->
+	  	<mx:operation name="Z_ECS_GET_CPR"  
+	    	 resultFormat="e4x" concurrency="last"
+	    	 result="getCPRCallBack(event.result)"
+	    	 fault="callError(event)" 
+	    	 >
+	    	<mx:request>
+	    		<IM_DOCUMENT_NUMBER>{cpr}</IM_DOCUMENT_NUMBER>
+	    		<IM_COMPANY_CODE>{company}</IM_COMPANY_CODE>
+	    		<IM_YEAR>{year}</IM_YEAR>
+	    		<CH_T_ITEMS></CH_T_ITEMS>
+	    	</mx:request>
+		</mx:operation>
+	
+	<!-- Delete a CPR-->	
+		<mx:operation name="Z_ECS_DELETE_CPR"  
+	    	 resultFormat="e4x" concurrency="single"
+	    	 result="deleteCPRCallBack(event.result)"
+	    	 fault="callError(event)" >
+	    	<mx:request>
+	    		<IM_DOCUMENT_NUMBER>{cpr}</IM_DOCUMENT_NUMBER>
+	    		<IM_COMPANY_CODE>{company}</IM_COMPANY_CODE>
+	    		<IM_YEAR>{year}</IM_YEAR>
+	    	</mx:request>
+		</mx:operation>
+		
+	<!--Save the payment on SAP -->
+	    <mx:operation name="Z_ECS_SAVE_CPR"  
+	     	 concurrency="single"
+	    	 resultFormat="e4x"
+	    	 result="saveCPRCallBack(event.result)"
+	    	 fault="callError(event)"  >
+	    	<mx:request>
+	    		<CH_T_ITEMS></CH_T_ITEMS>
+	    		<IM_HEADER></IM_HEADER>
+	    		<IM_NOTES>{rteNotes.htmlText}</IM_NOTES>
+	    		<IM_NEW_LEVEL></IM_NEW_LEVEL>
+	    		<EX_T_ERRORS></EX_T_ERRORS>
+	    		<EX_T_CPRS_CREATED></EX_T_CPRS_CREATED>
+	    	</mx:request>
+		</mx:operation>		
+		
+		<!--Search for contributors by name -->
+	    <mx:operation name="Z_ECS_CONTRIB_SEARCH"  
+	    	 resultFormat="e4x" concurrency="last"
+	    	 result="searchContributorsNewCallBack(event.result)"
+			 fault="Alert.show(event.fault.faultString,MESSAGE_TITLE)"    >
+			<mx:request>							
+				<IM_SEARCH_TYPE></IM_SEARCH_TYPE>
+				<IM_SEARCH_STRING>{txtContributorName.text}</IM_SEARCH_STRING>
+				<IM_ALLOW_DELETED>X</IM_ALLOW_DELETED>
+			</mx:request>		    	 
+		</mx:operation>		
+	     
+	<!-- Save an ME Approved CPR as Urgent -->
+	    <mx:operation name="Z_ECS_SAVE_AS_URGENT"  
+	    	 resultFormat="e4x" concurrency="single"
+	    	 result="saveAsUrgentCallBack(event.result)"
+	    	 fault="callError(event)" >
+	    	<mx:request>
+	    		<IM_DOCUMENT_NUMBER>{cpr}</IM_DOCUMENT_NUMBER>
+	    		<IM_COMPANY_CODE>{company}</IM_COMPANY_CODE>
+	    		<IM_YEAR>{year}</IM_YEAR>
+	    		<IM_REASON></IM_REASON>
+	    		<EX_T_ERRORS></EX_T_ERRORS>
+	    	</mx:request>
+		</mx:operation>
+
+	<!-- Search contributors by post code-->
+   	    <mx:operation name="Z_ECS_SEARCH_CONTRIBUTORS"  
+	     	 concurrency="single"
+	    	 resultFormat="e4x" 
+	    	 fault="callError(event)" 
+	    	 result="searchContributorsNewCallBack(event.result)">
+	    	<mx:request>
+	    		<PSTLZ>{txtPostCode.text}</PSTLZ>
+				<NAME></NAME>
+				<DELETED_INCL></DELETED_INCL>
+				<BUKRS></BUKRS>
+				<T_CONTRIBS></T_CONTRIBS>
+	    	</mx:request>
+		</mx:operation>
+		
+	<!-- Check / Search for project codes -->
+	    <mx:operation name="Z_ECS_SEARCH_PROJECT_CODES"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	<mx:request>
+	    		<IM_NAME></IM_NAME>
+	    		<IM_PUBID></IM_PUBID>
+	    		<RE_T_PROJECTS></RE_T_PROJECTS>
+	    	</mx:request>
+		</mx:operation>			
+		
+	</mx:WebService>
+	<!-- End of web service wsAllBusyCursor -->
+	
+	<mx:WebService id="wsAllNoBusyCursor"
+	  	wsdl="{wsdlRoot}Z_ECS_CONVERT_CURRENCY,Z_ECS_CPR_GET_CONTRIBUTOR_DET,Z_ECS_GET_CONTRIB_RCNT_CPRS,Z_ECS_CHECK_DOUBLE_PAYMENT,Z_ECS_CPR_GET_CONTRACTS,Z_ECS_GETLAST20,Z_ECS_SAVE_USER_DEFAULT_POST,Z_ECS_SAVE_USR_PARAM,Z_ECS_GET_CPR_CHANGES"
+	  	useProxy="false"
+	  	showBusyCursor="false"
+	  	fault="wsError(event)"
+	    load="loadCrossPolicyFile(event); initApplication();">		
+	  	
+	  	<!--Convert the currency -->
+	    <mx:operation name="Z_ECS_CONVERT_CURRENCY"  	     	 
+	    	 resultFormat="e4x" 	    	 
+	    	 concurrency="multiple"
+	    	 result="currencyConvertCallBack(event.result)"
+	    	 fault="callError(event)"     	 
+	    	 >
+	    	<mx:request>
+	    		<IM_FROM></IM_FROM>
+	    		<IM_TO></IM_TO>
+	    		<IM_AMOUNT></IM_AMOUNT>
+	    	</mx:request>
+		</mx:operation>	
+		
+		<!-- Get all details for the contributor (apart from recent payments)-->
+		<mx:operation name="Z_ECS_CPR_GET_CONTRIBUTOR_DET"  
+	     	 concurrency="last"
+	    	 resultFormat="e4x"
+	    	 result="getContributorDetailsCallBack(event.result)" 
+	    	 fault="callError(event)"  >
+	    	<mx:request>
+	    		<CH_T_CONTRIBUTOR_DETAIL></CH_T_CONTRIBUTOR_DETAIL>	    		
+	    		<IM_CONTRIBUTOR>{txtContributor.text}</IM_CONTRIBUTOR>
+	    	</mx:request>
+		</mx:operation>
+		
+		<!-- Get recent payments for the contributor-->
+		<mx:operation name="Z_ECS_GET_CONTRIB_RCNT_CPRS"  
+	     	 concurrency="last"
+	    	 resultFormat="e4x"
+	    	 result="getContributorCPRsCallBack(event.result)" 
+	    	 fault="callError(event)" 
+	    	  >
+	    	<mx:request>	
+	    		<IM_MAX_RECORDS>20</IM_MAX_RECORDS>
+	    		<IM_KOSTL></IM_KOSTL>    		
+	    		<CH_T_CPRS></CH_T_CPRS>
+	    		<IM_CONTRIBUTOR>{txtContributor.text}</IM_CONTRIBUTOR>
+	    	</mx:request>
+		</mx:operation>		
+
+<!--Double payment check before save-->	
+	   <mx:operation name="Z_ECS_CHECK_DOUBLE_PAYMENT"  
+	     	 concurrency="last"
+	    	 resultFormat="e4x" 
+	    	 result="doublePaymentCheckCallback(event.result)"
+	    	 fault="callError(event)"   >
+	    	<mx:request>
+	    		<IM_CONTRIBUTOR>{txtContributor.text}</IM_CONTRIBUTOR>
+	    		<IM_PUBID>{comboPubID.selectedItem.data}</IM_PUBID>
+	    		<IM_PUBDATE>{publicationDate}</IM_PUBDATE>
+	    		<IM_NET_AMOUNT></IM_NET_AMOUNT>
+	    		<IM_CURRENCY>{cprCurrency}</IM_CURRENCY>
+	    		<IM_DOCUMENT>{CPRHeader.BELNR}</IM_DOCUMENT>
+	    		<RE_T_CPRS></RE_T_CPRS>
+	    	</mx:request>
+		</mx:operation>
+
+	<!--get list of contracts (when contributor, cost centre or publication date change)-->
+	    <mx:operation name="Z_ECS_CPR_GET_CONTRACTS"  
+	     	 concurrency="last"
+	    	 resultFormat="e4x"
+	    	 result="getContractsCallback(event.result)"
+	    	 fault="callError(event)"   >
+	    	<mx:request>
+	    		<IM_CONTRIBUTOR>{txtContributor.text}</IM_CONTRIBUTOR>
+	    		<IM_PUBID>{comboPubID.selectedItem.data}</IM_PUBID>
+	    		<IM_PUBDATE>{publicationDate}</IM_PUBDATE>
+	    		<IM_T_COST_CENTRES></IM_T_COST_CENTRES>
+	    		<EX_T_CONTRACTS></EX_T_CONTRACTS>	    		
+	    	</mx:request>
+		</mx:operation>
+		
+	<!-- Get the user's last 20 contributors-->
+	    <mx:operation name="Z_ECS_GETLAST20"  
+	    	 resultFormat="e4x" concurrency="last"
+	    	   fault="callError(event)"  
+  			   result="getLast20CallBack(event.result.EX_T_CON_DETAIL.item)"  >
+		</mx:operation>			
+	
+	<!-- Save the user's default save option -->	
+	    <mx:operation name="Z_ECS_SAVE_USER_DEFAULT_POST"  
+	    	 resultFormat="e4x" concurrency="multiple"
+	    	   fault="callError(event)"  
+  			   result=";"  >
+  			 <mx:request>
+	    		<IM_POST>{comboDefaultSave.selectedItem.data}</IM_POST> 		
+	    	</mx:request>
+		</mx:operation>	
+
+	<!-- Save a user paramter option -->	
+	    <mx:operation name="Z_ECS_SAVE_USR_PARAM"  
+	    	 resultFormat="e4x" concurrency="multiple"
+	    	   fault="callError(event)"  
+  			   result=";"  >
+  			 <mx:request>
+	    		<IM_PARAM></IM_PARAM>
+	    		<IM_VALUE></IM_VALUE> 		
+	    	</mx:request>
+		</mx:operation>	
+
+	<!-- Get CPR History -->
+	  	<mx:operation name="Z_ECS_GET_CPR_CHANGES"  
+	    	 resultFormat="e4x" concurrency="last"
+	    	 result=";"
+	    	 fault="callError(event)" 
+	    	 >
+	    	<mx:request>
+	    		<IM_DOCUMENT_NUMBER>{cpr}</IM_DOCUMENT_NUMBER>
+	    		<IM_COMPANY_CODE>{company}</IM_COMPANY_CODE>
+	    		<IM_YEAR>{year}</IM_YEAR>
+	    	</mx:request>
+		</mx:operation>	
+	
+	</mx:WebService>
+ <!-- End of Web Service wsAllNoBusyCursor -->
+	
+
+	
+	<!-- Get the data for a CPR that has been selected for copying-->
+	<mx:WebService id="wsGetCPRDataForCopy" 
+    	wsdl="{wsdlRoot}Z_ECS_GET_CPR"
+    	useProxy="false"
+    	result="getCPRForCopyCallBack(event.result)"
+    	fault="wsError(event)"
+     	showBusyCursor="{this.visible}"
+     	load="loadCrossPolicyFile(event)">   
+	    <mx:operation name="Z_ECS_GET_CPR"  
+	    	 resultFormat="e4x" concurrency="single">
+	    	<mx:request>
+	    		<IM_DOCUMENT_NUMBER></IM_DOCUMENT_NUMBER>
+	    		<IM_COMPANY_CODE></IM_COMPANY_CODE>
+	    		<IM_YEAR></IM_YEAR>
+	    		<CH_T_ITEMS></CH_T_ITEMS>
+	    	</mx:request>
+		</mx:operation>
+	</mx:WebService>
+	
+
+	
+	<!--Get the email HTML (either contractual or infirming contributor of payment)-->
+<!--	<mx:WebService
+		id="wsGetContributorEmail" 
+    	wsdl="{wsdlRoot}Z_ECS_CPR_GET_EMAIL_TEXT"
+    	useProxy="false"
+    	result="getContributorEmailCallBack(event.result)"   	 
+     	showBusyCursor="true"
+     	fault="Alert.show(event.fault.faultString,MESSAGE_TITLE)">
+	    <mx:operation name="Z_ECS_CPR_GET_EMAIL_TEXT"  
+	     	 concurrency="last"
+	    	 resultFormat="e4x" >
+	    	<mx:request>
+	    		<IM_CPR_NUMBER>{cpr}</IM_CPR_NUMBER>
+	    		<IM_YEAR>{year}</IM_YEAR>
+	    		<IM_COMPANY>{company}</IM_COMPANY>
+	    		<IM_STATUS></IM_STATUS>
+	    	</mx:request>
+		</mx:operation>
+	</mx:WebService> -->
+		
+
+
+
+
+<!-- VALIDATORS-->	
+	<!-- Story - required entry validator-->
+	<mx:Validator
+		id="validTxtStory"
+		 required="true" 
+		 property="text">
+		 <mx:source>{txtStory}</mx:source> 
+		<!-- <mx:source>{txtPageNumbers}</mx:source> -->
+	</mx:Validator>
+	<!--Page numbers - required entry validator-->
+	<mx:Validator
+		id="validTxtPageNumbers"
+		 required="{pageNumbersRequired}" source="{txtPageNumbers}"
+		 property="text">
+	</mx:Validator>
+	<!--Contract reason for "DONT KNOW" - required entry validator-->
+	<!--Required unless user is Accounts Payable --> 
+	<mx:Validator
+		id="validTaContractReason"
+		 required="{ifBothTrue(!isFinanceUser, taContractReason.visible)}" source="{taContractReason}"
+		 property="text">
+	</mx:Validator>
+	
+    <!-- validates the input on behalf of field when special payment type is selected  -->	    
+	<mx:Validator
+		id="validateonbehalfof"		
+		property="text"
+		required="{ifTrue(comboSpecialPayment.selectedIndex, txtOnBehalfOf.text)}"  
+		source="{txtOnBehalfOf}"
+		>
+    </mx:Validator>		
+	
+    		
+	
+	<ecs:ComboValidator
+		id="validComboContract"
+		required="true"
+		source="{comboContract}"
+		property="selectedItem">		
+	</ecs:ComboValidator>
+		
+
+	<!--Contributor number: valid and required entry-->
+	<validators:ContributorNumberValiditor
+		id="validTxtContributor"
+		required="true" 
+		source="{txtContributor}"
+		error="{contributorNumberError}"
+		property="text"
+		>
+	</validators:ContributorNumberValiditor>
+	<!--Publication Date: valid and required entry-->
+	<mx:DateValidator 
+		id="validDtPubdate"
+		source="{dtPubDate}"
+		property="text"
+        inputFormat="dd/mm/yyyy"
+        invalid="invalidPubDate=true;"
+        valid="invalidPubDate=false;"
+        required="{(!chkHeld.selected)}"
+        allowedFormatChars="/." >
+    </mx:DateValidator>
+    
+	<!--Glow effect to highlight the contract "DNT KNOW" reason-->
+	<mx:Glow id="efGlow" duration="1500" repeatCount="2"></mx:Glow>
+	
+	<!--Glow effect to highlight the button that was activated-->
+	<mx:Glow id="efGlowForButton" duration="2000" repeatCount="1" color="0x22FF22"></mx:Glow>
+	
+	<!--Glow effect to highlight the messages -->
+	<mx:Parallel id="efGlowForMessage" target="{lblInfoMessage}" repeatCount="1" startDelay="100">		
+		<mx:Glow 		 	 
+		 	 duration="2000"
+		 	 repeatCount="1"	
+		 	 color="0x22FF22" />
+		<mx:WipeRight duration="600"
+		             repeatCount="1"
+		            />	
+    </mx:Parallel> 
+	
+<!--TOOLBAR (buttons are shown and placed in setUpScreen() -->
+	<mx:Canvas x="10" y="0" width="988"  height="32" borderStyle="solid"
+		id="cnvToolbar"  visible="false" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	<!--Validate -->
+	<mx:Button x="533" y="3" id="btnValidate"
+		enabled="true"
+		styleName="button"
+		click="doublePaymentCheck(2)"
+		tabEnabled="false"
+		focusEnabled="false"
+		toolTip="Validate this payment (ctrl + 2)" icon="@Embed('images/tick.gif')" labelPlacement="left" width="121" label="Validate" textAlign="center"/>
+	<!-- Save - stage one-->
+	<mx:Button x="17" y="3" id="btnSave"
+		enabled="true"
+		click="doublePaymentCheck(1)"
+		tabEnabled="false" focusEnabled="false"
+		toolTip="Save the CPR: not validated (ctrl + 1)" icon="@Embed('images/save.gif')" labelPlacement="left" width="121" styleName="{saveButtonStyle}" label="Save: Stage 1" textAlign="center"/>
+	<!-- Save (editing)-->
+	<mx:Button x="695" y="3" id="btnSaveChanges"
+		click="doublePaymentCheck(0)"
+		tabEnabled="false" focusEnabled="false"
+		toolTip="Save changes to the CPR (ctrl + s)" icon="@Embed('images/save.gif')" labelPlacement="left" width="121" styleName="{saveButtonStyle}" label="Save" textAlign="center"/>
+	<!-- Save - stage two-->
+	<mx:Button x="146" y="3" id="btnSave2"
+		enabled="true"
+		click="doublePaymentCheck(2);"
+		tabEnabled="false" focusEnabled="false"
+		toolTip="Save the CPR: validated (ctrl + 2)" icon="@Embed('images/tick.gif')" labelPlacement="left" width="121" styleName="{saveButtonStyle}" label="Save: Validated" textAlign="center"/>
+	<!-- Save- stage 3 (approved) -->
+	<mx:Button x="275" y="3" id="btnSave3"
+		enabled="true"
+		tabEnabled="false" focusEnabled="false"
+		click="doublePaymentCheck(3);"
+		toolTip="Save the CPR: approved at desk head level (ctrl + 3)" icon="@Embed('images/tickplus.gif')" labelPlacement="left" width="121" styleName="{saveButtonStyle}" label="Save: Approved" textAlign="center"/>
+	<!-- Switch to edit mode-->
+	<mx:Button x="404" y="3" id="btnEdit"
+		enabled="true"
+		tabEnabled="false" focusEnabled="false"
+		toolTip="Edit this payment (ctrl + e)" icon="@Embed('images/change.gif')" labelPlacement="left" width="121" label="Edit" 
+		textAlign="center"
+		click="editClicked()" styleName="button"/>
+	<!-- Delete button-->
+	<mx:Button x="662" y="3" id="btnDelete"
+		enabled="true"
+		tabEnabled="false" focusEnabled="false"
+		styleName="button"
+		click="confirmDelete()"
+		toolTip="Delete the payment" icon="@Embed('images/delete.gif')" labelPlacement="left" width="121" label="Delete" textAlign="center"/>
+	<!-- Create new contributor (switch htmlb tab to contrib tab)-->
+	<mx:Button x="662" y="3" id="btnCreateContributor"
+		enabled="true"
+		styleName="button"
+		tabEnabled="false" focusEnabled="false"
+		click="createContributor()"
+		toolTip="Create the new contributor master record" labelPlacement="left" width="121" label="Create Contributor" textAlign="center"/>
+	<!-- Print cash payment-->
+	<mx:Button x="662" y="3" id="btnPrint"
+		enabled="true"
+		styleName="button"
+		tabEnabled="false" focusEnabled="false"
+		click="printCashPaymentForms()"
+		toolTip="Create the new contributor master record" labelPlacement="left" width="121" label="Print Forms" textAlign="center"/>
+	<!--Hold/Set/Delete data options -->
+
+    <mx:PopUpMenuButton id="pbHoldOptions" x="662" y="3"
+        dataProvider="{xmlHoldOptions}" 
+        labelField="@label"         
+        showRoot="false" 
+        styleName="button"
+        tabEnabled="false" focusEnabled="false"
+        itemClick="pbHoldOptionsClickHandler(event);"
+        />
+    <mx:HBox x="838" y="3" paddingBottom="0" paddingTop="0" paddingLeft="160" paddingRight="0"
+    	    id="hbDefaultSave" visible="false" tabEnabled="false" focusEnabled="false" tabChildren="false"> 
+      <mx:Label text="Default save option"  fontStyle="normal" fontWeight="bold" paddingTop="2"/>
+	  <mx:ComboBox   id="comboDefaultSave"
+	  	             dataProvider="{allowedSaves}"  
+	  	             styleName="button"
+	  	             top="0"
+	  	             tabEnabled="false" focusEnabled="false"	  	             
+	  	             change="wsAllNoBusyCursor.Z_ECS_SAVE_USER_DEFAULT_POST.send()"   	         
+    	 />    	  	
+	</mx:HBox>	
+       
+    <mx:Label id="labHoldOptions" x="{pbHoldOptions.x + pbHoldOptions.width + 15}" y="5" />        	    
+	<!-- Save as Urgent -->
+	<mx:Button x="662" y="3" id="btnSaveUrgent"
+		enabled="true" click="saveAsUrgent()" tabEnabled="false" focusEnabled="false"
+		toolTip="Save CPR as Urgent" icon="@Embed('images/save.gif')" labelPlacement="left" 
+		width="121" styleName="{saveButtonStyle}" label="Save: Urgent" textAlign="center"/>
+	</mx:Canvas>
+	<mx:TabNavigator x="10" y="30" width="988" height="697" backgroundAlpha="0"
+		 id="tnTabs"	
+		 tabEnabled="false"
+		 
+		 creationComplete="setUpScreen()"
+		 change="tnTabsChanged(event);">
+		<mx:Canvas label="Contributor Payment Request" width="981" height="661" tabEnabled="true" tabChildren="true" >
+		
+
+			<mx:Panel x="20" y="5" width="463" height="221" layout="absolute" id="pnlKey" title="Key Information"  tabEnabled="true" tabChildren="true" >
+				<mx:Label 
+					x="10" y="4" 
+					text="Publication *" 
+					width="97" 
+					id="lblPublication" 
+				/>
+				<!-- Publication ID-->
+				<mx:ComboBox x="148" y="2" id="comboPubID" width="287" 
+					change="changedPublicationId()"
+					dataProvider="{publications}"
+					labelField="label"
+					editable="false"
+				    enabled="{applicationEditable}" styleName="{comboStyleName}" tabEnabled="false"> </mx:ComboBox>
+				<!-- Contributor Name-->
+				<ecs:ContributorTextInputPlus
+					x="148" y="30" width="259" 
+					listWidth="259"
+					listHeight="400"
+					recentEntries="{last20NamesDropDown}"
+					editable="{applicationEditable}" 
+					text="{contributorName}"
+				    committingChange="searchContributorName(txtContributorName.text)"					    			
+					id="txtContributorName" 
+					styleName="{textInputStyle}" 
+					tabEnabled="true" />			   
+		
+										
+				<mx:Label x="10" y="32" text="Name"  id="lblInfoName1"/>
+				<!--Advanced Search button-->
+				<mx:Button x="415" y="31" id="btnContribSearch" width="20" click="launchContributorSearch()" styleName="button" useHandCursor="true" icon="@Embed('images/search.gif')" enabled="{applicationEditable}" tabEnabled="false">
+					<mx:toolTip>Click here to use the advanced contributor search screen</mx:toolTip>
+				</mx:Button>
+				<!--Story-->
+				<mx:Label x="10" y="117" id="lblStory" 
+					 text="Story Details *" toolTip="Tooltip for the story details"/>
+				
+				<mx:Label x="10" y="62" text="Contributor Number *" id="lblContribNumber"/>
+				<!-- Contributor number -->
+				<ecs:ContributorTextInputPlus
+						x="148" y="58" id="txtContributor" maxChars="30" width="139"
+						listWidth="250"
+						listHeight="400"
+						recentEntries="{last20ForDropDown}"
+						enter="getContributorDetails(false);"
+					    valueCommit="getContributorDetails(false);"
+					    invalid="if(txtContributor.text.length > 0 ) txtContributor.setFocus();" 
+					    valid="setFormIsValid()"  
+					    editable="{applicationEditable}" 
+					    styleName="{textInputStyle}" 
+					    change="setDataChanged(true,false)" 
+ 						tabEnabled="true"
+ 					    focusIn="debugt()">					
+				</ecs:ContributorTextInputPlus>
+			
+			
+					 
+				<mx:Label x="10" y="90" text="Contributor's Reference" />
+				<ns1:SelectableTextInputPlus
+					 id="txtContributorReference"
+					 x="148" y="86"
+					 width="139" listWidth="139"
+					 maxChars="16"
+					 editable="{applicationEditable}"
+					 styleName="{textInputStyle}"
+					 change="setDataChanged(true)"
+					 tabEnabled="true"
+					 recentEntries="{last20ContribRef}"/>
+				<ns1:SelectableTextInputPlus
+					x="148" 
+					y="114" 
+					width="287" 
+					id="txtStory" 
+					maxChars="50" 
+					valid="setFormIsValid()"   
+					editable="{applicationEditable}"
+				    committingChange="storyChanged()"
+				    focusOut="storyChanged()"
+					styleName="{textInputStyle}"
+				    recentEntries="{last20Stories}"
+					listWidth="287"
+					listHeight="400"/>
+				<mx:Button x="295" y="60" label="Contributor Details" styleName="button" toolTip="View the full Contributor Details" icon="@Embed('images/display.gif')" width="140" click="displayFullContributorDetails()" tabEnabled="false"/>
+				<mx:CheckBox 
+					x="295" 
+					y="89" 
+					label="New Contributor" 
+					fillColors="[#aeffae, #aeffae]" 
+					visible="{allowNewContributor}" 
+					selected="{newContributor}" 
+					id="chkNewContributor" 
+					valueCommit="setNewContributorFlag()" 
+					tabEnabled="false" 
+					enabled="{applicationEditable}">
+					<mx:toolTip>Click on "contributor details" to enter/ edit information for the new contributor</mx:toolTip>
+				</mx:CheckBox>
+		 		<mx:Label x="10" y="144" text="Input on behalf of"/> 
+				<ns1:SelectableTextInputPlus
+					x="148" y="143"
+					width="287"
+					listWidth="287"
+					id="txtOnBehalfOf" 
+					styleName="{textInputStyle}" editable="{applicationEditable}" 
+					maxChars="40" 
+					change="setDataChanged(true)" 
+				    recentEntries="{last20OnBehalfOf}"  				   				   
+				  />				
+				 
+				<!--<mx:Label x="50" y="32" text="{'Available: ' + ExternalInterface.available}" visible="true"/> -->
+				
+			</mx:Panel>
+			
+			<mx:Label x="160" y="14"
+		    	      id="lblInfoMessage"
+		    	      text=""
+		    	      width="320"		    	      
+		    	      visible="false"
+		    	      fontStyle="italic"
+		    	      fontWeight="bold"		    	      
+		    	      color="green"		    	      
+		    	      includeInLayout="false"
+		    	      click="infoMessageClickHandler();"  	      
+		    	      
+		    	  />
+	
+	   	  
+			
+			<mx:TabNavigator x="20" y="230" width="951" height="427" backgroundAlpha="0"
+				     id="tnPaymentDetails"
+				     tabEnabled="false"
+				      creationPolicy="auto">
+				<mx:Canvas label="Payment Details" width="946" height="391" 
+					 tabEnabled="false">
+					<mx:Panel x="10" y="0" width="926" height="227" layout="absolute" title="Payment Detail" tabEnabled="false"
+					     >
+						<mx:Label x="10" y="9" text="Special Payment Type" id="lblSpecialPayment"/>
+				    	<mx:ComboBox x="129" y="7" width="160" 
+							id="comboSpecialPayment" 
+							editable="false"					
+					        dataProvider="{specialPaymentTypes}"
+					        valid="setFormIsValid()" 
+            		        labelField="label"  enabled="{applicationEditable}" styleName="{comboStyleName}" change="setDataChanged(true)" tabEnabled="false">					        
+						</mx:ComboBox>
+																		
+						<mx:CheckBox x="297" y="9" label="Urgent" id="chkUrgent" labelPlacement="left" fillColors="[#ff0000, #ff0000]" enabled="{applicationEditable||urgentEditable}" disabledColor="#000000" click="setDataChanged(true)" tabEnabled="false"/>
+						<mx:TextInput x="421" y="7" width="211"
+							 maxChars="100" visible="{chkUrgent.selected}"
+							  toolTip="{txtUrgentReason.text}"
+							   editable="{applicationEditable||urgentEditable}"
+							    styleName="{textInputStyle}"
+							     id="txtUrgentReason" 
+							     change="setDataChanged(true)"/>
+						<mx:Label x="371" y="9" text="Reason" visible="{chkUrgent.selected}"/>
+						<mx:TextInput x="756" y="7" styleName="disabled" id="txtPaymentDue" editable="false" width="98" visible="{showDueDate}"/>
+						<mx:Label x="640" y="9" text="Payment Due Date" id="lblPaymentDueDate"  visible="{showDueDate}"/>
+						<mx:Canvas  x="10" y="34" width="844" height="111" 
+							        id="dgCanvas"
+							        creationPolicy="queued">						
+						<mx:DataGrid
+							 x="0" y="0"
+							 id="dgItems"  height="111" 		 					 
+							 dataProvider="{CPRItems}"
+							 editable="{applicationEditable}"  
+							 selectable="false" 
+							 styleName="dataGrid" fontSize="10" change="setDataChanged(true)" tabChildren="true" tabEnabled="false" >
+							<mx:columns>
+								<mx:DataGridColumn 
+									width="20"
+									headerText="" 
+									sortable="false" 
+								    editable="true"
+								    dataField="deleteFlag"
+								    rendererIsEditor="true"
+								    editorDataField="deleteFlag"
+								    itemRenderer="ecs.gridFields.DeleteButton">
+								</mx:DataGridColumn>
+								<mx:DataGridColumn 
+									width="80"
+									dataField="amount"
+									headerText="Amount" 
+									sortable="false" 
+								    editable="true"
+								    itemRenderer="ecs.gridFields.AmountInput"
+								    editorDataField="amount"
+								    rendererIsEditor="true">
+								</mx:DataGridColumn>
+								
+								<mx:DataGridColumn headerText="Input Currency" 
+									dataField="currency"
+								    width="190" textAlign="center"
+								    sortable="false" 
+								    editable="true"
+								    editorDataField="currency"
+								    rendererIsEditor="true"
+								    itemRenderer="ecs.gridFields.CurrencyCombo"    > 
+								</mx:DataGridColumn>
+								
+								<mx:DataGridColumn headerText="Cost Centre" 
+									dataField="costCentre"
+									width="205" 
+								    sortable="false" 
+								    editorDataField="costCentre" 
+								    rendererIsEditor="true"
+								    itemRenderer="ecs.gridFields.CostCentreCombo"/>
+								
+								<mx:DataGridColumn headerText="Category" 
+									dataField="itemCategory"
+								    width="110" 
+								    textAlign="left"
+								    sortable="false" 
+								    editable="true"
+								    itemRenderer="ecs.gridFields.ItemCatCombo"
+								    editorDataField="itemCategory"
+								    rendererIsEditor="true">  
+								</mx:DataGridColumn>
+								
+								<mx:DataGridColumn headerText="GL Code" 
+									dataField="GLAccount"
+									editorDataField="glAccount"
+									itemRenderer="ecs.gridFields.GLAccountInput"
+									rendererIsEditor="true"
+									sortable="false"/>
+								<mx:DataGridColumn headerText="Project Code" 
+									dataField="project"
+									editorDataField="project"
+									itemRenderer="ecs.gridFields.ProjectInput"
+									rendererIsEditor="true"
+									sortable="false"/>
+									
+							</mx:columns>
+						</mx:DataGrid>
+						</mx:Canvas>
+						<mx:TextInput x="216" y="154" editable="false" id="txtCurrency" enabled="true"  styleName="disabled" width="54" text="{cprCurrency}" tabEnabled="false"/>
+						<mx:Label x="29" y="156" text="Total Net" id="lblTotal" width="48"/>
+						<mx:TextInput x="85" y="154" id="txtNetAmount"  
+							 editable="false" enabled="true" text="{totalNet}" width="123" styleName="disabled" tabEnabled="false"/>
+						<mx:Label x="312" y="155" text="VAT" id="lblVAT" width="29"/>
+						<mx:TextInput x="349" y="155" id="txtVAT"  
+							 editable="false" enabled="true" text="{VATAmount}" width="123" styleName="disabled" tabEnabled="false"/>
+						<mx:Label x="515" y="157" text="Total Gross" id="lblTotal1" width="64"/>
+						<mx:TextInput x="597" y="155" id="txtTotalAmount1"  
+							 editable="false" enabled="true" text="{totalAmount}" width="123" styleName="disabled" tabEnabled="false"/>
+						<mx:Button x="814" y="153" click="addTableRow();" styleName="button" icon="@Embed('images/add.gif')" toolTip="Add another payment line" enabled="{applicationEditable}" tabEnabled="false"/>
+						</mx:Panel>
+						<mx:Panel title="Contract Type and Publication Details" x="8.5" y="235" width="927.5" height="150" layout="absolute" tabEnabled="false">
+							<mx:ComboBox   x="131" y="8" width="320" id="comboContract"
+								editable="false"
+								change="contractChanged();"
+								dataProvider="{contractList}" 
+								enabled="{applicationEditable}" 
+								styleName="{comboStyleName}" 
+								tabEnabled="false"
+							>
+							</mx:ComboBox>
+							<!--<mx:DateField x="131" y="42" width="114"
+								 id="dtPubDate"
+								 tabEnabled="true"
+								 focusOut="formatPubDate();"
+								 editable="{applicationEditable}" formatString="DD/MM/YYYY" 
+								 enabled="{ifBothTrue(applicationEditable, !chkHeld.selected) }" 
+								 styleName="{textInputStyle}" 
+								 invalid="invalidPubDate=true;setFormIsValid();"
+								 valid="invalidPubDate=false;setFormIsValid();"
+								 keyUp="dateKeyPress(event)"								 					 
+								 change="pubDateChanged()"/> -->		
+							<ns1:DateInputPlus	x="131" y="42" width="114"
+								 id="dtPubDate"
+								 tabEnabled="true"
+								 focusOut="formatPubDate();"
+								 editable="{applicationEditable}" formatString="DD/MM/YYYY" 
+								 enabled="{ifBothTrue(applicationEditable, !chkHeld.selected) }" 
+								 styleName="{textInputStyle}" 
+								 invalid="invalidPubDate=true;setFormIsValid();"
+								 valid="invalidPubDate=false;setFormIsValid();"
+								 keyUp="dateKeyPress(event)"								 					 
+								 change="pubDateChanged()"
+								 recentEntries="{last20PubDates}">
+								
+							</ns1:DateInputPlus> 				    
+							<mx:Label x="10" y="44" text="Publication Date" id="lblPublicationDate" />
+							<mx:Label x="10" y="77" text="Page Numbers" id="lblPageNumbers" />
+							<ns1:TextInputPlus
+								 x="131" y="75"
+								 id="txtPageNumbers"
+								 width="98"
+								 listWidth="98"
+								 maxChars="10"
+								 editable="{applicationEditable}"
+								 styleName="{textInputStyle}"								
+				                 recentEntries="{last20PageNos}"
+								 change="setDataChanged(true)"
+								 tabEnabled="true"/>
+							<mx:CheckBox 
+								x="295" y="45" width="80" 
+								label="Held" labelPlacement="left" 
+								fillColors="[#ffff80, #ffff80]" 
+								id="chkHeld" 
+								enabled="{applicationEditable}" 
+								disabledColor="#000000" 
+								click="heldChanged();" 
+								visible="{heldAllowed}" 
+							/>				
+							
+							<mx:Label x="10" y="10" text="Contract" id="lblContract"/>
+							
+							<mx:TextArea 
+								x="459" y="44" width="438.5" height="53" 
+								id="taContractReason" 
+								visible="{contractReasonVisible}" 
+								maxChars="100" 
+								change="setDataChanged(true)" 
+								/>
+								
+							<mx:Label x="570" y="10" text="Reason for not selecting the standard contract:" color="#ff0000" id="lblContractReason" visible="{contractReasonVisible}"/>
+							<mx:Button 
+								x="459" y="8" 
+								label="Details" 
+								styleName="button" 
+								toolTip="View the full Contract Details" 
+								icon="@Embed('images/display.gif')" width="69" 
+								click="displayFullContractDetails()" 
+								tabEnabled="false"/>
+							
+						
+					</mx:Panel>
+				</mx:Canvas>
+				
+				
+				<mx:Panel label="{paymentNotesTxt}" width="100%" height="399" tabEnabled="false" id="tabPaymentNotes">
+					<mx:RichTextEditor width="889" height="350" id="rteNotes"
+						enabled="{applicationEditable}"
+						htmlText="{wsAllBusyCursor.Z_ECS_GET_CPR.lastResult.EX_NOTES}"
+						change="setDataChanged(true);setPaymentNotesLabel();" 
+					    creationComplete="rteNotes.text = paymentNotesLongTxt;"
+						> 
+					</mx:RichTextEditor>
+				
+				</mx:Panel>
+							
+				<mx:Canvas label="Recent Payments for Contributor" width="100%" height="438" tabEnabled="false">
+					
+					<ecs:PaymentListDataGrid 
+						dataProvider="{contributorCPRs.item}"
+						id="dgRecentPayments" doubleClickEnabled="false" selectable="true" width="918" height="356">
+					</ecs:PaymentListDataGrid>
+					<mx:Button x="10" y="10" label="Copy Payment" id="btnCopyPayment" enabled="{MODE==CREATE}" click="copyCPR();"/>
+				
+					
+					<mx:HBox x="157" y="5" verticalAlign="middle"  borderStyle="outset"
+						    paddingLeft="5" paddingRight="5" backgroundColor="#cef4f2" horizontalGap="5">
+						<mx:Label text="Show:" fontWeight="bold"/>
+						<mx:ComboBox 
+						         id="cbRecentCPRsMax"
+						         dataProvider="{model_RecentCPRsMax.item}"
+						         change="cbRecentCPRsMaxChange(event)"
+						/>
+						<mx:Label text="  Cost Centre:" fontWeight="bold"/>		
+						<mx:ComboBox 
+						         id="cbRecentCPRsCostCentre"
+						         dataProvider="{costCentresWithAll}"
+						         change="cbRecentCPRsCostCentreChange(event)"
+						         
+						/>												
+					</mx:HBox>
+				</mx:Canvas>
+			</mx:TabNavigator>
+			<mx:Panel x="491" y="5" width="463" height="221" layout="absolute" id="pnlQuickinfo" title="Contributor Quick Info/ Search"  tabEnabled="false">
+				<mx:Label x="7" y="62" text="Street" id="lblInfoAddressLine1"/>
+				<mx:Label x="7" y="90" text="Town/ City" id="lblInfoCity"/>
+				<mx:TextInput x="106" y="58" id="txtinfoAddressLine" editable="false" styleName="disabled" borderThickness="0" text="{contributorDetails.STRAS}" width="327" tabEnabled="false"/>
+				<mx:TextInput x="106" y="86" id="txtInfoCity" editable="false" styleName="disabled" borderThickness="0" text="{contributorDetails.NAME4} {contributorDetails.ORT01}" width="327" tabEnabled="false"/>
+				<mx:TextInput x="234" y="114" editable="false" id="txtInfoTelNumber" styleName="disabled" borderThickness="0" width="199" text="{contributorDetails.TELF1}" tabEnabled="false"/>
+				<mx:Label x="204" y="116" text="Tel." id="lblInfoTel" />
+				<mx:Label x="7" y="117" text="Post Code" id="lblInfoPostCode"/>
+				<mx:TextInput x="106" y="114" id="txtPostCode" width="90" enter="searchContributorsPostCode();" text="{contributorDetails.PSTLZ}" editable="{applicationEditable}" styleName="{textInputStyle}" tabEnabled="false"/>
+				<mx:Button x="310" y="143" label="Advanced Search" id="btnContribSearch0" width="133" click="launchContributorSearch()" styleName="button" useHandCursor="true" icon="@Embed('images/search.gif')" enabled="{applicationEditable}" tabEnabled="false">
+					<mx:toolTip>Click here to use the advanced contributor search screen</mx:toolTip>
+				</mx:Button>
+				<mx:Label x="7" y="144" text="Email"/>
+				<mx:TextInput x="106" y="143" width="199" styleName="disabled" editable="false" text="{contributorDetails.EMAIL1}" id="txtEmail" tabEnabled="false"/>
+				<mx:TextInput x="106" y="2" id="txtInfoContributorType" styleName="disabled" borderThickness="0" width="90" text="{contributorType}" enabled="true" editable="false" tabEnabled="false"/>
+				<mx:Label x="7" y="4" text="Contributor Type" id="lblInfoContibutorType"/>
+				<mx:Label x="202" y="4" text="Alias" visible="{aliasVisible}"/>
+				<mx:TextInput x="234" y="2" editable="false" styleName="disabled" text="{contributorDetails.NOM_DE_PLUME}" width="199" visible="{aliasVisible}" tabEnabled="false" id="txtAlias"/>
+				<mx:Label x="7" y="32" text="{name2Label}"/>
+				<mx:TextInput x="106" y="31" editable="false" styleName="disabled" text="{name2}" width="327" focusEnabled="false" id="txtName2"/>
+			</mx:Panel>
+			<mx:Button x="795" y="9" label="Repeat Last Search" id="btnRepeatContribSearch" width="153" click="repeatContributorSearch()" enabled="{ifBothTrue(lastRearchRepeatable, applicationEditable)}" styleName="button" useHandCursor="true" icon="@Embed('images/search.gif')"  tabEnabled="false">
+				<mx:toolTip>Click here to view the results of the last search</mx:toolTip>
+			</mx:Button>
+		</mx:Canvas>
+	
+		<mx:Canvas label="Last 20 Contributors" width="100%" height="100%" id="tabLast20" tabEnabled="false">
+			<ecs:ContribDataGrid x="10" y="10" height="430" 
+				doubleClickEnabled="true"
+				doubleClick="selectContributorFromLast20()"
+				dataProvider="{wsAllNoBusyCursor.Z_ECS_GETLAST20.lastResult.EX_T_CON_DETAIL.item}" id="dgLast20"/>
+		</mx:Canvas>
+		<mx:Canvas label="Change History" width="100%" height="100%" id="tabHistory" tabEnabled="false">
+			<mx:Panel x="10" y="10" width="922" height="287" layout="absolute" title="Status">
+				<mx:Label x="22" y="10" text="Status"/>
+				<mx:Text x="22" y="38" text="Batch"/>
+				<mx:TextInput x="118" y="8" text="{CPRHeader.STATUS} {CPRHeader.STATUSDESC}" editable="false" styleName="disabled"/>
+				<mx:Text x="118" y="35" text="{CPRHeader.BATCH}" width="119" styleName="disabled" />
+				<mx:DataGrid x="22" y="66" height="176" width="585"
+					id="dgWorkflowChanges"
+					styleName="dataGrid"
+					editable="false"
+					dataProvider="{wsAllNoBusyCursor.Z_ECS_GET_CPR_CHANGES.lastResult.EX_T_WORKFLOW.item}">
+					<mx:columns>
+						<mx:DataGridColumn headerText="Action" dataField="ACTION"/>
+						<mx:DataGridColumn headerText="User" dataField="USER"/>
+						<mx:DataGridColumn headerText="Date" dataField="DATE"/>
+						<mx:DataGridColumn headerText="Time" dataField="TIME"/>
+					</mx:columns>
+				</mx:DataGrid>
+			</mx:Panel>
+			<mx:Panel x="10" y="305" width="922" height="353" layout="absolute" title="Changes">
+				<mx:DataGrid x="10" y="8" width="873" height="292"
+				    id="dgCPRChanges"
+					dataProvider="{wsAllNoBusyCursor.Z_ECS_GET_CPR_CHANGES.lastResult.EX_T_CHANGE_HIST.item}"
+					styleName="dataGrid">
+					<mx:columns>
+						<mx:DataGridColumn headerText="User" dataField="UNAME"/>
+						<mx:DataGridColumn headerText="Date" dataField="ACTIONDATE"/>
+						<mx:DataGridColumn headerText="Time" dataField="ACTIONTIME"/>
+						<mx:DataGridColumn headerText="What Changed" dataField="FDESC"/>
+						<mx:DataGridColumn headerText="Changed From" dataField="OLDVALUE"/>
+						<mx:DataGridColumn headerText="Changed To" dataField="NEWVALUE"/>
+						<mx:DataGridColumn headerText="Line" dataField="ITEM"/>
+					</mx:columns>
+				</mx:DataGrid>
+			</mx:Panel>
+		</mx:Canvas>
+		
+		
+		<mx:Canvas label="Communication History" width="100%" height="665" id="tabCommunicationHistory"
+			 tabEnabled="false"
+			 visible="false"
+			 horizontalScrollPolicy="off"
+			 verticalScrollPolicy="off">
+		<mx:ModuleLoader id="mlCommHist"
+			             url="{SWFMODULE_COMM_HIST}"
+			             width="100%"
+			             height="100%"
+			             horizontalScrollPolicy="off"
+			             verticalScrollPolicy="off"
+			             ready="commHistSetup(mlCommHist.child);"
+			             error="Alert.show('Error displaying payment history')"	                
+			             >
+			
+		</mx:ModuleLoader>
+<!--			<mx:Panel x="430" y="10" width="370" height="143" layout="absolute" styleName="panel" title="Email sent for a New Contributor/ Contract">
+				<mx:Label x="19" y="10" text="Date Sent"/>
+				<mx:Label x="19" y="38" text="Time Sent"/>
+				<mx:Button x="122.5" y="69" label="View Email" styleName="button" id="btnViewEmail1" enabled="{viewEmail1}"
+					click="getHTMLForEmail(STATUS_VALIDATED)"/>
+				<mx:TextInput x="124" y="9" width="122" editable="false" styleName="disabled" id="txtSentDate1" text="{sentDate1}"/>
+				<mx:TextInput x="124" y="37" width="122" editable="false" styleName="disabled" id="txtSentTime1" text="{sentTime1}"/>
+			</mx:Panel>
+			<mx:Panel x="21" y="10" width="370" height="143" layout="absolute" styleName="panel" title="Email sent for Confirmation of Payment">
+				<mx:Label x="20" y="10" text="Date Sent"/>
+				<mx:Label x="20" y="38" text="Time Sent"/>
+				<mx:TextInput x="124" y="9" width="122" editable="false" styleName="disabled" id="txtSentDate2" text="{sentDate2}"/>
+				<mx:TextInput x="124" y="37" width="122" editable="false" styleName="disabled" id="txtSentTime2" text="{sentTime2}"/>
+				<mx:Button x="122.5" y="69" label="View Email" styleName="button" id="btnViewEmail2" 
+					click="getHTMLForEmail(STATUS_POSTED)" enabled="{viewEmail2}"/>
+			</mx:Panel>
+			-->
+			
+			<!--HTML Component for display the email texts-->
+			<!--
+			<fc:HTML  moveEffect="{}" resizeEffect="{}"
+				borderStyle="solid" borderThickness="2" y="170" width="779" x="21" 
+				elementType="division" height="484" cornerRadius="6" borderColor="#605669" 
+				offscreenOffset="-5000" fitToContentHeight="false"
+				getHeightTimeout="1000" id="html1">
+			</fc:HTML>
+			
+			-->
+		</mx:Canvas> 
+		
+	</mx:TabNavigator>
+	<mx:Text x="814" y="4" text="{cpr}" width="140" alpha="1.0" fontSize="14" color="#000000" fontWeight="bold" id="lblCPR" textAlign="right"/>
+    <!-- Values for dropdown -->
+	<mx:Model id="model_RecentCPRsMax">
+		<data>
+		    <item>
+		   		<value>20</value>
+		   		<label>Last 20</label>
+		    </item>
+		    <item>
+		   		<value>100</value>
+		   		<label>Last 100</label>
+		    </item>		    
+			<item>
+				<value>0</value>
+		   		<label>All</label>
+		    </item>		    				
+		</data>
+	</mx:Model>
+
+
+</mx:Application>

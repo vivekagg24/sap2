@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry and Approval
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	Message.mxml
+		Message popup : higlight errors and allow copy of text (e.g. for ZC number created).
+		Set focus back to specified in calling application
+-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" title="ECS CPR Entry" 
+	creationComplete="doInit();"
+    defaultButton="{btnOK}"
+	>
+	
+<mx:Script>
+<![CDATA[
+	import mx.core.UIComponent;
+	import mx.managers.IFocusManagerContainer;
+	import mx.managers.IFocusManagerComponent;
+	import mx.managers.PopUpManager;
+	import mx.collections.ArrayCollection;	
+	[Bindable]
+	public var message:String="";
+	public var error:Boolean;
+	[Bindable]
+	private var textStyle:String="";
+	
+	// Since popups are always parented by SystemManager, we can't rely on this.parentApplication like we can 
+	// with normal components (i.e. those which aren't popups)
+	// Therefore we need a reference to the application which we are running in.
+	public var trueParentApp:Object; 
+	
+	
+	private function doInit():void {
+		PopUpManager.centerPopUp(this);
+		if (error)textStyle="error";
+		btnOK.setFocus();
+		 
+	}
+	
+	override public function setFocus():void
+	{
+		super.setFocus();
+		btnOK.setFocus();
+	}
+
+	public function handleClose():void{
+		PopUpManager.removePopUp(this);
+		this.focusManager.deactivate();
+		this.systemManager.removeFocusManager(this);
+		//parentApplication.focusManager.activate();
+		
+		// Remove the item from the parent's list of popups
+		var popups:Array = trueParentApp.messageWindows as Array;
+		var i:int = popups.indexOf(this);		
+		if (i > -1) // Check found. Should always be true, but just to be on the safe side
+		{
+			popups.splice(i, 1);
+		}
+		
+		// If there is another popup, give it focus
+		if (popups.length > 0)
+		{
+			(popups[popups.length -1] as UIComponent)..setFocus();
+			return;
+		}
+		
+		
+		// If no more popups, focus back in the application
+		if (trueParentApp.focusField!=null && popups.length == 0){
+			trueParentApp.focusField.setFocus();
+			trace("Focused on" + trueParentApp.focusField.id);
+			
+			var focNext:IFocusManagerComponent;
+			if (trueParentApp.focusField.hasOwnProperty("editable") && !trueParentApp.focusField.editable) // If not editable, tab to next field
+			{
+				focNext = trueParentApp.focusManager.getNextFocusManagerComponent();
+				if (focNext) focNext.setFocus();
+			}
+			else if (trueParentApp.focusField.hasOwnProperty("enabled") && !trueParentApp.focusField.enabled) // If not enabled (e.g. a button), tab to next field
+			{
+				focNext = trueParentApp.focusManager.getNextFocusManagerComponent();
+				if (focNext) focNext.setFocus();
+			}
+			
+			
+		}
+		if (trueParentApp.focusEvent!="" && popups.length == 0) trueParentApp.dispatchEvent(new Event(trueParentApp.focusEvent));
+		
+	}
+]]>
+</mx:Script>
+<mx:Style>
+	.error{color:red}
+</mx:Style>
+
+	<mx:VBox horizontalAlign="center" height="101" verticalScrollPolicy="auto" horizontalScrollPolicy="off">
+		<mx:Text text="{message}" width="368" fontSize="12" styleName="{textStyle}"/>
+	</mx:VBox>
+	<mx:ControlBar horizontalAlign="center" id="bar" >
+		<mx:HBox defaultButton="{btnOK}" id="barBox">
+			<mx:Button 
+				click="handleClose()" 
+				id="btnOK" 
+				label="OK"  />
+		</mx:HBox>
+	</mx:ControlBar>
+</mx:TitleWindow>

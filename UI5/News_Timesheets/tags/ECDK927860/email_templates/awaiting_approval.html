@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+  <title>Timesheet Awaiting Approval</title>
+  <meta charset=utf-8>
+  <style type="text/css">
+    * {
+      font-family: Helvetica, Arial;
+      font-size: 16px;
+    }
+    h1 {
+      font-size: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="header">
+<h1>Timesheet Awaiting Approval</h1>
+</div>
+
+<strong>$system_warning$</strong>
+
+<div id="body">
+<p>
+A timesheet created by $timesheet_created_by$ at $timesheet_created_at$ on $timesheet_created_on$
+for the week of $start_date$ to $end_date$ requires approval. Please review the contents of the
+timesheet below and select to either <strong>Approve</strong> or <strong>Reject</strong>. 
+
+<p>
+<strong>Timesheet details:</strong>
+<table border="0">
+  <tr><td>Project or Activity</td><td>$date1$</td><td>$date2$</td><td>$date3$</td><td>$date4$</td><td>$date5$</td><td>$date6$</td><td>$date7$</td></tr>
+  $timesheet_start$
+  <tr><td>$activity_desc$</td><td>$hours1$</td><td>$hours2$</td><td>$hours3$</td><td>$hours4$</td><td>$hours5$</td><td>$hours6$</td><td>$hours7$</td></tr>  
+  $timesheet_end$  
+</table>
+
+<p>
+Should you have any queries regarding this timesheet, please contact <a href="mailto:servicedesk@news.co.uk">Service Desk</a>.
+The timesheet reference is <strong>$timesheet_id$</strong>.
+</div>
+
+<div id="process">
+<Timesheet method="get" action="$url_approve$" style="margin: 0; padding:0;display:inline!important;">
+  <input type="hidden" name="action" value="approve">
+  <input type="hidden" name="id" value="$process_id$">
+  <input type="submit" value="Approve">
+</Timesheet>
+
+<Timesheet method="get" action="$url_reject$" style="margin: 0; padding:0;display:inline!important;">
+  <input type="hidden" name="action" value="reject">
+  <input type="hidden" name="id" value="$process_id$">
+  <input type="submit" value="Reject">
+</Timesheet>
+</div>
+
+<!--
+<div id="process">
+<p>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+      <table border="0" cellspacing="10" cellpadding="0">
+        <tr cellpadding="10px">
+          <td align="center" style="-webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;" bgcolor="#27e660"><a href="$url_approve$" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; padding: 12px 18px; border: 1px solid #27e660; display: inline-block;">Approve</a></td>
+
+          <td align="center" style="-webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;" bgcolor="#e9703e"><a href="$url_reject$" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; padding: 12px 18px; border: 1px solid #e9703e; display: inline-block;">Reject</a></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+</div>
+-->
+
+<div id="footer">
+</div>
+
+</body>

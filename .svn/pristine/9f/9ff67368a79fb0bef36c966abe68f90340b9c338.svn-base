@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center">
+	<mx:Script >
+		<![CDATA[
+	 		import mx.controls.listClasses.BaseListData;
+
+	        [Embed (source="../images/redlight.gif" )] 
+	        public static const redIm:Class; 
+	        [Embed (source="../images/greenlight.gif" )] 
+	        public static const greIm:Class; 
+	        [Embed (source="../images/amberlight.gif" )] 
+	        public static const ambIm:Class; 	        
+	        [Embed (source="../images/outlight.gif" )] 
+	        public static const outIm:Class; 	        
+
+	 		override public function set data(value:Object):void
+	 		{
+	 			super.data = value;
+				status.enabled = true;
+				status.visible = true;
+								
+				if (value && value.STATUS == "R"){
+					status.source=redIm;
+					status.toolTip = "Usage is negative";
+				}
+				else if (value && value.STATUS == "G"){
+					status.source=greIm; //"@Embed('../images/greenlight.gif')";
+					status.toolTip = "Usage balances";
+				}
+				else if (value && value.STATUS == "A"){
+					status.source=ambIm; //"@Embed('../images/amberlight.gif')";
+					status.toolTip = "Usage does not balance";
+				}
+				else {
+					status.source=outIm; //"@Embed('../images/outlight.gif')";
+					status.toolTip = "Usage not calculated";
+				}								
+	 		}
+		]]>
+	</mx:Script>
+	<mx:Image id="status" source="@Embed('../images/outlight.gif')" toolTip="status" enabled="false"/>
+</mx:HBox>

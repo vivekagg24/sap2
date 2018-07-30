@@ -1,0 +1,21 @@
+TODO
+- Time alignment in display mode
+- Hide comments box on display if there aren't any
+- Timesheet single row per project
+- Date range validations
+- Entering too many hours for a day across multiple lines
+- Approval list
+- Handle errors on AJAX calls
+- Logging of approver username
+- Project creation - default project manager
+- Refresh of project display when selecting a project
+- Overdue timesheet counts
+
+FIXED
+- Deletion indicator on table line
+- Message after submission?
+- Handle data changed with navigation
+- Destroy model on navigation away
+- Refresh after timesheet submission
+- Timesheet comments not being saved
+- Item info for approved/rejected

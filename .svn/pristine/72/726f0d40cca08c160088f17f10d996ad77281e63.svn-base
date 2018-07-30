@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mvc:View controllerName="nuk.sap.driverportal.view.Login" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:l="sap.ui.layout">
+
+
+<Image src="images/230x60_NewsUK1.png" width="230px" height="60px" alt="{i18n>NewsUk}" />
+
+  <l:VerticalLayout
+    class="sapUiContentPadding"
+    width="100%">
+    <l:content>
+      <Label text="Password" />
+      <Input type="Password" placeholder="Enter password ..." />
+    </l:content>
+  </l:VerticalLayout>
+
+</mvc:View>

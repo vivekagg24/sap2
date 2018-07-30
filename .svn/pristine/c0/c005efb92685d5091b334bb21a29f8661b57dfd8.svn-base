@@ -1,0 +1,153 @@
+sap.ui.define([
+  "nuk/sap/timesheet/util/TimesheetAPI",
+  "nuk/sap/timesheet/util/Message"
+  ], function(TimesheetAPI, Message) {
+  "use strict";
+
+  return {
+    _googleAuth: null,
+    _oController: null,
+
+    /**
+     * Initialise Google authentication
+     * @param  {Object} oController Controller
+     * @return {[type]}             [description]
+     */
+    init: function(oController) {
+      var that = this;
+      if (oController)
+        this._oController = oController;
+      gapi.load('auth2', function() {
+        that._googleAuth = gapi.auth2.init({
+          client_id: '853022590353-jrkl9orkomct3i5lc60urtl807307ffd.apps.googleusercontent.com',
+          cookiepolicy: 'single_host_origin',
+        });
+//          that._googleAuth.attachClickHandler(oView.byId('loginButton').getDomRef(), {}, that.onSignIn, that.onSignInFailure);
+        if (oController && oController.byId("loginContainer") !== undefined) {
+          gapi.signin2.render(oController.byId('loginContainer').getDomRef(), {
+            'longtitle': false,
+            'theme': 'dark',
+            'onsuccess': jQuery.proxy(that.onSignIn, that),
+            'onfailure': jQuery.proxy(that.onSignInFailure, that),
+            'width': 150
+          });
+        } else {
+          that._googleAuth.currentUser.listen(jQuery.proxy(that._userChanged, that));
+//          if (that._googleAuth.isSignedIn.get() === true) {
+//          }
+        }
+     });
+    },
+
+    /**
+     * Called after successful sign-in to Google
+     * @param  {Object} googleUser Google user
+     */
+    onSignIn: function(googleUser) {
+      var that = this;
+
+      var profile = googleUser.getBasicProfile();
+      jQuery.sap.log.info("ID: " + profile.getId());
+      jQuery.sap.log.info("Name: " + profile.getName());
+      jQuery.sap.log.info("Image URL: " + profile.getImageUrl());
+      jQuery.sap.log.info("Email: " + profile.getEmail());
+
+      var id_token = googleUser.getAuthResponse().id_token;
+      jQuery.sap.log.info("ID Token: " + id_token);
+
+      // auth model on the core
+      var oAuthModel = new sap.ui.model.json.JSONModel({
+        user_email: profile.getEmail(),
+        name: profile.getName(),
+        token: id_token
+      });
+      sap.ui.getCore().setModel(oAuthModel, "auth");
+
+      // Urgh - only way we can call a controller method from this callback :(
+//      sap.ui.getCore().byId("__xmlview1").getController()._getUser(profile.getEmail(), id_token);
+      that._getUser(profile.getEmail(), id_token, that._loginSuccessful);
+    },
+
+    onReSignIn: function(googleUser) {
+      var that = this;
+
+      var profile = googleUser.getBasicProfile();
+      jQuery.sap.log.info("ID: " + profile.getId());
+      jQuery.sap.log.info("Name: " + profile.getName());
+      jQuery.sap.log.info("Image URL: " + profile.getImageUrl());
+      jQuery.sap.log.info("Email: " + profile.getEmail());
+
+      var id_token = googleUser.getAuthResponse().id_token;
+      jQuery.sap.log.info("ID Token: " + id_token);
+
+      // auth model on the core
+      var oAuthModel = new sap.ui.model.json.JSONModel({
+        user_email: profile.getEmail(),
+        name: profile.getName(),
+        token: id_token
+      });
+      sap.ui.getCore().setModel(oAuthModel, "auth");
+
+      // Urgh - only way we can call a controller method from this callback :(
+//      sap.ui.getCore().byId("__xmlview1").getController()._getUser(profile.getEmail(), id_token);
+      that._getUser(profile.getEmail(), id_token);
+    },
+
+    onSignInFailure: function() {
+
+    },
+
+    _getUser: function(sEmail, sToken) {
+      var that = this;
+      var bError = false;
+      var oView;
+
+      if (this._oController) {
+        oView = this._oController.getView();
+        var oBusyDialog = new sap.m.BusyDialog({
+          text: Message.getText(oView, "login-refresh-dialog-text")
+        });
+        oBusyDialog.open();
+      }
+
+      Message.clearMessages(oView);
+      TimesheetAPI.login(sEmail, sToken,
+        function(oResponse) {
+          oBusyDialog.close();
+          bError = false;
+          for (var i = 0; i < oResponse.length; i++) {
+            if (oResponse[i].is_error=== 'true') {
+              bError = true;
+              Message.addMessage(oView, oResponse[i].text, "Error");
+            }
+          }
+          if (!bError) {
+            var oUserModel = new sap.ui.model.json.JSONModel(oResponse);
+            sap.ui.getCore().setModel(oUserModel, "user");
+            that._loginSuccessful();
+          }
+        },
+        function(oXhr, sStatus, sErrorThrown)  {
+          oBusyDialog.close();
+          that._loginError(oView, oXhr, sErrorThrown);
+        });
+    },
+
+    _userChanged: function(user) {
+//      var profile = user.getBasicProfile();
+//      jQuery.sap.log.info("Reauth Name: " + profile.getName());
+      this.onReSignIn(user);
+//      sap.ui.getCore().byId("__xmlview1").getController().onSignIn(user);
+    },
+
+    _loginSuccessful: function() {
+      if (this._oController)
+        this._oController.toLaunchpad();
+    },
+
+    _loginError: function(oView, oXhr, sErrorThrown) {
+      Message.addMessage(oView, Message.getText(oView, "login-login-error") , "Error");
+    }
+
+  };
+});

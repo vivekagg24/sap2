@@ -1,0 +1,134 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+
+  <ResponsivePopover
+    id="popoverTimesheet"
+     title="{timesheetDisplay>/timesheet/submitter_name} -
+      { parts: [
+        { path: 'timesheetDisplay>/timesheet/date_from' },
+        { path: 'timesheetDisplay>/timesheet/date_to' }
+      ],
+      formatter: 'nuk.sap.timesheet.util.Formatter.formatTimesheetPeriod'
+    }
+    ({i18n>common-timesheet} {timesheetDisplay>/timesheet/id})"
+
+    showHeader="true"
+    class="sapUiPopupWithPadding"
+    placement="Bottom">
+
+    <content>
+      <Table
+        id="tblTimesheetDisplay"
+        backgroundDesign="Solid"
+        class="tableZebra"
+        mode="None"
+        noDataText="{i18n>timesheet-table-no-data}"
+        items="{
+          path: 'timesheetDisplay>/timesheet/time_worked'
+        }">
+
+        <columns>
+          <Column width="8em">
+            <Text text="{i18n>timesheet-table-project}"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheetDisplay>/timesheet/date_from', 'i18n>timesheet-day1' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekendDay"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheetDisplay>/timesheet/date_from', 'i18n>timesheet-day2' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekendDay"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheetDisplay>/timesheet/date_from', 'i18n>timesheet-day3' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheetDisplay>/timesheet/date_from', 'i18n>timesheet-day4' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheetDisplay>/timesheet/date_from', 'i18n>timesheet-day5' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheetDisplay>/timesheet/date_from', 'i18n>timesheet-day6' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Text text="{
+                parts: [ 'timesheetDisplay>/timesheet/date_from', 'i18n>timesheet-day7' ],
+                formatter: 'nuk.sap.timesheet.util.Formatter.formatDayMonthShort'
+              }"
+              class="weekDay"/>
+          </Column>
+
+          <Column width="2em" hAlign="Center" demandPopin="true">
+            <Label text="{i18n>timesheet-table-project-total}" design="Bold"/>
+          </Column>
+
+        </columns>
+
+        <items>
+          <ColumnListItem>
+            <cells>
+              <ComboBox
+                id="selProject"
+                selectionChange="onProjectChange"
+                selectedKey="{timesheetDisplay>project_id}"
+                enabled="true"
+                editable="false"
+                width="100%"
+                placeholder="{i18n>timesheet-table-project-placeholder}"
+                items="{timesheetDisplay>/assigned_projects}">
+                <core:Item key="{timesheetDisplay>project_id}" text="{timesheetDisplay>name}" />
+              </ComboBox>
+
+              <Text text="{timesheetDisplay>time/0}"/>
+              <Text text="{timesheetDisplay>time/1}"/>
+              <Text text="{timesheetDisplay>time/2}"/>
+              <Text text="{timesheetDisplay>time/3}"/>
+              <Text text="{timesheetDisplay>time/4}"/>
+              <Text text="{timesheetDisplay>time/5}"/>
+              <Text text="{timesheetDisplay>time/6}"/>
+              <Label text="{
+                path: 'timesheetDisplay>time',
+                formatter: 'nuk.sap.timesheet.util.Formatter.calculateProjectTotal'
+                }"
+                design="Bold"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+
+  </ResponsivePopover>
+
+</core:FragmentDefinition>

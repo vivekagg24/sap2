@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- SelectableTextInputs are always selectable even when they aren't editable -->
+<ns2:SelectableTextInput xmlns:mx="http://www.adobe.com/2006/mxml"
+	                     xmlns:ns2="ni.components.*"
+	 					 change="doChange()"
+	 					 focusOut="ShiftLeft()">
+
+	  <mx:Script>
+        <![CDATA[
+        	
+        	// Flag to indicate that text is always uppercase
+        	[Inspectable(defaultValue=true, category="Common")]
+        	public var upperCase:Boolean = true;
+        	
+        	// Flag to indicate that this field only allows numbers
+        	[Inspectable(defaultValue=false, category="Common")]
+        	public var numbersOnly:Boolean;        	
+        
+        
+        	private function doChange():void {
+        		// Runs when the data in the textbox is changed
+        		if (upperCase == true) 	textToUpper();
+        		
+        		if (numbersOnly == true) removeLetters();
+        		
+        	}
+
+			private function textToUpper():void{
+				
+				this.text = this.text.toUpperCase();
+			}
+// Graham?			
+			private function removeLetters():void {
+				var newText:String = "";
+				var char:String = "";
+				
+				for (var i:int = 0; i < this.text.length; i++)
+				{
+					char = this.text.charAt(i);
+					// Only keep this character if it is a valid number
+					// Note - " " is converted to 0 so have to check for this as well
+					var a:Number = Number(char);
+					if (!isNaN(a) && char != " " ) newText += char;  
+					
+				}
+				this.text = newText;
+				
+			}
+
+			private function ShiftLeft():void{
+				
+				this.horizontalScrollPosition = 0;
+				
+			}
+			
+        ]]>
+    </mx:Script>
+
+</ns2:SelectableTextInput>
+

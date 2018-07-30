@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>Syndication Royalties</name>
+	<comment></comment>
+	<projects>
+		<project>VDG_Library</project>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.flexbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.adobe.flexbuilder.project.flexnature</nature>
+		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] VDG_Library</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/VDG_Library</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>

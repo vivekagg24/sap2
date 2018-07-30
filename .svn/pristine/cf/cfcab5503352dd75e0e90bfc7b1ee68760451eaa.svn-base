@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="275" height="150" title="Member login">
+
+<mx:Script>
+	<![CDATA[
+		private function handleLoginEvent():void {
+			lblTest.text = "logging in...";
+			// login logic
+		}
+	]]>
+</mx:Script>
+
+
+	<mx:Label x="10" y="12" text="Username"/>
+	<mx:Label x="10" y="42" text="Password"/>
+	<mx:TextInput x="74" y="10" id="txtUID"/>
+	<mx:TextInput x="74" y="40" id="txtPwd"/>
+	<mx:Button x="178" y="70" label="Login" click="handleLoginEvent()"/>
+	<mx:Label x="74" y="72" id="lblTest"/>
+	
+</mx:Panel>

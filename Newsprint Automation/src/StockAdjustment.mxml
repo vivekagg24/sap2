@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+					layout="absolute"
+					paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0" 
+				    initialize="init();" minWidth="1000"
+					creationComplete="creationComplete();"
+					creationPolicy="all"
+					horizontalScrollPolicy="auto" verticalScrollPolicy="auto" xmlns:ns1="visualComponents.*">
+
+<!-- general functions -->
+	<mx:Script source="scripts/Processing_general.as"/>
+<!-- stock adjustment specific functions -->
+	<mx:Script source="scripts/Processing_stock_adjustment.as"/>	
+	
+<!-- web service to call into SAP -->
+<!-- get plants -->
+	<mx:WebService id="wsGetPlants"
+ 		wsdl="{wsdl_prefix + 'ZNP_PLANT_AUTH_CHECK'}"
+     	useProxy="false"
+     	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsGetPlants')" 
+  		load="forceSecureWSDL(event)"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PLANT_AUTH_CHECK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_UNAME></I_UNAME>
+				<ET_WERKS></ET_WERKS>	
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- Get list of stock adjustments from this week -->
+	<mx:WebService id="wsGetStockAdjustment"
+ 		wsdl="{wsdl_prefix + 'ZNP_STOCK_ADJUST_READ'}"
+     	useProxy="false"
+     	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetStockAdjustment')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_STOCK_ADJUST_READ"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<STOCK_TRANSFERS></STOCK_TRANSFERS>
+				<STOCK_ADJUSTMENT></STOCK_ADJUSTMENT>
+				<ET_ITEMS></ET_ITEMS>
+				<ET_WERKS></ET_WERKS>
+				<ET_MOVEMENT_REASON></ET_MOVEMENT_REASON>
+				<ET_PARAMETERS></ET_PARAMETERS>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- Add a stock adjustment -->
+	<mx:WebService id="wsStockAdjust"
+ 		wsdl="{wsdl_prefix + 'ZNP_STOCK_ADJUST_ADD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsStockAdjust')"  
+  		load="forceSecureWSDL(event)"   	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_STOCK_ADJUST_ADD"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_STOCK_ADJUST></I_STOCK_ADJUST>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>		
+
+<!-- Add a stock transfer -->
+	<mx:WebService id="wsStockTransfer"
+ 		wsdl="{wsdl_prefix + 'ZNP_STOCK_TRANSFER_ADD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsStockTransfer')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_STOCK_TRANSFER_ADD"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_STOCK_TRANSF></I_STOCK_TRANSF>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- Reverse a stock adjustment -->
+	<mx:WebService id="wsStockAdjustReverse"
+ 		wsdl="{wsdl_prefix + 'ZNP_STOCK_ADJUST_REVERSE'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsStockAdjustReverse')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_STOCK_ADJUST_REVERSE"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_STOCK_ADJUST></I_STOCK_ADJUST>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- Reverse a stock transfer -->
+	<mx:WebService id="wsStockTransferReverse"
+ 		wsdl="{wsdl_prefix + 'ZNP_STOCK_TRANSFER_REVERSE'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsStockTransferReverse')"    
+  		load="forceSecureWSDL(event)" 	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_STOCK_TRANSFER_REVERSE"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_STOCK_TRANSF></I_STOCK_TRANSF>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>	
+
+<!-- date validator for transfer out date -->
+    <mx:DateValidator id="stringDateV" 
+        source="{TRANS_DATE}" property="text" allowedFormatChars="." trigger="{AddLine}"  
+        inputFormat="dd.mm.yyyy" invalid="Alert.show('Invalid date');" triggerEvent="click" 
+        valid="onAdd(LIFNR.text, MILL.text,
+						  MATNR.text, SelectedWerks, '',
+						  WEIGHT.text, REEL.text, 'stock transfer', TRANS_DATE.text,
+						  '', '');"/>	
+
+<!-- date validator for stock adjustment date -->
+    <mx:DateValidator id="stringDateV2" 
+        source="{ADJUST_DATE}" property="text" allowedFormatChars="." trigger="{AddLine1}"  
+        inputFormat="dd.mm.yyyy" invalid="Alert.show('Invalid date');" triggerEvent="click" 
+        valid="onAdd(LIFNR1.text, MILL1.text,
+					MATNR1.text, SelectedReason, SelectedReasonType,
+					WEIGHT1.text, REEL1.text, 'stock adjustment', ADJUST_DATE.text,
+					SelectedDestWerks, COMMENT.text)"/>	
+
+<!-- number validator -->
+ 	<mx:NumberValidator source="{WEIGHT}" trigger="{WEIGHT}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid weight');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="3" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>
+
+<!-- number validator -->
+ 	<mx:NumberValidator source="{WEIGHT1}" trigger="{WEIGHT1}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid weight');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="3" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>
+
+<!-- number validator -->
+ 	<mx:NumberValidator source="{REEL}" trigger="{REEL}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid number of reels');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="2" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>
+
+<!-- number validator -->
+ 	<mx:NumberValidator source="{REEL1}" trigger="{REEL1}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid number of reels');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="2" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>
+	
+<!-- title -->
+	<mx:Panel x="2" y="2" height="90" width="100%" title="Stock Adjustments" layout="absolute" fontFamily="Arial" fontSize="18" fontWeight="bold" backgroundAlpha="0">
+		<mx:Label x="15" y="10" text="Site:" fontSize="10"/>
+		<mx:ComboBox id="comboPlant" x="70" y="10" width="200" fontSize="10" 
+			dataProvider="{plantsList}" change = "setCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Label x="300" y="10" text="Last posted:" fontSize="10"/>
+		<mx:TextInput id="lastPost" x="393" y="9" width="100" fontSize="10" editable="false"  backgroundColor="0xDCDCDC"/>			
+		<mx:Button x="550" y="10" click="doRefresh()" label="Refresh Screen" fontSize="12"/>
+		<mx:Text x="696" y="-1" text="News UK Newsprint" height="36" fontSize="28" fontFamily="Times"/>				
+	</mx:Panel>
+
+<!-- add a transfer out -->
+	<mx:Panel  x="2" y="95" width="100%" height="100" layout="absolute" title="Add stock transfer out" backgroundAlpha="0" visible="false">
+		<mx:Text x="141" y="10" text="Vendor - Mill - Material"/>
+		<mx:Text x="689" y="10" text="Weight"/>
+		<mx:Text x="760" y="10" text="Reels"/>
+		<mx:Text x="804" y="10" text="Destination"/>
+		<ns1:DateField1 id="TRANS_DATE" x="16" y="35" width="92" enabled="true" editable="true" formatString="DD.MM.YYYY" restrict="0123456789."/>
+		<mx:ComboBox id="comboMaterial" x="116" y="35" width="565" fontSize="10" 
+			dataProvider="{materialList}" change = "setMaterialCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>	
+		<mx:Text x="16" y="10" text="Date transfered"/>	
+		<mx:TextInput id="LIFNR" x="10" y="35" width="126" visible="false" maxChars="10"></mx:TextInput>
+		<mx:TextInput id="MILL" x="144" y="35" width="97" visible="false" maxChars="10"></mx:TextInput>
+		<mx:TextInput id="MATNR" x="249" y="35" width="92" visible="false" maxChars="18"></mx:TextInput>
+		<mx:TextInput id="MAKTX" x="349" y="35" width="92" visible="false" maxChars="40"></mx:TextInput>		
+		<mx:TextInput id="WEIGHT" x="689" y="35" width="63" restrict="0123456789." maxChars="13"/>
+		<mx:TextInput id="REEL" x="760" y="35" width="36" restrict="0123456789." maxChars="6"/>
+		<mx:ComboBox id="comboDestination" x="804" y="35" width="200" fontSize="10" 
+			dataProvider="{werksList}" change = "setWerksCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Button x="1012" y="31" id="AddLine" label="Add line"/>
+	</mx:Panel>	
+
+<!-- transfers out -->	
+	<mx:Panel x="2" y="198" width="100%" height="181" title="Transfers out" backgroundAlpha="0" visible="false">
+		<mx:DataGrid x="26.5" y="33" id="Transfers" dataProvider="{wsGetStockAdjustment.ZNP_STOCK_ADJUST_READ.lastResult.STOCK_TRANSFERS.item}" editable="true" enabled="true" height="141" wordWrap="true">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Date" dataField="TRANS_DATE" width="77" editable="false" labelFunction="dateLabel" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material" dataField="MATNR" width="56" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material Description" dataField="MAKTX" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="LIFNR" width="55" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="NAME1" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL" width="44" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL_NAME" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Weight (ton)" dataField="WEIGHT" width="84" textAlign="left" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Reels" dataField="REEL" width="43" textAlign="left" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Destination" dataField="DEST_NAME" width="160" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Cancel Transfer" width="60" itemRenderer="visualComponents.deleteIcon" editable="false" backgroundColor="0xDCDCDC"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+
+<!-- add a stock adjustments -->
+	<mx:Panel x="2" y="100" width="100%" height="201" layout="absolute" title="Add stock adjustment" backgroundAlpha="0">
+		<mx:Text x="118" y="10" text="Vendor - Mill - Material"/>
+		<mx:Text x="691" y="10" text="Reason"/>
+		<mx:Text x="899" y="10" text="Weight"/>
+		<mx:Text x="971" y="10" text="Reels"/>
+		<ns1:DateField1 id="ADJUST_DATE" x="16" y="35" width="94" enabled="true" editable="true" formatString="DD.MM.YYYY" restrict="0123456789."/>
+		<mx:Text x="16" y="10" text="Date adjusted"/>		
+		<mx:TextInput id="LIFNR1" x="10" y="35" width="92" visible="false" maxChars="10"></mx:TextInput>
+		<mx:TextInput id="MILL1" x="110" y="35" width="92" visible="false" maxChars="10"></mx:TextInput>		
+		<mx:TextInput id="MATNR1" x="210" y="35" width="105" visible="false" maxChars="18"/>
+		<mx:ComboBox id="comboMaterial2" x="118" y="35" width="565" fontSize="10" 
+			dataProvider="{materialList2}" change = "setMaterialCombo2()" enabled = "{bEnableButtons}"></mx:ComboBox>				
+		<mx:ComboBox id="comboReason" x="691" y="35" width="200" fontSize="10" 
+			dataProvider="{reasonList}" change = "setReasonCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>				
+		<mx:Text x="691" y="66" text="Destination Site"/>
+		<mx:Text x="118" y="66" text="Reason for adjustment"/>
+		<mx:TextInput id="WEIGHT1" x="899" y="35" width="64" restrict="0123456789." maxChars="13"/>
+		<mx:TextInput id="REEL1" x="971" y="35" width="36" restrict="0123456789." maxChars="6"/>
+		<mx:Button x="1015" y="31" id="AddLine1" label="Add line"/>		
+		<mx:TextArea x="118" y="86" width="565" id="COMMENT" text="Enter comment here" maxChars="250" wordWrap="true" editable="true" enabled="true" height="65"/>
+		<mx:ComboBox id="comboDestWerks" x="691" y="86" width="200" fontSize="10" 
+			dataProvider="{destWerksList}" change = "setDestWerksCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+	</mx:Panel>
+
+<!-- stock adjustment -->
+	<mx:Panel x="0" y="309" width="100%" height="293" title="Stock Adjustments" backgroundAlpha="0">
+		<mx:DataGrid id="StockAdjustments" dataProvider="{wsGetStockAdjustment.ZNP_STOCK_ADJUST_READ.lastResult.STOCK_ADJUSTMENT.item}" editable="true" enabled="true" wordWrap="true" height="353">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Date" dataField="ADJUST_DATE" width="77" editable="false" labelFunction="dateLabel" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material" dataField="MATNR" width="56" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material Description" dataField="MAKTX" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="LIFNR" width="55" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="NAME1" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL" width="44" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL_NAME" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Dest Site" dataField="WERKS_REC" width="80" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Reason" dataField="REASON" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Weight (ton)" dataField="WEIGHT" width="85" textAlign="left" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.MovementValue"/>
+				<mx:DataGridColumn headerText="Reels" dataField="REEL" width="43" textAlign="left" editable="false" backgroundColor="0xDCDCDC" itemRenderer="visualComponents.MovementValue"/>
+				<mx:DataGridColumn headerText="Comment" width="80" itemRenderer="visualComponents.detailIcon" textAlign="center" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Cancel Adjust" width="55" itemRenderer="visualComponents.deleteIcon" backgroundColor="0xDCDCDC" editable="false"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>							
+</mx:Application>

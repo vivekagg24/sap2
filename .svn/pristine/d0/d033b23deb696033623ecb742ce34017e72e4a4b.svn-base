@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+TreeGrid.mxml
+Item renderer for the expand/ contract image in the Approval datagrid
+When clicked - open up the section (cost centre or batch) by inserting the groupings line items directly
+below the grouping - indented to show the hierarchy.
+An item's children are stored in it's childList array
+The grid functions to expand / contract are in GridFunctions.as
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" color="0x000000"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+
+    <mx:Image id="imageIcon" click="iconPress(event)" 
+    	useHandCursor="true"
+    	buttonMode="true"
+    	showBusyCursor="true" />
+    <mx:Label id="labelValue"/>
+
+<mx:Script>
+<![CDATA[
+		import mx.managers.CursorManager;
+		import flash.profiler.showRedrawRegions;
+		import ecs.generalClasses.ApprovalTree;
+        import mx.collections.ArrayCollection;
+        import mx.core.*;
+	 	import mx.controls.Label;
+	   	import mx.controls.dataGridClasses.*;
+	   	import mx.controls.DataGrid;
+	   	import flash.display.Graphics;
+	   	import ni.components.cas.QueryPopup;
+
+		[Embed(source="../../../images/contract_tree.gif")]
+      //  [Bindable]
+        public static var closeIcon:Class;
+
+		[Embed(source="../../../images/expand_tree.gif")]
+     //   [Bindable]
+        public static var openIcon:Class;
+        
+		[Embed(source="../../../images/query_timer_yellow.gif")]
+     //   [Bindable]
+        public static var queryIconYellow:Class;       
+        
+		[Embed(source="../../../images/query_timer_red.gif")]
+     //   [Bindable]
+        public static var queryIconRed:Class;            
+
+        /************************************************************************
+        /* setValue
+        /*************************************************************************/
+        override public function set data(data:Object):void{
+
+                if(data != null){
+                          
+					
+                          if(data.childList.length > 0){
+							//if the item has children
+                            if(data.isOpen == false){
+                            	//Closed : image is +
+                                    imageIcon.visible = true;
+                                    imageIcon.source = new openIcon as BitmapAsset;
+                                    imageIcon.toolTip = "Expand";
+                              }
+                              else{
+                              	//Open: image is -
+                                    imageIcon.visible = true;
+                                    imageIcon.source = new closeIcon as BitmapAsset;
+                                    imageIcon.toolTip = "Collapse";
+                              }
+                              imageIcon.x = 20 + data.indent;
+                          }
+                          else if (data.onQuery) // Show the "On query" icon
+                          {
+                          	  imageIcon.visible = true;
+                          	  imageIcon.source = new queryIconRed as BitmapAsset;
+                          	  imageIcon.toolTip = "End query";
+                          	  imageIcon.x =  20 ;
+                          	  
+                          }   
+                          else{ // Show the "put on query" icon
+                          	  imageIcon.visible = true;
+                          	  imageIcon.source = new queryIconYellow as BitmapAsset;
+                          	  imageIcon.toolTip = "Put on query";
+                          	  imageIcon.x =  20 ;
+
+                                  
+                                  
+                          }
+                          
+                  }
+                   
+          }
+ 	
+       
+   
+        /************************************************************************
+        /* iconPress
+        /*************************************************************************/
+        private function iconPress(event:MouseEvent):void{
+                callLater(disclosurePress);
+        }
+
+        /************************************************************************
+        /* disclosurePress
+        /*************************************************************************/
+        private function disclosurePress():void{
+
+           var indexNum:Number = parentApplication.myRow -1;
+           var item:ApprovalTree = parentApplication.dp[indexNum];
+			if ((parentApplication.dp[indexNum] as ApprovalTree).childList.length > 0)
+			{
+	            if(parentApplication.dp[indexNum].isOpen == false){
+	            	openItem(item, indexNum);
+	            }
+	            else{
+	            	closeItem(item,indexNum);
+	            }				
+			}
+			else
+			{
+				launchQueryPopup(item,indexNum);
+			}
+			
+			
+
+
+           // item.isOpen = !item.isOpen;  // Not needed any more, as this is done by the
+           // expandSection and closeSection functions
+        }
+
+        /************************************************************************
+        /* openItem
+        /*************************************************************************/
+        private function openItem(item:ApprovalTree, indexNum:Number):void{
+        	parentApplication.expandSection(item,indexNum,true);
+        }
+
+        /************************************************************************
+        /* closeItem
+        /*************************************************************************/
+        private function closeItem(item:Object, indexNum:Number):void{
+			parentApplication.closeSection(item,indexNum); 
+        }
+
+        /************************************************************************
+        /* launchQueryPopup
+        /*************************************************************************/
+        private function launchQueryPopup(item:Object, indexNum:Number):void{
+			//parentApplication.closeSection(item,indexNum); 
+			var _data:ApprovalTree = (parentApplication.dp[indexNum] as ApprovalTree)
+		    var obj:Object = QueryPopup.show(parentApplication as DisplayObject, _data, parentApplication.ws1.Z_ECS_PUT_ON_QUERY, parentApplication.refreshGrid);
+			obj.x += 20;
+        }        
+
+]]>
+</mx:Script>
+
+</mx:Canvas>

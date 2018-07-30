@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	DeleteButton
+		Item renderer for the delete row button on the data grid.
+		Works by setting a delete flag on the row and then calling the itemDeleted on the parent application
+	
+		
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+	horizontalScrollPolicy="off"
+	verticalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import ecs.generalClasses.CPRItem;
+			//Row data returned  by get data to data grid (stops rows being jumbled when reused by the DG)
+			private var retData:Object;
+			//This is the value returned to the data provider for the data grid
+			[Bindable]
+			public var deleteFlag:Boolean = false;
+			override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+						retData=value;
+                    }
+        		}
+	        }
+				
+			//Return the row to stop the jumbling -  occurs because the grid reuses the conponents when  scrolling
+			override public function get data():Object{
+				return retData;
+			}
+			
+			//Set the flag to delete the row and call the parent application handler
+			private function deleteRow():void{
+				retData.deleteFlag=true;
+				parentApplication.itemDeleted();
+			}
+		]]>
+	</mx:Script>
+
+	 <mx:Button
+	 	icon="@Embed('../../images/delete.gif')"
+	 	click="deleteRow()"
+	 	useHandCursor="true"
+	 	enabled="{parentApplication.applicationEditable}"
+	 	tabEnabled="false"
+	 	width="20">
+	 	
+	 </mx:Button>
+</mx:Canvas>

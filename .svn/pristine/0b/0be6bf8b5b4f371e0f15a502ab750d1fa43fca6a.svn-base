@@ -1,0 +1,95 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>History.mxml</title>
+<link rel="stylesheet" type="text/css" href="../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:TitleWindow</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot; title=&quot;<span class="mxmlString">History</span>&quot; 
+    creationComplete=&quot;doInit<span class="asBracket">()</span>;&quot; height=&quot;<span class="mxmlString">348</span>&quot;<span class="mxmlComponent">&gt;</span>
+    
+    <span class="mxmlTag">&lt;mx:Script&gt;</span>
+        <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+        <span class="asReserved">import</span> mx.managers.PopUpManager;
+    
+        <span class="asReserved">protected</span> <span class="asVar">var</span> _historyTab<span class="asOperator">:</span>XMLList;
+        <span class="asBracket">[</span><span class="asMetadata">Bindable</span><span class="asBracket">]</span>
+        <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> historyTab<span class="asBracket">(</span>value<span class="asOperator">:</span>XMLList<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+        <span class="asBracket">{</span>
+            _historyTab <span class="asOperator">=</span> value;
+            <span class="asReserved">if</span> <span class="asBracket">(</span>hist<span class="asBracket">)</span> hist.dataProvider <span class="asOperator">=</span> _historyTab;
+        <span class="asBracket">}</span>
+        <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">get</span> historyTab<span class="asBracket">()</span><span class="asOperator">:</span>XMLList
+        <span class="asBracket">{</span>
+            <span class="asReserved">return</span> _historyTab;
+        <span class="asBracket">}</span>
+
+        <span class="asReserved">public</span> <span class="asVar">var</span> error<span class="asOperator">:</span>Boolean;
+
+        <span class="asBracket">[</span><span class="asMetadata">Bindable</span><span class="asBracket">]</span>
+        <span class="asReserved">private</span> <span class="asVar">var</span> textStyle<span class="asOperator">:</span>String<span class="asOperator">=</span><span class="asString">&quot;&quot;</span>;    
+        
+        <span class="asReserved">private</span> <span class="asFunction">function</span> doInit<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span> <span class="asBracket">{</span>
+            <span class="asReserved">this</span>.move<span class="asBracket">(</span>100, 100<span class="asBracket">)</span>; <span class="asComment">// For some reason, PoUpManager.centre doesn&apos;t work very well,
+</span>            <span class="asReserved">this</span>.alpha <span class="asOperator">=</span> 1.0;
+            <span class="asReserved">this</span>.hist.dataProvider <span class="asOperator">=</span> historyTab;
+            <span class="asReserved">this</span>.hist.rowCount <span class="asOperator">=</span> 10;
+            <span class="asReserved">this</span>.hist.showHeaders <span class="asOperator">=</span> <span class="asReserved">true</span>;
+            <span class="asReserved">this</span>.setStyle<span class="asBracket">(</span><span class="asString">&quot;borderAlpha&quot;</span>, 1.0<span class="asBracket">)</span>;
+            <span class="asReserved">if</span> <span class="asBracket">(</span>error<span class="asBracket">)</span>textStyle<span class="asOperator">=</span><span class="asString">&quot;error&quot;</span>;
+            btnOK.setFocus<span class="asBracket">()</span>;    
+        <span class="asBracket">}</span>
+    
+        <span class="asReserved">override</span> <span class="asReserved">protected</span> <span class="asFunction">function</span> updateDisplayList<span class="asBracket">(</span>unscaledWidth<span class="asOperator">:</span>Number, unscaledHeight<span class="asOperator">:</span>Number<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+        <span class="asBracket">{</span>
+            <span class="asReserved">super</span>.updateDisplayList<span class="asBracket">(</span>unscaledWidth, unscaledHeight<span class="asBracket">)</span>;        
+        <span class="asBracket">}</span>
+    
+        <span class="asReserved">private</span> <span class="asFunction">function</span> handleClose<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+            PopUpManager.removePopUp<span class="asBracket">(</span><span class="asReserved">this</span><span class="asBracket">)</span>;
+            <span class="asReserved">this</span>.focusManager.deactivate<span class="asBracket">()</span>;
+            parentApplication.focusManager.activate<span class="asBracket">()</span>;
+            <span class="asReserved">if</span> <span class="asBracket">(</span>parentApplication.hasOwnProperty<span class="asBracket">(</span><span class="asString">&quot;focusField&quot;</span><span class="asBracket">)</span> <span class="asOperator">&amp;&amp;</span>
+               parentApplication.focusField<span class="asOperator">!=</span><span class="asReserved">null</span><span class="asBracket">)</span>
+            <span class="asBracket">{</span>    
+                parentApplication.focusField.setFocus<span class="asBracket">()</span>;
+                <span class="asTrace">trace</span><span class="asBracket">(</span>parentApplication.focusField.id<span class="asBracket">)</span>;
+            <span class="asBracket">}</span>
+            <span class="asReserved">if</span> <span class="asBracket">(</span>parentApplication.hasOwnProperty<span class="asBracket">(</span><span class="asString">&quot;focusEvent&quot;</span><span class="asBracket">)</span> <span class="asOperator">&amp;&amp;</span> parentApplication.focusEvent<span class="asOperator">!=</span><span class="asString">&quot;&quot;</span><span class="asBracket">)</span> 
+            <span class="asBracket">{</span>
+                parentApplication.dispatchEvent<span class="asBracket">(</span><span class="asReserved">new</span> Event<span class="asBracket">(</span>parentApplication.focusEvent<span class="asBracket">))</span>;
+            <span class="asBracket">}</span>
+        <span class="asBracket">}</span>
+        <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+    <span class="mxmlTag">&lt;/mx:Script&gt;</span>
+    <span class="mxmlTag">&lt;mx:Style&gt;</span>
+        <span class="cssSelector">.error</span><span class="cssSymbol">{</span><span class="cssPropName">color</span><span class="cssSymbol">:</span><span class="cssPropValue">red</span><span class="cssSymbol">}</span>
+    <span class="mxmlTag">&lt;/mx:Style&gt;</span>
+    
+    <span class="mxmlComponent">&lt;mx:DataGrid</span> id=&quot;<span class="mxmlString">hist</span>&quot; height=&quot;<span class="mxmlString">224</span>&quot; width=&quot;<span class="mxmlString">100%</span>&quot; headerColors=&quot;<span class="mxmlString">0xC6EFF7</span>&quot; wordWrap=&quot;<span class="mxmlString">true</span>&quot; variableRowHeight=&quot;<span class="mxmlString">true</span>&quot;<span class="mxmlComponent">&gt;</span>
+        <span class="mxmlComponent">&lt;mx:columns&gt;</span>
+            <span class="mxmlComponent">&lt;mx:DataGridColumn</span> dataField=&quot;<span class="mxmlString">DATE_TEXT</span>&quot; headerText=&quot;<span class="mxmlString">Date</span>&quot; width=&quot;<span class="mxmlString">80</span>&quot;<span class="mxmlComponent">/&gt;</span> 
+            <span class="mxmlComponent">&lt;mx:DataGridColumn</span> dataField=&quot;<span class="mxmlString">TIME_TEXT</span>&quot; headerText=&quot;<span class="mxmlString">Time</span>&quot; width=&quot;<span class="mxmlString">70</span>&quot;<span class="mxmlComponent">/&gt;</span>
+            <span class="mxmlComponent">&lt;mx:DataGridColumn</span> dataField=&quot;<span class="mxmlString">AGENT_NAME</span>&quot; headerText=&quot;<span class="mxmlString">user</span>&quot; width=&quot;<span class="mxmlString">120</span>&quot;<span class="mxmlComponent">/&gt;</span>
+            <span class="mxmlComponent">&lt;mx:DataGridColumn</span> dataField=&quot;<span class="mxmlString">ACTION</span>&quot; headerText=&quot;<span class="mxmlString">Action</span>&quot; width=&quot;<span class="mxmlString">90</span>&quot;<span class="mxmlComponent">/&gt;</span>
+            <span class="mxmlComponent">&lt;mx:DataGridColumn</span> dataField=&quot;<span class="mxmlString">TEXT</span>&quot; headerText=&quot;<span class="mxmlString">Text</span>&quot; width=&quot;<span class="mxmlString">200</span>&quot; wordWrap=&quot;<span class="mxmlString">true</span>&quot;<span class="mxmlComponent">/&gt;</span> 
+        <span class="mxmlComponent">&lt;/mx:columns&gt;</span>
+    <span class="mxmlComponent">&lt;/mx:DataGrid&gt;</span>
+
+    <span class="mxmlComponent">&lt;mx:Canvas</span> height=&quot;<span class="mxmlString">40</span>&quot; width=&quot;<span class="mxmlString">100%</span>&quot;
+              horizontalScrollPolicy=&quot;<span class="mxmlString">off</span>&quot;
+               verticalScrollPolicy=&quot;<span class="mxmlString">off</span>&quot;<span class="mxmlComponent">&gt;</span>    
+        <span class="mxmlComponent">&lt;mx:ControlBar</span> horizontalAlign=&quot;<span class="mxmlString">center</span>&quot; id=&quot;<span class="mxmlString">bar2</span>&quot;  width=&quot;<span class="mxmlString">60</span>&quot; horizontalCenter=&quot;<span class="mxmlString">0</span>&quot;<span class="mxmlComponent">&gt;</span>
+            <span class="mxmlComponent">&lt;mx:HBox</span> defaultButton=&quot;<span class="mxmlString">{</span>btnOK<span class="mxmlString">}</span>&quot;<span class="mxmlComponent">&gt;</span>
+                <span class="mxmlComponent">&lt;mx:Button</span> 
+                    click=&quot;handleClose<span class="asBracket">()</span>&quot; 
+                    id=&quot;<span class="mxmlString">btnOK</span>&quot; 
+                    label=&quot;<span class="mxmlString">OK</span>&quot;  <span class="mxmlComponent">/&gt;</span>
+            <span class="mxmlComponent">&lt;/mx:HBox&gt;</span>
+        <span class="mxmlComponent">&lt;/mx:ControlBar&gt;</span>
+    <span class="mxmlComponent">&lt;/mx:Canvas&gt;</span>
+<span class="mxmlComponent">&lt;/mx:TitleWindow&gt;</span></pre></body>
+</html>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml"
+	 width="310" height="144"
+	 layout="absolute"
+
+	     title="Progress">
+	<mx:Label x="10" y="35" text="Complete:"/>
+	<mx:Label x="10" y="10" text="Total:"/>
+	<mx:Label x="10" y="60" text="Percent:"/>
+	<mx:Label x="82" y="35" text="{_complete}"/>
+	<mx:Label x="82" y="10" text="{_total}"/>
+	<mx:Label x="82" y="60" text="{_percent}"/>
+	<mx:ProgressBar
+		     x="10" y="85"
+		      id="progBar"
+		            mode="manual"
+		            label="" height="11" width="265">
+	</mx:ProgressBar>
+	
+	
+	<mx:Script>
+		<![CDATA[
+		
+			[Bindable]
+			public var _complete:Number;
+			
+			[Bindable]
+			public var _left:Number;
+			
+			[Bindable]
+			public var _total:Number;
+			
+			[Bindable]
+			private var _percent:String = "0%";
+		
+			public function setProgress(value:Number, total:Number):void
+			{
+				progBar.setProgress(value, total);
+				_complete = value;
+				_left     = total - value;
+				_total    = total;
+				
+				var percent_number:Number = _complete / _total * 100;				
+				_percent  = percent_number.toFixed(0) + "%";
+				
+			}
+			
+			override public function set label(value:String):void
+			{
+				progBar.label = "";
+				this.title = value;
+			}			
+			override public function get label():String
+			{
+				return progBar.label;
+			}			
+			
+			
+		]]>
+	</mx:Script>
+</mx:Panel>

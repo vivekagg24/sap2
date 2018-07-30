@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:s0="urn:sap-com:document:sap:rfc:functions" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="urn:sap-com:document:sap:rfc:functions">
+  <types>
+    <xsd:schema targetNamespace="urn:sap-com:document:sap:rfc:functions">
+      <xsd:element name="Z_CMS_GET_CLAIMEDIT_INITDATA">
+        <xsd:complexType>
+          <xsd:all></xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Z_CMS_GET_CLAIMEDIT_INITDATA.Response">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="EX_T_COST_CENTERS">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="s0:SHSVALSTR"></xsd:element>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:complexType name="SHSVALSTR">
+        <xsd:sequence>
+          <xsd:element name="KEY" minOccurs="0">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="132"></xsd:maxLength>
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element name="VALUE" minOccurs="0">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:maxLength value="132"></xsd:maxLength>
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </types>
+  <message name="Z_CMS_GET_CLAIMEDIT_INITDATAInput">
+    <part name="parameters" element="s0:Z_CMS_GET_CLAIMEDIT_INITDATA"></part>
+  </message>
+  <message name="Z_CMS_GET_CLAIMEDIT_INITDATAOutput">
+    <part name="parameters" element="s0:Z_CMS_GET_CLAIMEDIT_INITDATA.Response"></part>
+  </message>
+  <portType name="Z_CMS_GET_CLAIMEDIT_INITDATAPortType">
+    <operation name="Z_CMS_GET_CLAIMEDIT_INITDATA">
+      <input message="s0:Z_CMS_GET_CLAIMEDIT_INITDATAInput"></input>
+      <output message="s0:Z_CMS_GET_CLAIMEDIT_INITDATAOutput"></output>
+    </operation>
+  </portType>
+  <binding name="Z_CMS_GET_CLAIMEDIT_INITDATABinding" type="s0:Z_CMS_GET_CLAIMEDIT_INITDATAPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <operation name="Z_CMS_GET_CLAIMEDIT_INITDATA">
+      <soap:operation soapAction="http://www.sap.com/Z_CMS_GET_CLAIMEDIT_INITDATA"></soap:operation>
+      <input>
+        <soap:body use="literal"></soap:body>
+      </input>
+      <output>
+        <soap:body use="literal"></soap:body>
+      </output>
+    </operation>
+  </binding>
+  <service name="Z_CMS_GET_CLAIMEDIT_INITDATAService">
+    <documentation>SAP Service Z_CMS_GET_CLAIMEDIT_INITDATA via SOAP</documentation>
+    <port name="Z_CMS_GET_CLAIMEDIT_INITDATAPortType" binding="s0:Z_CMS_GET_CLAIMEDIT_INITDATABinding">
+      <soap:address location="http://saponi.bis.newsint.com:8080/sap/bc/soap/rfc?sap-client=007"></soap:address>
+    </port>
+  </service>
+</definitions>

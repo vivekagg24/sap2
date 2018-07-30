@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300"
+	 creationComplete="onCreationComplete()" xmlns:events="flash.events.*">
+<!-- Replicates SAP's structure search in Flex 
+     We need two function modules to get our data
+     - RH_STRUC_HELP_ROOTS_GET gets the top level nodes
+     - RH_STRUC_GET_MULTIPLE_ROOTS gets the actual structure
+     Since the data ia needed as XML, it makes sense to let ABAP generate the XML. as it is faster.
+     Also, we don't want our XML from SOAP, since that would involve encoding XML twice, instead
+      we want it from an HTTP service, so we use a BSP.
+     
+-->      
+<mx:Metadata>
+    [Event(name="org_selected", type="flash.events.Event")]
+</mx:Metadata>
+
+
+<mx:Script>
+	<![CDATA[
+		import mx.collections.XMLListCollection;
+		import mx.rpc.events.ResultEvent;
+        import mx.binding.utils.*;
+        import mx.events.FlexEvent;
+        import mx.events.PropertyChangeEvent;
+
+		public static const ORG_SELECTED_EVENT:String = "org_selected";
+		
+		[Bindable]
+		protected var wegid:String = 'ORGEH';
+		
+		[Bindable]
+		protected var relative_url:String = '/sap/bc/bsp/sap/ZHR_ORG_XML/Default.xml';		
+		
+		[Bindable]
+		public var server_url:String;
+		
+		[Bindable]
+		public var root_org:String;		
+		
+		
+		public function load():void
+		{
+			org_hs1.send();
+		}
+		
+		private function onResult(event:ResultEvent):void
+		{
+			t1.dataProvider = (new XML(event.result)).children();
+		}
+		
+		private function onCreationComplete():void
+		{
+			// Add listener to tree
+			ChangeWatcher.watch(t1, "selectedItem", watcherListener);
+
+		}
+		
+		private function watcherListener(event:Event):void
+		{
+			if (t1.selectedItem)
+			{
+				var x:XML = t1.selectedItem as XML;
+				var new_id:String = x.@id;
+				if (new_id != this.id_of_selected_org_unit)
+					id_of_selected_org_unit = x.@id;	
+				
+				name_of_selected_org_unit = x.@name;	
+				orgSelected = true;			
+			}
+			else
+			{
+				_id_of_selected_org_unit = null;
+				name_of_selected_org_unit = null;
+				orgSelected = false;
+			}
+			
+			var e:Event = new Event(ORG_SELECTED_EVENT);
+			this.dispatchEvent(e);
+			
+		}
+		
+		protected var _id_of_selected_org_unit:String;
+		
+		[Bindable]			
+		public function set id_of_selected_org_unit(val:String):void
+		{
+			if (!t1 || !t1.dataProvider)
+				return;		
+			
+			// Set the item in the tree
+			var l:XMLList = (t1.dataProvider as XMLListCollection).source..org;			
+			
+			for each (var x:XML in l)
+			{
+				if (x.@id == val)
+				{
+					_id_of_selected_org_unit = val;						
+					t1.expandItem(x, true);
+					var y:XML = x.parent();
+					while (y.@id && y.@id.toString().length > 0)
+					{
+						t1.expandItem(y, true );
+						y = y.parent();
+					}	
+					t1.selectedItem = x;		
+					return;							
+				}		
+			}						
+		}
+		
+		public function get id_of_selected_org_unit():String
+		{
+			return  _id_of_selected_org_unit;
+		}
+
+		[Bindable]
+		public var name_of_selected_org_unit:String;
+		
+		[Bindable]
+		public var orgSelected:Boolean = false;
+		
+	]]>
+</mx:Script>
+<!--
+url="http://www.google.com"
+ -->
+<mx:HTTPService url="{server_url + relative_url}"
+                showBusyCursor="true"
+                id="org_hs1"
+                result="onResult(event)"
+                resultFormat="e4x"
+                useProxy="false"
+               >
+               <mx:request xmlns="" >
+               	
+               	
+               </mx:request>
+               
+
+</mx:HTTPService>
+	<mx:Tree x="0" y="0" width="100%" height="100%" id="t1" labelField="@name"
+	         verticalScrollPolicy="on" openDuration="0"
+	         
+		      
+		     
+		      >
+	         
+	
+	
+	</mx:Tree>
+</mx:Canvas>

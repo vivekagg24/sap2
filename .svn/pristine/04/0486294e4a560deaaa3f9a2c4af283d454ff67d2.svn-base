@@ -1,0 +1,29 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+
+  <QuickView id="quickViewResource">
+    <QuickViewPage
+      icon="sap-icon://employee"
+      header="{i18n>approval-submitter-info-title}"
+      title="{approval>submitter_name}"
+      description="{approval>submitter_department}">
+      <QuickViewGroup>
+         <QuickViewGroupElement
+          label="{i18n>common-personnel-no}"
+          value="{approval>submitter}"/>
+         <QuickViewGroupElement
+          label="{i18n>common-username}"
+          value="{approval>submitter_username}"/>
+        <QuickViewGroupElement
+          label="{i18n>common-email-address}"
+          value="{approval>submitter_email}"
+          emailSubject="{i18n>common-timesheet}"
+          type="sap.m.QuickViewGroupElementType.email"/>
+      </QuickViewGroup>
+    </QuickViewPage>
+
+  </QuickView>
+
+</core:FragmentDefinition>

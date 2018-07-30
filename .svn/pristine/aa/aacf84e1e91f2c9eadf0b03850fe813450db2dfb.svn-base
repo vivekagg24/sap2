@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="ejbModule"/>
+	<classpathentry exported="true" kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/sshlib/ganymed-ssh2-build251beta1.jar" sourcepath="//newsint.internal/UserData/Central/UserM-P/Home/MTurner1/workspace/sshlib/ganymed-ssh2-build251beta1"/>
+	<classpathentry kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/pilib/com.sap.aii.af.lib.mod.jar"/>
+	<classpathentry kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/pilib/com.sap.aii.af.ms.ifc_api.jar"/>
+	<classpathentry kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/pilib/com.sap.aii.proxy.ejb.jar"/>
+	<classpathentry kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/pilib/com.sap.aii.proxy.gen.jar"/>
+	<classpathentry kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/pilib/com.sap.aii.proxy.svc_api.jar"/>
+	<classpathentry kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/pilib/com.sap.aii.utilxi.core.jar"/>
+	<classpathentry kind="lib" path="//newsint.internal/userdata/Central/UserM-P/Home/MTurner1/My Documents/MJT/workspace/pilib/com.sap.aii.utilxi.server.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre6"/>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.generic.runtimeTarget.sap/sapruntime"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>

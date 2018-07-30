@@ -1,0 +1,129 @@
+jQuery.sap.declare('nuk.sap.timesheet.Component');
+
+sap.ui.core.UIComponent.extend("nuk.sap.timesheet.Component", {
+  TESTING: false,    // running in test mode (ie local data)
+
+  metadata: {
+    manifest: "json"
+  },
+
+  init: function() {
+
+    //jQuery.sap.require("nuk.sap.timesheet.util.api");
+    //jQuery.sap.require("nuk.sap.timesheet.util.Formatter");
+
+    sap.ui.core.UIComponent.prototype.init.apply(this, arguments);
+  },
+
+  createContent: function() {
+    var _dialog;
+
+    // create root view
+    var oView = sap.ui.view({
+      id: "idViewRoot",
+      viewName: "nuk.sap.timesheet.view.App",
+      type: "XML",
+      viewData: { component : this }
+    });
+    oView.addStyleClass("sapUiSizeCompact");
+
+    // initialise device model
+    var oDeviceModel = new sap.ui.model.json.JSONModel({
+      isTouch: sap.ui.Device.support.touch,
+      isNoTouch: !sap.ui.Device.support.touch,
+      isPhone: sap.ui.Device.system.phone,
+      isNoPhone: !sap.ui.Device.system.phone,
+      listMode: sap.ui.Device.system.phone ? "None" : "SingleSelectMaster",
+      listItemType: sap.ui.Device.system.phone ? "Active" : "Inactive"
+    });
+    oDeviceModel.setDefaultBindingMode("OneWay");
+    this.setModel(oDeviceModel, "device");
+
+    // Config model
+    var oConfigModel = new sap.ui.model.json.JSONModel({
+      isDataChanged: false
+    });
+    this.setModel(oConfigModel, "config");
+
+    // Login model
+    var oLoginModel = new sap.ui.model.json.JSONModel({
+      username: "",
+      password: ""
+    });
+    oView.setModel(oLoginModel, "login");
+
+    // i18n model
+    var oi18nModel = new sap.ui.model.resource.ResourceModel({
+      bundleUrl: "i18n/messageBundle.properties"
+    });
+    oView.setModel(oi18nModel, "i18n");
+
+    // instantiate dialog
+    if (! _dialog) {
+      _dialog = sap.ui.xmlfragment("nuk.sap.timesheet.fragment.RefreshingRouteDialog", this);
+      oView.addDependent(_dialog);
+    }
+
+    // open dialog
+    jQuery.sap.syncStyleClass("sapUiSizeCompact", oView, _dialog);
+    _dialog.open();
+
+    // finally, set data model on root view, fetching routes from SAP ECC
+    if (nuk.sap.timesheet.Component.TESTING) {
+      var oModel = new sap.ui.model.json.JSONModel("model/mock.json");
+      //sap.ui.getCore().setModel(oModel);
+      oView.setModel(oModel);
+
+      var oBackupModel = new sap.ui.model.json.JSONModel("model/mock.json");
+      oView.setModel(oBackupModel, "backup");
+      _dialog.close();
+    } else {
+
+      // Get the list of routes for the issue date
+      nuk.sap.timesheet.util.api.getRoutes(
+        function(sJSON) {
+          var oModel = new sap.ui.model.json.JSONModel(sJSON);
+          oView.setModel(oModel, "routes");
+          _dialog.close();
+        },
+        function(oXhr, sStatus, sErrorThrown) {
+          _dialog.close();
+          var sTitle = oView.getModel("i18n").getResourceBundle().getText('MasterDropFetchErrorTitle');
+          var sContent = oView.getModel("i18n").getResourceBundle().getText('MasterDropFetchErrorContent', [sStatus, sErrorThrown]);
+
+          sap.ui.commons.MessageBox.show(sContent,
+            sap.ui.commons.MessageBox.Icon.ERROR,
+            sTitle,
+            [sap.ui.commons.MessageBox.Action.OK]);
+        }
+      );
+
+      // Get the drops for the route
+      nuk.sap.timesheet.util.api.getDrops('MF_C_LD001',
+        function(sJSON) {
+          var oModel = new sap.ui.model.json.JSONModel(sJSON);
+          oView.setModel(oModel);
+
+          var oBackupModel = new sap.ui.model.json.JSONModel(sJSON);
+          oView.setModel(oBackupModel, "backup");
+
+          _dialog.close();
+        },
+        function(oXhr, sStatus, sErrorThrown) {
+          _dialog.close();
+          var sTitle = oView.getModel("i18n").getResourceBundle().getText('MasterRouteFetchErrorTitle');
+          var sContent = oView.getModel("i18n").getResourceBundle().getText('MasterRouteFetchErrorContent', [sStatus, sErrorThrown]);
+
+          sap.ui.commons.MessageBox.show(sContent,
+            sap.ui.commons.MessageBox.Icon.ERROR,
+            sTitle,
+            [sap.ui.commons.MessageBox.Action.OK]);
+        }
+      );
+
+    }
+
+    return oView;
+  }
+
+});

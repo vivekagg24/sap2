@@ -1,0 +1,124 @@
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	LookUPCostCentre.mxml
+		
+		Show the list of Cost Centres for the current publication/ item category
+		
+-->
+<mx:TitleWindow x="239" y="156" width="457" height="427" layout="absolute"
+		 close="btnCancel.dispatchEvent(new MouseEvent(MouseEvent.CLICK))"
+		 creationComplete="doInit()"
+		 showCloseButton="true"
+		 title="Cost Centre Selection"
+		 backgroundAlpha="1"
+		 mouseDown="mouseDownHandlerForDrag(event)"
+		 xmlns:mx="http://www.adobe.com/2006/mxml" 
+		 	>
+		 	<mx:Style source="../../ECS.css"/>
+	<mx:Script>
+    <![CDATA[
+    	import mx.core.DragSource;
+    	import mx.core.IUIComponent;
+    	import mx.managers.IFocusManagerComponent;
+    	import ecs.generalClasses.valueForDropdown;
+    	import mx.managers.FocusManager;
+    	
+        import mx.managers.PopUpManager;
+        //Selected Cost Centre
+       	public var costCentre:String;
+       	//Selected Cost Centre Description
+       	public var description:String;
+       	// Where to put focus after?
+       	public var toFocus:IFocusManagerComponent;
+       	
+       	
+       	//Data provider for grid     
+       	private var _costCentres:Array;  	
+       	[Bindable]       	
+		public function set costCentres(value:Array):void
+		{
+			this._costCentres = new Array();
+			for each (var item:valueForDropdown in value)
+			{
+				var x:valueForDropdown = new valueForDropdown();
+				x.data = item.data;
+				x.label = item.label;
+				x.tip = item.tip;
+				x.extra = item.extra;
+				
+				// Take cost centre code out of description if the description contains the code
+				if (x.label.substr(0, x.data.length) == x.data)
+					x.label = x.label.substr(x.data.length + 1);				
+				
+				this._costCentres.push(x);
+			}			
+		}
+		public function get costCentres():Array
+		{
+			return this._costCentres;
+		}
+		
+
+		private function doInit():void{
+			PopUpManager.centerPopUp(this);
+			//GL accounts for current publication and item category (list is populated when the application loads)
+			
+			if (costCentres.length > 0){
+				//Select the first item in the grid
+				dgCostCentres.selectedIndex=0;
+				dgCostCentres.setFocus();
+				
+			}
+		}
+		
+		public function cleanClose():void
+		{
+			PopUpManager.removePopUp(this);
+			this.focusManager.deactivate();
+			systemManager.removeFocusManager(this);	
+			
+			if (toFocus)
+				toFocus.setFocus();		
+			
+		}
+		
+		//Set return values and close the window
+		private function returnValue():void{
+  			if (dgCostCentres.selectedIndex>-1){ 	
+  				costCentre = costCentres[dgCostCentres.selectedIndex].data.toString();
+  				description = costCentres[dgCostCentres.selectedIndex].label.toString();
+  			}
+
+  			cleanClose();
+  		}
+  		
+		// Allow the user to drag the popup
+		include "includeDragForPopUp.as";
+  		
+		  		
+	    ]]>
+	</mx:Script>
+
+	<mx:Panel x="10" y="10" width="416" height="361" layout="absolute"
+		defaultButton="{btnOK}" horizontalCenter="0" id="pnl">
+		<mx:DataGrid x="0" y="0" width="386" height="288" id="dgCostCentres"
+			dataProvider="{costCentres}"
+			styleName="dataGrid"
+			doubleClickEnabled="true"
+			doubleClick="returnValue()">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Cost Centre" dataField="data" width="100"/>
+				<mx:DataGridColumn headerText="Text" dataField="label"/>
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:Button x="109" y="289" 
+			id="btnCancel"
+			 styleName="button" label="Cancel" click="cleanClose();" icon="@Embed('../../images/cancel.gif')" width="70"/>
+		<mx:Button x="191" y="289" 
+			styleName="button" id="btnOK" label="OK" click="returnValue()" icon="@Embed('../../images/OK.gif')" width="70"/>
+	</mx:Panel>
+</mx:TitleWindow>
+

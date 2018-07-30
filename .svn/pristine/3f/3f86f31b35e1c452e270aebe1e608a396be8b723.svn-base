@@ -1,0 +1,178 @@
+jQuery.sap.declare('nuk.sap.timesheet.util.Formatter');
+
+nuk.sap.timesheet.util.Formatter = {
+
+  formatTimesheetPeriod: function(sDateFrom, sDateTo) {
+    var OUT_FORMAT_NO_YEAR = "D MMM";
+    var OUT_FORMAT_YEAR = "D MMM YYYY";
+
+    var oFrom = moment(sDateFrom);
+    var oTo = moment(sDateTo);
+
+    if (oFrom.year == oTo.year) {
+      return oFrom.format(OUT_FORMAT_NO_YEAR) + ' to ' + oTo.format(OUT_FORMAT_YEAR);
+    } else {
+      return oFrom.format(OUT_FORMAT_YEAR) + ' to ' + oTo.format(OUT_FORMAT_YEAR);
+    }
+  },
+
+  /**
+   * Format the long timesheet header. Uses momentjs for formatting.
+   * @param  {[type]} sPrefix    [description]
+   * @param  {[type]} sSeparator [description]
+   * @param  {[type]} sDateFrom  [description]
+   * @param  {[type]} sDateTo    [description]
+   * @return {[type]}            [description]
+   */
+  formatTimesheetHeaderLong: function(sPrefix, sSeparator, sDateFrom, sDateTo) {
+    var OUT_FORMAT_NO_YEAR = "dddd, D MMMM";
+    var OUT_FORMAT_YEAR = "dddd, D MMMM YYYY";
+    var oFrom = moment(sDateFrom);
+    var oTo = moment(sDateTo);
+
+    if (oFrom.year === oTo.year) {
+      return sPrefix + ' ' + oFrom.format(OUT_FORMAT_NO_YEAR) + ' ' + sSeparator + ' ' + oTo.format(OUT_FORMAT_YEAR);
+    } else {
+      return sPrefix + ' ' + oFrom.format(OUT_FORMAT_YEAR) + ' ' + sSeparator + ' ' + oTo.format(OUT_FORMAT_YEAR);
+    }
+
+
+  },
+
+  formatTimesheetStatus: function() {
+  },
+
+  _getStatusIcon: function(oTimesheet) {
+    var oIcon = {
+      icon: "",
+      tooltip: "",
+      colour: ""
+    };
+
+    if (oTimesheet.status === "rejected") {
+      oIcon.icon = "sap-icon://decline";
+//      oIcon.tooltip = "common-status-rejected-description";
+      oIcon.colour = "";
+    } else if (oTimesheet.is_overdue === "true") {
+      oIcon.icon = "sap-icon://alert";
+//      oIcon.tooltip = "common-status-overdue-description";
+      oIcon.colour = "";
+    } else if (oTimesheet.status === "approved") {
+      oIcon.icon = "sap-icon://accept";
+//      oIcon.tooltip = "common-status-overdue-description";
+      oIcon.colour = "";
+    }
+
+    return oIcon;
+  },
+
+
+  formatTimesheetStatusIcon: function(oTimesheet) {
+    if (!oTimesheet)
+      return;
+
+    var oIcon = nuk.sap.timesheet.util.Formatter._getStatusIcon(oTimesheet);
+    return oIcon.icon;
+  },
+
+  formatTimesheetStatusTooltip: function(oTimesheet) {
+    if (!oTimesheet)
+      return;
+
+    var oIcon = nuk.sap.timesheet.util.Formatter._getStatusIcon(oTimesheet);
+    return oIcon.tooltip;
+  },
+
+  /**
+   * Format a date to our external format - DD/MM/YYYY
+   * @param  {String} sDate Date in YYYY-MM-DD format
+   * @return {String}       Date in DD/MM/YYYY format
+   */
+  formatDateExternal: function(sDate) {
+    return moment(sDate).format("DD/MM/YYYY");
+  },
+
+  formatDayMonthShort: function(sDate, sDelta) {
+    var iDelta = sDelta || 0;
+    var oDate = new moment(sDate).add(iDelta, 'd');
+    var sFormatted = oDate.format("ddd") + "\n" + oDate.format("D MMM");
+
+    return sFormatted;
+  },
+
+  /**
+   * Format total number of hours. Sums all but the last parameter, which is
+   * interpreted as the total. For example, "8,8,8,8,4,40" is '36/40'
+   * @return {String} String proportion of total - "36/40"
+   */
+  formatTotalHours: function() {
+    var aArgs = Array.prototype.slice.call(arguments);
+    var iTotal = 0;
+
+    for (var i = 0; i < aArgs.length; i++) {
+      if (i < aArgs.length - 1) {
+        iTotal+=aArgs[i];
+      }
+    }
+    return iTotal + '/' + aArgs[aArgs.length-1];
+  },
+
+  formatProjectNames: function() {
+    var sNames = '';
+//    var aArgs = Array.prototype.slice.call(arguments);
+    var oProjects = arguments[0];       // projects are element 0
+    var aTimeWorked = arguments[1];     // time worked element 1
+
+    if (!aTimeWorked)
+      return "";
+
+    for (var i = 0; i < aTimeWorked.length; i++) {
+      if (i > 0)
+        sNames += '\n ';
+      if (oProjects[aTimeWorked[i].project_id]) {
+        sNames += oProjects[aTimeWorked[i].project_id].name;
+      } else {
+        sNames += aTimeWorked[i].project_id;
+      }
+    }
+
+    return sNames;
+  },
+
+  formatComment: function(sComment) {
+    return sComment || "None";
+  },
+
+  calculateProjectTotal: function() {
+    var aArgs;
+    if (arguments[0] && typeof arguments[0] === "object") {
+      aArgs = Array.prototype.slice.call(arguments[0]);
+    } else {
+      aArgs = Array.prototype.slice.call(arguments);
+    }
+
+    return aArgs.reduce(function(iPrev, iCurr) {
+      return parseFloat(iPrev) + parseFloat(iCurr);
+    }, 0).toFixed(2);
+  },
+
+  /**
+   * Round total billable hours down the nearest four-hour increment
+   * for hourly rate contractors
+   * @param  {String} sRateType Rate type - 'H'ourly or 'D'aily
+   * @param  {Number} Total
+   * @return {Number} Rounded total
+   */
+  roundBillableHours: function(sRateType, iHours) {
+    if (sRateType != 'D') {
+      return iHours;
+    }
+    if (iHours === 0) {
+      return 0;
+    } else {
+      var oRem = iHours % 4;
+      return iHours - oRem;
+    }
+  }
+
+};

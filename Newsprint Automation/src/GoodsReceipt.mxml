@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+					layout="absolute"
+					paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0" 
+			    	initialize="init();" minWidth="1000"
+					creationComplete="creationComplete();"
+					creationPolicy="all" 
+					horizontalScrollPolicy="auto" verticalScrollPolicy="auto" xmlns:ns1="visualComponents.*">
+
+<!-- general functions -->
+	<mx:Script source="scripts/Processing_general.as"/>
+<!-- goods receipt specific functions -->
+	<mx:Script source="scripts/Processing_good_receipt.as"/>
+
+<!-- web service to call into SAP -->
+<!-- get plants -->
+	<mx:WebService id="wsGetPlants"
+ 		wsdl="{wsdl_prefix + 'ZNP_PLANT_AUTH_CHECK'}"
+     	useProxy="false"
+     	result="processingReturned(event)"
+  		fault="webServiceFault(event,'wsGetPlants')" 
+  		load="forceSecureWSDL(event)"   	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_PLANT_AUTH_CHECK"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_UNAME></I_UNAME>
+				<ET_WERKS></ET_WERKS>	
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- Get list of expected deliveries and processed deliveries -->
+	<mx:WebService id="wsGetDeliveries"
+ 		wsdl="{wsdl_prefix + 'ZNP_INBOUND_READ'}"
+     	useProxy="false" 
+     	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetDeliveries')" 
+  		load="forceSecureWSDL(event)"      	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_INBOUND_READ"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<EXPECTED_DELIVERIES></EXPECTED_DELIVERIES>
+				<PROCESSED_DELIVERIES></PROCESSED_DELIVERIES>
+				<PURCHASE_ORDERS></PURCHASE_ORDERS>
+				<VENDOR_MILL></VENDOR_MILL>
+				<MATERIALS></MATERIALS>
+				<ET_WERKS></ET_WERKS>
+				<ET_PARAMETERS></ET_PARAMETERS>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- Receipt a line  -->
+	<mx:WebService id="wsReceiptLine"
+ 		wsdl="{wsdl_prefix + 'ZNP_INBOUND_RECEIPT'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'onReceiptLine')"   
+  		load="forceSecureWSDL(event)"  	
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_INBOUND_RECEIPT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_RECEIPT></I_RECEIPT>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- Reverse a receipt line -->
+	<mx:WebService id="wsReverseLine"
+ 		wsdl="{wsdl_prefix + 'ZNP_INBOUND_REVERSE'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'onReverseLine')"    	
+  		load="forceSecureWSDL(event)"   
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_INBOUND_REVERSE"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_REVERSE></I_REVERSE>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- Add a manual delivery line -->
+	<mx:WebService id="wsManualAdd"
+ 		wsdl="{wsdl_prefix + 'ZNP_INBOUND_MANUAL_ADD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'onManualAdd')"    	
+  		load="forceSecureWSDL(event)"   
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_INBOUND_MANUAL_ADD"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_DELIVERY_LINE></I_DELIVERY_LINE>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>			
+
+<!-- PO look up -->
+	<mx:WebService id="wsPOLookup"
+ 		wsdl="{wsdl_prefix + 'ZNP_INBOUND_PO_LOOKUP'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doPOSearch')"    	
+  		load="forceSecureWSDL(event)"   
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_INBOUND_PO_LOOKUP"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<PURCHASE_ORDERS></PURCHASE_ORDERS>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+<!-- item vendor look up -->
+	<mx:WebService id="wsItemLookup"
+ 		wsdl="{wsdl_prefix + 'ZNP_INBOUND_ITEM_LOOKUP'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doItemSearch')"    	
+  		load="forceSecureWSDL(event)"   
+       	showBusyCursor="true"> 
+       	<mx:operation name="ZNP_INBOUND_ITEM_LOOKUP"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<I_WERKS>{SelectedPlant}</I_WERKS>
+				<ITEM_VENDOR></ITEM_VENDOR>
+				<RE_T_MESSAGES></RE_T_MESSAGES>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+
+<!-- title -->
+	<mx:Panel x="2" y="2" height="90" width="100%" title="Goods Receipt" layout="absolute" fontFamily="Arial" fontSize="18" fontWeight="bold" backgroundAlpha="0">
+		<mx:Label x="15" y="10" text="Site:" fontSize="10"/>
+		<mx:ComboBox id="comboPlant" x="70" y="10" width="200" fontSize="10" 
+			dataProvider="{plantsList}" change = "setCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>
+		<mx:Button x="550" y="9" click="doRefresh()" label="Refresh Screen" fontSize="12"/>
+		<mx:Text x="696" y="-1" text="News UK Newsprint" height="36" fontSize="28" fontFamily="Times"/>				
+		<mx:Label x="300" y="10" text="Last posted:" fontSize="10"/>
+		<mx:TextInput id="lastPost" x="393" y="9" width="100" fontSize="10" editable="false"  backgroundColor="0xDCDCDC"/>
+	</mx:Panel>
+
+<!-- expected deliveries -->
+	<mx:Panel x="2" y="95" height="227" width="100%" title="Inbound deliveries/transfers" backgroundAlpha="0">
+		<mx:DataGrid x="26.5" y="33" id="Deliveries"
+			         dataProvider="{wsGetDeliveries.ZNP_INBOUND_READ.lastResult.EXPECTED_DELIVERIES.item}"
+			         editable="true" enabled="true" height="187" wordWrap="true">
+			<mx:columns>
+				<mx:DataGridColumn id="PO" headerText="PO no." dataField="EBELN" width="80" editable="false" backgroundColor="0xDCDCDC">
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="Line" headerText="Line no." dataField="EBELP" width="40" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn id="Vendor" headerText="Vendor" dataField="LIFNR" width="55" editable="false" backgroundColor="0xDCDCDC">
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="Vendor_desc" headerText="Vendor" dataField="NAME1" width="170" editable="false" backgroundColor="0xDCDCDC">
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="Mill" headerText="Mill" dataField="MILL" width="44" editable="false" backgroundColor="0xDCDCDC">
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="Mill_desc" headerText="Mill" dataField="MILL_NAME" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn id="Material" headerText="Material" dataField="MATNR" width="56" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn id="Material_desc" headerText="Material Description" dataField="MAKTX" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn id="Date1" headerText="Delivery Date" dataField="DEL_DATE" width="100" editable="true" labelFunction="dateLabel">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput width="90" restrict="0123456789." maxChars="10"></mx:TextInput>								
+						</mx:Component>
+					</mx:itemEditor>
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="Del" headerText="Delivery ticket" dataField="DEL_NOTE" width="100" editable="true">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput maxChars="16"></mx:TextInput>
+						</mx:Component>															
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="Weight" headerText="Weight (ton)" dataField="WEIGHT" width="84" textAlign="left" editable="true">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789." maxChars="13" ></mx:TextInput>
+						</mx:Component>															
+					</mx:itemEditor>					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn id="Reel" headerText="Reels" dataField="REEL" width="43" textAlign="left" editable="true">
+					<mx:itemEditor>
+						<mx:Component>
+							<mx:TextInput restrict="0123456789." maxChars="6" ></mx:TextInput>
+						</mx:Component>															
+					</mx:itemEditor>
+				</mx:DataGridColumn>					
+				<mx:DataGridColumn headerText="Type" dataField="DEL_TYPE" width="37" editable="false" backgroundColor="0xDCDCDC"/>
+				<!--<mx:DataGridColumn headerText="Edit" width="35" itemRenderer="visualComponents.changeIcon" editable="false"/> -->
+				<mx:DataGridColumn headerText="Accept" width="50" itemRenderer="visualComponents.acceptIcon" editable="false"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+	
+<!-- manually add delivery line -->
+	<mx:Panel x="2" y="330" height="150" width="100%" layout="absolute" title="Add delivery line" backgroundAlpha="0">
+		<mx:Label x="16" y="8" text="PO seach" visible="false"/>
+		<mx:Button x="91" y="6" label="PO seach" click="onPOSearchClick()" visible="false"/>
+		<mx:Label x="200" y="8" text="Material seach" visible="false"/>
+		<mx:Button x="287" y="6" label="Material search" click="onItemSearchClick()" visible="false"/>				
+		<!-- hidden fields required for passing data -->
+		<mx:TextInput id="EBELN" x="480" y="5" width="126" visible="false" restrict="0123456789" maxChars="10"></mx:TextInput>
+		<mx:TextInput id="EBELP" x="614" y="5" width="97" visible="false" restrict="0123456789" maxChars="5"></mx:TextInput>
+		<mx:TextInput id="LIFNR" x="719" y="5" width="92" visible="false" restrict="0123456789" maxChars="10"></mx:TextInput>
+		<mx:TextInput id="MILL" x="819" y="5" width="92" visible="false" restrict="0123456789" maxChars="10"></mx:TextInput>		
+		<mx:TextInput id="MATNR" x="919" y="5" width="150" visible="false" restrict="0123456789" maxChars="18"/>
+		<mx:TextInput id="DESTINATION" x="1019" y="5" width="50" visible="false" maxChars="4"/>
+		<mx:Text x="16" y="4" text="Date delivered"/>
+		<ns1:DateField1 id="DEL_DATE" x="16" y="29" width="90" enabled="true" editable="true" formatString="DD.MM.YYYY" restrict="0123456789."/>
+
+		<!-- Drop down boxes for selection -->
+		<mx:Text x="114" y="4" text="Po no."/>
+		<mx:ComboBox id="comboPO" x="114" y="30" width="130" fontSize="10" 
+			dataProvider="{POList}" change = "setPOCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>						
+		<mx:Text x="252" y="3" text="PO number"/>
+		<mx:TextInput id="EBELN2" x="252" y="29" width="85" restrict="0123456789" maxChars="10" editable="false" backgroundColor="0xDCDCDC"/>
+		<mx:Text x="345" y="4" text="Vendor - Mill"/>
+		<mx:ComboBox id="comboVendor" x="345" y="29" width="392" fontSize="10" 
+			dataProvider="{vendorList}" change = "setVendorCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>					
+		<mx:Text x="16" y="59" text="Material"/>
+		<mx:ComboBox id="comboMaterial" x="16" y="78" width="310" fontSize="10" 
+			dataProvider="{materialList}" change = "setMaterialCombo()" enabled = "{bEnableButtons}"></mx:ComboBox>	
+		<mx:Text x="334" y="59" text="Material not on PO"/>
+		<mx:ComboBox id="comboUnknown" x="334" y="78" width="310" fontSize="10" 
+			dataProvider="{unknownList}" change = "setUnknownCombo()" enabled = "false"></mx:ComboBox>			
+		<!-- text input -->
+		<mx:Text x="653" y="59" text="Delivery note"/>
+		<mx:TextInput id="DEL_NOTE" x="653" y="78" maxChars="16" width="118"/>
+		<mx:Text x="779" y="59" text="Weight (ton)"/>
+		<mx:TextInput id="WEIGHT" x="779" y="78" width="76" restrict="0123456789."  maxChars="13"/>
+		<mx:Text x="863" y="59" text="Reels"/>
+		<mx:TextInput id="REEL" x="863" y="78" width="36" restrict="0123456789." maxChars="6"/>
+		<mx:Button x="966" y="78" id="AddLine" label="Add delivery line" /> <!--click="stringDateV.validate()" -->
+		<mx:CheckBox id="TRANS" x="750" y="30" label="Transfer in" selected="false" visible="false" change="trans(TRANS.selected)"/>
+		<mx:Label id="TRANS_LABEL" x="850" y="5" text="Transfer from" visible="false"/>
+		<mx:ComboBox id="comboDestination" x="850" y="30" width="200" fontSize="10" 
+			dataProvider="{werksList}" change = "setWerksCombo()" visible="false" enabled="false"></mx:ComboBox>
+	</mx:Panel>
+
+<!-- date validator for delivery date -->
+    <mx:DateValidator id="stringDateV" 
+        source="{DEL_DATE}" property="text" allowedFormatChars="." trigger="{AddLine}"   
+        inputFormat="dd.mm.yyyy" invalid="Alert.show('Invalid date');" triggerEvent="click" 
+        valid="onManualAdd(EBELN.text, EBELP.text,
+						  LIFNR.text, MILL.text,
+						  MATNR.text, DEL_NOTE.text,
+						  WEIGHT.text, REEL.text, DEL_DATE.text,
+						  EBELN2.text, TRANS.selected, DESTINATION.text);"/>
+
+<!-- number validator -->
+ 	<mx:NumberValidator source="{WEIGHT}" trigger="{WEIGHT}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid weight');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="3" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>
+
+<!-- number validator -->
+ 	<mx:NumberValidator source="{Weight}" trigger="{Weight}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid weight');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="3" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>
+		
+<!-- number validator -->
+ 	<mx:NumberValidator source="{REEL}" trigger="{REEL}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid reels');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="2" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>
+		
+<!-- number validator -->
+ 	<mx:NumberValidator source="{Reel}" trigger="{Reel}" triggerEvent="change" property="text"
+		allowNegative="false" invalid="Alert.show('invalid weight');"
+		decimalPointCountError="The decimal separator can only occur once." 
+		decimalSeparator="." 
+		invalidCharError="The input contains invalid characters." 
+		negativeError="The number may not be negative." 
+		precision="2" 
+		precisionError="The number entered has too many digits beyond the decimal point."/>				
+
+<!-- processed receipts -->
+	<mx:Panel x="1" y="483" height="228" width="100%" title="Deliveries/transfers receipted (current week)" backgroundAlpha="0">
+		<mx:DataGrid id="ReceiptedDeliveries" dataProvider="{wsGetDeliveries.ZNP_INBOUND_READ.lastResult.PROCESSED_DELIVERIES.item}" editable="true" enabled="true" height="188" wordWrap="true">
+			<mx:columns>
+				<mx:DataGridColumn headerText="PO no." dataField="EBELN" width="80" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Line no." dataField="EBELP" width="40" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="LIFNR" width="55" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Vendor" dataField="NAME1" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL" width="44" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Mill" dataField="MILL_NAME" width="170" editable="false" backgroundColor="0xDCDCDC"/>				
+				<mx:DataGridColumn headerText="Material" dataField="MATNR" width="56" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Material Description" dataField="MAKTX" width="170" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Delivery Date" dataField="DEL_DATE" width="77" editable="false" labelFunction="dateLabel" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Delivery ticket" dataField="DEL_NOTE" width="100" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Weight (ton)" dataField="WEIGHT" width="84" textAlign="left" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Reels" dataField="REEL" width="43" textAlign="left" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Type" dataField="DEL_TYPE" width="37" editable="false" backgroundColor="0xDCDCDC"/>
+				<mx:DataGridColumn headerText="Cancel receipt" width="50" headerWordWrap="true" itemRenderer="visualComponents.deleteIcon" editable="false" backgroundColor="0xDCDCDC"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Panel>
+</mx:Application>

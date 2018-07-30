@@ -1,0 +1,35 @@
+{
+  "user" : "first.last@news.co.uk",
+  "timesheets" : [{
+      "id" : "8765",
+      "week" : "15",
+      "start" : "2015-04-06",
+      "end" : "2015-04-12",
+      "time": {
+        "1": [{"we", 8, null}],
+        "2": [{"we", 8, null}],
+        "3": [{"w", 8, "1T55"}],
+        "4": [{"w", 8, "1T55"}],
+        "5": [{"w", 8, "1T55"}],
+        "6": [{"w", 8, "Project 1"}],
+        "7": [{"w", 8, "Project 1"}]
+      },
+      "submitted_at" : "2015-04-21T14:22:00+0100",
+      "status" : "submitted",
+      "submitter_comment" : "",
+      "approver_comment" : ""
+    }, {
+      "id" : "8766",
+      "week" : "16",
+      "start" : "2015-04-13",
+      "end" : "2015-04-19",
+      "time" : [null, null, 8, 8, 0, 0, 4],
+      "type" : ["we", "we", "w", "w", "bh", "nw", "w"],
+      "project" : [null, null, "Project1", "Project1", null, null, "Project1"],
+      "submitted_at" : "2015-04-21T14:25:33+0100",
+      "status" : "submitted",
+      "submitter_comment" : "Half day on Friday, as discussed",
+      "approver_comment" : ""
+    }
+  ]
+}

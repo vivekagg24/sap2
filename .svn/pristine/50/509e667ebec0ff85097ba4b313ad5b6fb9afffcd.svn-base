@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mvc:View controllerName="nuk.sap.driverportal.view.Detail" class="sapUiSizeCompact" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:maps="openui5.googlemaps" xmlns:l="controls">
+    <Page id="PageMap" enableScrolling="false">
+        <customHeader>
+            <Bar>
+              <contentMiddle>
+                <Label text="{i18n>DetailMapTitle}" />
+              </contentMiddle>
+              <contentRight>
+                <Button icon="sap-icon://sys-help" tooltip="{i18n>MasterHelpTooltip}" press="onHelp"/>
+                <Button icon="sap-icon://log" tooltip="{i18n>MasterLogoutTooltip}" press="onLogout"/>
+                <Image src="images/230x60_NewsUK1.png" width="115px" height="30px" alt="{i18n>NewsUk}" />
+              </contentRight>
+            </Bar>
+        </customHeader>
+        <content>
+            <VBox class="marginBoxContent" >
+                <items>
+                    <maps:Map id="MapDrops" class="googleMap" height="800px" zoom="14" markers="{/drop}" ready="onMapReady" zoomControl="true" panControl="true">
+                        <maps:Marker
+                            lat="{geo_lat}" lng="{geo_long}"
+                            info="{
+                              parts: [
+                                {path: 'itinerary'},
+                                {path: 'priority'},
+                                {path: 'customer_name'},
+                                {path: 'address'}
+                              ],
+                              formatter: 'nuk.sap.driverportal.util.Formatter.formatPinTitle'
+                            }"
+                            animation="0"
+                            draggable="false"
+                            icon="http://chart.apis.google.com/chart?chst={icon_pin}&amp;chld={icon_pin_child}{itinerary}|{icon_pin_fill}|{icon_pin_text}|FFFF00"
+                            click="onMarkerClick">
+                        </maps:Marker>
+                    </maps:Map>
+                </items>
+            </VBox>
+        </content>
+        <footer>
+            <Bar>
+                <contentRight>
+                    <Label text="{i18n>DetailShowPolyline}" />
+                    <Switch change="onShowPolyline" state="false" />
+                    <!--
+                    <Label text="{i18n>DetailShowPolygon}" />
+                    <Switch change="onShowPolygon" state="false" />
+                    -->
+                </contentRight>
+            </Bar>
+        </footer>
+    </Page>
+</mvc:View>

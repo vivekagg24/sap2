@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+  <title>Forms Awaiting Approval</title>
+  <meta charset=utf-8>
+  <style type="text/css">
+    * {
+      font-family: Helvetica, Arial;
+      font-size: 16px;
+    }
+    h1 {
+      font-size: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="header">
+<h1 style="font-variant: small-caps">Forms Awaiting Approval</h1>
+</div>
+
+<strong>$system_warning$</strong>
+
+<div id="body">
+<p>
+$approver_name$,
+
+<p>
+You have forms that are awaiting approval. You can review each form below and
+approve or reject it using the appropriate button.
+
+<p>
+<table border="0">
+  <thead>
+    <tr style=>
+      <th style="text-align:left;border-bottom: 1px dashed #333333;"><strong>Form ID</strong></th>
+      <th style="text-align:left;padding:0 15px 0 15px;border-bottom: 1px dashed #333333;"><strong>Form Type</strong></th>
+      <th style="text-align:left;padding:0 15px 0 15px;border-bottom: 1px dashed #333333;"><strong>Submitted By</strong></th>
+      <th style="text-align:left;padding:0 15px 0 15px;border-bottom: 1px dashed #333333;"><strong>Submitted On</strong></th>
+      <th style="text-align:left;padding:0 15px 0 15px;border-bottom: 1px dashed #333333;"><strong>Action</strong></th>
+      <th style="text-align:left;padding:0 15px 0 15px;border-bottom: 1px dashed #333333;"><strong>&nbsp;</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    $line$
+  </tbody>
+</table>
+
+<p>This list was generated on $date$ at $time$.
+
+<p>
+Should you have any queries about this list, please contact <a href="mailto:ServiceDesk@news.co.uk" title="Email Service Desk">Service Desk</a>.
+
+<p>
+ <B>Note:</B> <i>For approving compliance forms you don't have to go to CAS anymore.
+<BR>The approval for compliance forms is done only from the email notifications.
+<BR>You get one email once a new form is submitted and one daily email summarising all forms pending your approval. 
+</div>
+
+<!--
+<div id="process">
+<p>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+      <table border="0" cellspacing="10" cellpadding="0">
+        <tr cellpadding="10px">
+          <td align="center" style="-webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;" bgcolor="#27e660"><a href="$url_approve$" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; padding: 12px 18px; border: 1px dashed #27e660; display: inline-block;">Approve</a></td>
+
+          <td align="center" style="-webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;" bgcolor="#e9703e"><a href="$url_reject$" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; padding: 12px 18px; border: 1px dashed #e9703e; display: inline-block;">Reject</a></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+</div>
+-->
+
+<div id="footer">
+</div>
+
+</body>

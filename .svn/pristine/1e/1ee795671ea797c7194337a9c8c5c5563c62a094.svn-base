@@ -1,0 +1,77 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>ShowItemsCanvas.mxml</title>
+<link rel="stylesheet" type="text/css" href="../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:Canvas</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot;
+           xmlns:ns1=&quot;<span class="mxmlString">visualComponents.GridComponents.*</span>&quot;
+           maxWidth=&quot;<span class="mxmlString">35</span>&quot; width=&quot;<span class="mxmlString">35</span>&quot; height=&quot;<span class="mxmlString">42</span>&quot; autoLayout=&quot;<span class="mxmlString">true</span>&quot;<span class="mxmlComponent">&gt;</span>
+    <span class="mxmlTag">&lt;mx:Script&gt;</span>
+        <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+             <span class="asReserved">import</span> mx.controls.listClasses.BaseListData;
+         
+             <span class="asReserved">override</span> <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> data<span class="asBracket">(</span>value<span class="asOperator">:</span>Object<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+             <span class="asBracket">{</span>
+                 <span class="asReserved">super</span>.data <span class="asOperator">=</span> value;
+                 subIcon.data <span class="asOperator">=</span> value;
+                 subIcon.enabled <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                 
+                 <span class="asComment">// Are there items to exand?
+</span>                 <span class="asReserved">if</span> <span class="asBracket">(</span>value <span class="asOperator">&amp;&amp;</span> value.hasItems <span class="asOperator">==</span> <span class="asString">&quot;true&quot;</span><span class="asBracket">)</span>
+                 <span class="asBracket">{</span>
+                     exp.visible <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                 <span class="asBracket">}</span>
+                 <span class="asReserved">else</span>
+                 <span class="asBracket">{</span>
+                     exp.visible <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                 <span class="asBracket">}</span>
+
+                 <span class="asComment">// Are there items to exand?
+</span>                 <span class="asReserved">if</span> <span class="asBracket">(</span>value <span class="asOperator">&amp;&amp;</span> value.expand<span class="asBracket">)</span>
+                 <span class="asBracket">{</span>        
+                     <span class="asReserved">if</span> <span class="asBracket">(</span>value.expand <span class="asOperator">==</span> <span class="asString">&quot;true&quot;</span><span class="asBracket">)</span>
+                     <span class="asBracket">{</span>
+                         exp.isOpen <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                     <span class="asBracket">}</span>
+                     <span class="asReserved">else</span> <span class="asReserved">if</span> <span class="asBracket">(</span>value.expand <span class="asOperator">==</span> <span class="asString">&quot;false&quot;</span><span class="asBracket">)</span>
+                     <span class="asBracket">{</span>
+                         exp.isOpen <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                     <span class="asBracket">}</span>    
+                 <span class="asBracket">}</span>             
+                 
+            
+                <span class="asComment">// if substitute, make icon visible and set text to name
+</span>                <span class="asReserved">if</span> <span class="asBracket">(</span>value <span class="asOperator">&amp;&amp;</span> value.SUBSTITNAM <span class="asOperator">!=</span> <span class="asString">&quot;&quot;</span><span class="asBracket">){</span>
+                    subIcon.enabled <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                    subIcon.visible <span class="asOperator">=</span> <span class="asReserved">true</span>;
+                    subIcon.toolTip <span class="asOperator">=</span> <span class="asString">&quot;Substituted item for &quot;</span> <span class="asOperator">+</span> value.SUBSTITNAM;
+                <span class="asBracket">}</span>
+                <span class="asReserved">else</span> <span class="asBracket">{</span>
+                     subIcon.enabled <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                    subIcon.visible <span class="asOperator">=</span> <span class="asReserved">false</span>;
+                <span class="asBracket">}</span>             
+             <span class="asBracket">}</span>
+             
+             <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">set</span> listData<span class="asBracket">(</span>value<span class="asOperator">:</span>BaseListData<span class="asBracket">)</span><span class="asOperator">:</span><span class="asReserved">void</span>
+             <span class="asBracket">{</span>
+                 subIcon.listData <span class="asOperator">=</span> value;
+             <span class="asBracket">}</span>
+             
+             <span class="asReserved">public</span> <span class="asFunction">function</span> <span class="asReserved">get</span> listData<span class="asBracket">()</span><span class="asOperator">:</span>BaseListData
+             <span class="asBracket">{</span>
+                 <span class="asReserved">return</span> subIcon.listData;
+             <span class="asBracket">}</span>
+            
+        <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+    <span class="mxmlTag">&lt;/mx:Script&gt;</span>
+    <span class="mxmlComponent">&lt;mx:HBox</span> horizontalGap=&quot;<span class="mxmlString">0</span>&quot;<span class="mxmlComponent">&gt;</span>
+        <span class="mxmlComponent">&lt;ns1:ShowItems</span> id=&quot;<span class="mxmlString">exp</span>&quot;<span class="mxmlComponent">/&gt;</span>
+        <span class="mxmlComponent">&lt;mx:Image</span> id=&quot;<span class="mxmlString">subIcon</span>&quot; source=&quot;<span class="mxmlString">@Embed(&apos;../../HR/images/substituted.gif&apos;)</span>&quot; width=&quot;<span class="mxmlString">20</span>&quot; maxWidth=&quot;<span class="mxmlString">20</span>&quot;<span class="mxmlComponent">/&gt;</span>
+    <span class="mxmlComponent">&lt;/mx:HBox&gt;</span>
+<span class="mxmlComponent">&lt;/mx:Canvas&gt;</span></pre></body>
+</html>

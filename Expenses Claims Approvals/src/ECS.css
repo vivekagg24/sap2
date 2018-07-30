@@ -1,0 +1,36 @@
+/* CSS file */
+.application{
+	fontSize: 11;
+	font-family: arial;
+	background-gradient-colors:#FFFFFF,#408dde;
+	background-alpha:0.9;
+	background-gradient-alphas:1,1;
+	border-color:#FFFFFF;
+	border-thickness:0px;
+}
+.comboDisabled{
+	disabled-color:#000000;
+	font-weight:bold;
+}
+.disabled{
+	background-color:#ededeb;
+	disabled-color:#000000;
+}
+.button {
+	fill-colors:#ffffff,#408DDE;
+}
+.buttonDisabled {
+	fill-colors:#ffffff,#c0c0c0;
+}
+.panel{
+	background-alpha:0.56;
+}
+.dataGrid{
+	header-colors:#ffffff,#408DDE;	
+}
+.menuBar{
+	background-color:#FFFFFF;
+	alpha:1;	
+}	
+
+

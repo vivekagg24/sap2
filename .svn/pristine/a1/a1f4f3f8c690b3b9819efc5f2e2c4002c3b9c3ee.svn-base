@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--	
+Application: CPR Entry
+Author: 	 DJ McNamara 
+Date:		 March 2007
+
+	ContributorSearch.mxml 
+		
+		Advanced search screen for contributor.
+		Also displays the last 20 list
+-->
+<mx:Module xmlns:mx         = "http://www.adobe.com/2006/mxml" 
+	            layout           = "absolute"
+	            initialize       = "presetup()"
+	            creationComplete = "DoInit()"
+            	styleName        = "application" 
+	            xmlns:ecs        = "ecs.components.*" 
+	            >
+	
+	<mx:Style source="ECS.css"/>   
+		
+	<mx:Script>
+    <![CDATA[
+    	import mx.core.Container;
+    	import mx.core.IFlexDisplayObject;
+    	import mx.collections.ArrayCollection;
+        import mx.managers.PopUpManager;
+        import mx.controls.Alert;
+        import mx.events.ListEvent;
+  		import mx.core.Application;
+  		import mx.rpc.events.FaultEvent;
+		import mx.events.CloseEvent;
+ 		import mx.rpc.events.ResultEvent;
+ 		import ecs.components.ContribDataGrid;
+ 		import mx.events.CloseEvent;
+ 		import mx.managers.FocusManager;
+ 		import mx.managers.SystemManager;
+        
+        private const cLast20:String  		= 'GetLast20';
+        private const cContribSearch:String = 'SearchContrib';
+        
+        [Bindable]        
+        private var xmlContributors:XMLList;
+
+        [Bindable]
+        private var xmlLast20:XMLList;
+  
+		[Bindable]            
+        public var aContribNumbers:ArrayCollection;
+
+		[Bindable]
+        public var aLast20:ArrayCollection;
+       
+		public var CurrentLast20Row:String;
+		public var CurrentSearchRow:String;		
+        public var ContribNr:String;
+    	public var justShowResults:Boolean=false;
+    	
+    	public var hideOnClose:Boolean = true;
+    
+    	private const cConSearchChooseError:String = "Please choose a line and click 'Choose' or double click on a line";
+        private const cGetContributor: String = 'GetContributor';
+        
+    // Setup function called before chidlren are created. Only called once (unlike DoInit)
+    private function presetup():void
+    {
+    	// Have to add event listener manualy, since this object doesn't implement IFocusManagerComponent
+    	this.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+    }
+        
+	private function DoInit():void{
+
+		ServerRequest(cLast20);
+		if (justShowResults){
+			//If user searched on payment entry screen - show results here
+			xmlContributors=parentApplication.quickSearchResults.item;
+			//New contributor search flag allowed for commissioning editor if they have run a search
+			parentApplication.setAllowNewContributor();
+			aContribNumbers=new ArrayCollection();			
+			//Populate data provider for grid
+			for each(var item:XML in xmlContributors) {				
+		    	aContribNumbers.addItem({lifnr:item.LIFNR});
+			}
+			if (xmlContributors.length()==0){
+				this.defaultButton = btnCancel;
+				btnCancel.setFocus();
+				noContributorFound();				
+			}
+			else{
+				this.defaultButton = btnOK;
+				btnOK.setFocus();
+				dgContributorSearch.selectedIndex=0;
+				dgContributorSearch.setFocus();
+			} 
+		} 
+		
+	}
+	
+	// If popup was hidden rather than closed, reshow it
+	public function reshow():void
+	{
+		// Reset the "justShowResults" flag
+		justShowResults = false;
+		
+		// Make this visible
+		if (this.parent)
+			this.parent.visible = true;
+			
+		this.visible = true;
+		
+		// Clear the grid
+		xmlContributors = new XMLList();
+		
+		// Allow tabbing / focus			
+		systemManager.addFocusManager(this);
+		this.focusManager.activate();
+		
+		// Initialise		
+		this.callLater(DoInit);
+	}
+	
+	private function noContributorFound():void{
+		
+		this.focusManager.deactivate();		
+		
+		if (!parentApplication.allowNewContributor &&parentApplication.setAllowNewContributor()){
+			Alert.show("No contributor found.\nYou can enter the contributor details if the contributor does not already exist on the system","Contributor Search", Alert.OK, null, focusCancelButton );	
+		}
+		else Alert.show( "No contributor found" ,"Contributor Search", Alert.OK, null, focusCancelButton);	
+
+		
+	}
+	
+	private function focusCancelButton(event:CloseEvent):void
+	{
+		var fm:FocusManager = event.target.focusManager;	
+		if (fm) fm.deactivate();		
+				
+	//	this.defaultButton = btnCancel;		
+	//	this.focusManager.defaultButtonEnabled = true;
+	//	this.focusManager.defaultButton = btnCancel;
+		
+		this.focusManager.activate();
+		btnCancel.setFocus();
+	}
+		
+	
+	 
+	
+	private function ServerRequest(ID:String):void{
+		
+		var oRequestCall:Object;
+ 			
+		switch (ID){
+
+			case cContribSearch:
+
+				oRequestCall = wsContribSearchAndLast20.Z_ECS_CONTRIB_SEARCH.send();
+
+				break;
+
+			case cLast20:
+
+				oRequestCall = wsContribSearchAndLast20.Z_ECS_GETLAST20.send();
+
+				break;		
+		}
+
+		oRequestCall.marker = ID;
+	}
+
+
+	private function ServerResponse(event:ResultEvent):void{
+
+		var oCallResponse:Object = event.token;
+
+  		var Return_message:String;
+  		var Return_code:int;  			
+		var item:*;
+		
+		switch(oCallResponse.marker)
+		{			
+			case cContribSearch:
+
+				var xmlSearchResults:XML = new XML(wsContribSearchAndLast20.Z_ECS_CONTRIB_SEARCH.lastResult);
+
+				Return_code = xmlSearchResults.EX_RETURN_CODE.toString();
+				
+				if(Return_code != 0){
+	
+					noContributorFound();
+								
+				}else{
+					
+					xmlContributors = xmlSearchResults.EX_T_CON_DETAIL.item;
+				}
+
+                aContribNumbers = new ArrayCollection;
+
+		    	for each(item in xmlContributors) {
+
+		    		aContribNumbers.addItem({lifnr:item.LIFNR});
+			    }
+				parentApplication.setAllowNewContributor();
+				if (aContribNumbers.length>0) {
+					dgContributorSearch.selectedIndex=0;
+					dgContributorSearch.setFocus();
+				}
+				break;			
+						
+			case cLast20:
+			
+				var xmLast20Results:XML = new XML(wsContribSearchAndLast20.Z_ECS_GETLAST20.lastResult);
+
+				Return_code = xmLast20Results.EX_RETURN_CODE.toString();
+				
+				if(Return_code == 0){
+					
+					xmlLast20 = xmLast20Results.EX_T_CON_DETAIL.item;
+					
+				}
+
+                aLast20 = new ArrayCollection;
+
+		    	for each(item in xmlLast20){
+
+		    		aLast20.addItem({lifnr:item.LIFNR});
+			    }
+
+			
+				break;				
+		}
+
+	}
+
+	private function DoubleClick(ClickedGrid:String,event:MouseEvent):void{
+		
+		ChooseContributor(ClickedGrid);
+	}
+	
+    private function itemClickEvent(ClickedGrid:String,event:ListEvent):void{
+
+		switch (ClickedGrid){
+
+			case cContribSearch:
+
+		        CurrentSearchRow = String(event.rowIndex);
+		
+				break;
+
+			case cLast20:
+
+		        CurrentLast20Row = String(event.rowIndex);
+
+				break;		
+		}
+        
+    }
+
+    private function ChooseContributor(ClickedGrid:String):void{
+
+		var ChosenRow:int;
+		var oConNr:Object;
+		
+		switch (ClickedGrid){
+
+			case cContribSearch:
+
+				if (CurrentSearchRow == "0" || CurrentSearchRow == null){
+		
+		  			Alert.show( cConSearchChooseError ,"Get Contributor", (Alert.OK),this);											
+		  			
+		  			return;
+		
+		  		}else{
+					
+					ChosenRow = int(CurrentSearchRow) - 1;
+					
+					oConNr = aContribNumbers[ChosenRow];
+		
+		  		}
+				
+				break;
+
+			case cLast20:
+
+				if (CurrentLast20Row == "0" || CurrentLast20Row == null){
+		
+		  			Alert.show( cConSearchChooseError ,"Get Contributor", (Alert.OK),this);											
+		  			
+		  			return;
+		
+		  		}else{
+
+					ChosenRow = int(CurrentLast20Row) - 1;
+					
+					oConNr = aLast20[ChosenRow];
+		  		}
+		  		
+		  		break;		
+		}
+
+		// Clear the "previous contributor" details to force the application to load the contributor, 
+		// otherwise the name is not updated
+		parentApplication.prevContributor = "";
+		parentApplication.txtContributor.text = "";								
+										
+		// Set contributor number in the parent application
+		var xmlConNr:XML = new XML(oConNr.lifnr);
+		ContribNr = xmlConNr;
+				
+		parentApplication.txtContributor.text = ContribNr;
+		
+		// Close popup cleanly and return focus to parent
+ 		doClose();
+		
+		
+
+    }
+
+  	private function webServiceFault(e:FaultEvent,Title:String):void{
+
+		Alert.show(e.fault.faultString,Title);
+
+  	}
+
+	//Launch new contributor details screen on payment entery screen
+	private function launchNewContributorScreen():void{
+		doClose(-1); // Close this screen
+		parentApplication.newContributor = true;
+		parentApplication.launchNewContributorScreen();
+	}
+	
+	//Handle user pressing enter on datagrid to select an item from the list
+	private function handleKeyDownDG(event:KeyboardEvent):void{
+		if (event.keyCode==Keyboard.ENTER){
+			CurrentSearchRow = String(dgContributorSearch.selectedIndex+1);
+			ChooseContributor(cContribSearch);
+		}
+	}
+	
+	override protected function keyUpHandler(event:KeyboardEvent):void
+	{
+		super.keyUpHandler(event);
+		
+		if (event.keyCode == Keyboard.ESCAPE && !event.shiftKey && !event.ctrlKey)
+		{
+			event.stopImmediatePropagation();
+			event.preventDefault();
+			
+			// Call the doClose(1) method later, so that this event isn't propagated to the application
+			var a:Array = new Array(1);
+			a[0] = 1;
+			this.callLater(doClose, a);
+		}
+			(1);	
+	}
+
+	
+	/** Close the popup
+	*     The int (number) supplied specifies where to set the focus in the parent application
+	*   after the popup closes.
+	*   
+	*/
+	private function doClose(i:int = 0):void{
+		var popup:IFlexDisplayObject;
+		if (this.isPopUp)
+			popup = this;				
+		else if (this.parent)
+				popup = (this.parent as IFlexDisplayObject);
+				
+		if (!popup)
+			return; // Should never happen		
+		
+		// Get rid, or just hide?
+		if (hideOnClose)
+		{
+			popup.visible = false;
+			parentApplication.contribSearchPopup = popup;			
+		}
+		else
+		{
+			PopUpManager.removePopUp(popup);
+			parentApplication.contribSearchPopup = null;
+		}
+		
+		// Deactivate the focus manager, otherwise we won't be able to tab in the
+		// main application until we click in it.
+		this.focusManager.deactivate();
+		this.systemManager.removeFocusManager(this);
+		parentApplication.focusManager.activate();		
+		
+		
+		
+		// Set focus to the "Story" field
+		if (i == 0)
+		{
+			if (parentApplication.hasOwnProperty("txtStory"))
+				parentApplication.txtStory.setFocus();
+		}
+		else if (i == 1) // Set focus back to Contributor Name
+		{
+			if (parentApplication.hasOwnProperty("txtContributorName"))
+			{
+				parentApplication.txtContributorName.text = "";
+				parentApplication.txtContributorName.setFocus();
+			}
+			
+		}
+		else  // Don't set focus
+		{  
+			
+		}
+		
+	}
+	
+        
+    ]]>
+	</mx:Script>
+
+	<mx:WebService  id             = "wsContribSearchAndLast20" 
+					wsdl           = "{parentApplication.wsdlRoot}Z_ECS_CONTRIB_SEARCH,Z_ECS_GETLAST20"    	   
+			    	useProxy       = "false" 	    	
+			     	showBusyCursor = "true">
+			     	
+	    <mx:operation name         = "Z_ECS_CONTRIB_SEARCH"  
+	    	          resultFormat = "e4x"
+	    	          concurrency  = "last"
+	    	          result         = "ServerResponse(event)"
+			  		  fault          = "webServiceFault(event,'wsContribSearch')"   >    	 
+			<mx:request>							
+				<IM_SEARCH_TYPE>A</IM_SEARCH_TYPE>
+				<IM_FIRST_NAME>{txtFirstName.text}</IM_FIRST_NAME>
+				<IM_LAST_NAME>{txtSurname.text}</IM_LAST_NAME>
+				<IM_AGENT_NAME>{txtAgentName.text}</IM_AGENT_NAME>
+				<IM_NOM_DE_PLUME>{txtAlias.text}</IM_NOM_DE_PLUME>
+				<IM_AGENCY>{txtNewsAgency.text}</IM_AGENCY>
+				<IM_AGENCY_CONTACT>{txtAgencyContact.text}</IM_AGENCY_CONTACT>
+			    <IM_ALLOW_DELETED>X</IM_ALLOW_DELETED>
+			</mx:request>		
+			    	 
+		</mx:operation>			
+
+	    <mx:operation name="Z_ECS_GETLAST20"  
+	    	 resultFormat="e4x" concurrency="last"
+	    	 result="ServerResponse(event)"
+  		     fault="webServiceFault(event,'wsGetLast20')" >
+	    	 <mx:request xmlns="">	    	 	
+	    	 	<IM_WITH_DETAIL>X</IM_WITH_DETAIL>
+	    	 </mx:request>
+		</mx:operation>		
+	</mx:WebService>
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	label="Contributors"
+   	styleName="application" 
+	close="doClose(1);"	
+	width="985" height="683"    
+	showCloseButton="true" x="24">
+
+	<mx:TabNavigator x="20" y="10" width="935" height="623"  styleName="panel" tabEnabled="false" tabChildren="true" >
+		<mx:Canvas label="Search" width="923" height="592" tabChildren="true" tabEnabled="false">
+			
+			<mx:Panel 
+				x="10" y="207" 
+				width="892" 
+				height="305" 
+				layout="absolute" 
+				id="pnlResults" 
+				defaultButton="{btnOK}"
+				horizontalScrollPolicy="off" verticalScrollPolicy="off"
+			    tabChildren="true" tabEnabled="false">
+
+<!-- see ContribDataGrid.mxml for data grid	-->
+
+			<ecs:ContribDataGrid id           = "dgContributorSearch" 
+								 height       = "247" 
+								 doubleClick  = "DoubleClick(cContribSearch,event)" 
+								 itemClick    = "itemClickEvent(cContribSearch,event)"
+								 dataProvider = "{xmlContributors}"
+								 keyDown      = "handleKeyDownDG(event)"
+								 tabIndex="2"/>
+				
+			</mx:Panel>
+
+			<mx:Panel x="10" y="10" width="892" height="189" layout="absolute" tabIndex="1" tabChildren="true" tabEnabled="false">
+				
+				<mx:Label x="10" y="11" text="First Name" id="lblFirstName"/>
+				<mx:TextInput x="135" y="10" id="txtFirstName" enter="ServerRequest(cContribSearch)"/>
+				
+				<mx:Label x="357" y="11" text="Surname" id="lblSurname"/>
+				<mx:TextInput x="511" y="11" id="txtSurname" enter="ServerRequest(cContribSearch)" />
+				
+				<mx:TextInput x="135" y="49" id="txtAlias" enter="ServerRequest(cContribSearch)"/>
+				<mx:Label x="10" y="51" text="Alias" id="lblAlias"/>
+				
+				<mx:Label x="357" y="51" text="Contributor's Agent/Company" id="lblAgentName"/>
+				<mx:TextInput x="511" y="50" id="txtAgentName" enter="ServerRequest(cContribSearch)"/>
+				
+				<mx:TextInput x="135" y="91" id="txtNewsAgency" enter="ServerRequest(cContribSearch)"/>
+				<mx:TextInput x="511" y="92" id="txtAgencyContact" enter="ServerRequest(cContribSearch)"/>
+				
+				<mx:Label x="10" y="93" text="News / Picture Agency" id="lblNewsAgency"/>
+				<mx:Label x="357" y="92" text="Agency Contact Name" id="lblAgencyContact"/>
+								
+				<mx:Button x="732" y="92" label="Search" id="btnSearch" styleName="button" click="ServerRequest(cContribSearch)" icon="@Embed('images/search.gif')"/>
+				<mx:Button x="316" y="120" label="Enter new contributor details" styleName="button" visible="{parentApplication.allowNewContributor}" click="launchNewContributorScreen()"/>
+				
+			</mx:Panel>
+
+			<mx:Button click="ChooseContributor(cContribSearch);" tabIndex="3" styleName="button" icon="@Embed('images/ok.gif')" label="Choose" x="382" y="520"  fontWeight="bold"  id="btnOK"/>
+
+			<mx:Button click="doClose(1);"  tabIndex="4" styleName="button" icon="@Embed('images/cancel.gif')" fontWeight="bold" label="Cancel" x="475" y="520" id="btnCancel"/>
+		</mx:Canvas> 
+
+		<mx:Canvas label="Last 20" width="100%" height="596">
+
+			<mx:Panel x="10" y="10" width="892" height="502" layout="absolute" id="pnlResults0">
+		 		<ecs:ContribDataGrid dataProvider="{xmlLast20}"
+					height="437" 
+					doubleClick="DoubleClick(cLast20,event)" 
+					itemClick="itemClickEvent(cLast20,event)"
+				 	id="dgLast20" />
+					
+			</mx:Panel>
+			
+			<mx:Button 
+				id="btnChoose"
+				click="ChooseContributor(cLast20);" 
+				styleName="button" 
+				icon="@Embed('images/ok.gif')" 
+				label="Choose" x="382" y="520"  fontWeight="bold" />
+			<mx:Button click="doClose(1);" styleName="button" icon="@Embed('images/cancel.gif')" fontWeight="bold" label="Cancel" x="475" y="520"/>
+			
+		</mx:Canvas>
+	
+	</mx:TabNavigator>
+	
+	</mx:TitleWindow>
+
+</mx:Module>

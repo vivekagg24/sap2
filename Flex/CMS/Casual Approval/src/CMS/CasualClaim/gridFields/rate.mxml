@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+         horizontalScrollPolicy="off"
+         width="100%" 
+         >
+         
+	<mx:Script source="../scripts/Common.as"></mx:Script>
+         
+    <mx:Script>
+        <![CDATA[
+        import mx.controls.dataGridClasses.DataGridColumn;
+ 
+
+        // Define a property for returning the new value to the cell.
+        [Bindable]
+		public var shiftrate:String="";
+		private var RowID:int;
+		private var DataChanged:Boolean;
+		
+        private var retData:Object;
+       
+        override public function set data(value:Object):void {
+			 // not sure of the details on when or why, but sometimes this method is passed a null value
+                if(value != null)
+                {
+                    super.data = value;
+                    // the parent DataGridColumn is passed as value before the real data arrives
+                    if(!(value is DataGridColumn))
+                    {
+                    	RowID = value.ROW_NUMBER;
+                    	shiftrate=String(value.RATE);
+						txtShiftrate.text=shiftrate;
+
+						if(value.ZZAPPROVAL == cRejectStatus || value.ZZAPPROVAL == cApproved){
+
+							txtShiftrate.enabled = false;					
+						}else{
+							txtShiftrate.enabled = true;												
+						}
+						
+						retData=value;
+                    }
+        		}
+        }
+		
+		override public function get data():Object{
+			return retData;
+		}
+		
+
+		public function ProcessRate():void{
+
+			if(DataChanged == true && parentDocument.CheckRates(txtShiftrate) == 0 ){				
+				
+			
+				if(parentDocument.ProcessRate(txtShiftrate.text, RowID) == true){
+					DataChanged = false;
+				}
+			}
+		}
+
+		private function HandleChange():void{
+			
+			DataChanged = true;
+			
+			parentDocument.EnableButtons(false);			
+		}
+		
+         ]]>
+    </mx:Script>
+     
+   <mx:TextInput
+   	 id="txtShiftrate"
+   	 width="70"
+	 maxChars="6"
+	 focusOut="ProcessRate()"
+	 change="HandleChange()"
+	 styleName="inputECS" 
+	 focusEnabled="true">
+   	</mx:TextInput>
+   
+</mx:HBox>
+
+
+

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+     
+<!-- APPLICATION ==> ===========================================================================================================================  -->	            
+<mx:Application xmlns:mx         = "http://www.adobe.com/2006/mxml" 
+	            layout           = "absolute"
+                initialize       = "init()"
+	            creationComplete = "createComplete()" >
+
+<!-- SCRIPT ==> ================================================================================================================================  -->	            
+
+<mx:Script>
+<![CDATA[
+ 
+	import mx.rpc.events.ResultEvent;	                                  // declaration needed for events
+ 
+	[Bindable]
+	public var letterFilter:String;	
+
+	public const cA:String = "A";            
+	public const cB:String = "B";     
+	public const cC:String = "C";     
+	public const cD:String = "D";     
+	public const cE:String = "E";     
+	public const cF:String = "F";     
+	public const cG:String = "G";     
+	public const cH:String = "H";     
+	public const cI:String = "I";     
+	public const cJ:String = "J";     
+	public const cK:String = "K";     
+	public const cL:String = "L";     
+	public const cM:String = "M";     
+	public const cN:String = "N";     
+	public const cO:String = "O";     
+	public const cP:String = "P";     
+	public const cQ:String = "Q";     
+	public const cR:String = "R";     
+	public const cS:String = "S";     
+	public const cT:String = "T";     
+	public const cU:String = "U";     
+	public const cV:String = "V";     
+	public const cW:String = "W";     
+	public const cX:String = "X";     
+	public const cY:String = "Y";     
+	public const cZ:String = "Z";     
+	
+	public const c_dev_server:String = "http://sapr3d.ni.ad.newsint";
+	public const c_uat_server:String = "http://saptest1.ni.ad.newsint";
+	public const c_sap_client:String = "sap-client=007&";
+	public const c_wsdl_sicf_prefix:String = "/zni/bc/soap/wsdl11?"; 
+	
+	[Bindable]
+	public var wsdl_prefix:String;
+				       
+	public function init():void
+	{
+	    	if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    		wsdl_prefix = c_wsdl_sicf_prefix
+				            + "services=";
+	     	    	
+			else  // Running locally
+			    wsdl_prefix = c_dev_server       // Which SAP server should we connect to?
+			                + c_wsdl_sicf_prefix
+			                + c_sap_client       // Which SAP client should we connect to?
+			                + "services=" ;   	
+	}
+	
+	public function createComplete():void
+	{
+		wsWebService3.ZCMS_USER_GET_EVERY_CASUAL.send();                  
+    }
+
+	public function debug(event:*):void
+	{
+	}
+
+  public function getCasuals(letterChosen:String):void
+  {
+    letterFilter = letterChosen;
+    wsWebService3.ZCMS_USER_GET_EVERY_CASUAL.send();  
+  }
+  
+
+
+
+  public function getUserIDDetails():void
+  {
+  	wsWebService2.ZCMS_USER_CHECK_CASUAL.send();
+   // wsWebService3.ZCMS_USER_GET_EVERY_CASUAL.send();    	
+	wsWebService4.ZCMS_USER_CHECK_VC.send();
+  }
+
+
+
+		
+]]> 
+</mx:Script> 
+
+<!-- WEB SERVICES ==> ==========================================================================================================================  -->
+<!-- &amp;sap-client=200                                       -->
+<!-- to debug /nsm51, click on sapr3d_D11_01  to change...     -->
+<!-- WEB SERVICES ==> ==========================================================================================================================  -->
+
+<!-- ===================================================                                                                                          -->
+<!-- Function module in SAP R/3: ZCMS_USER_CHECK_CASUAL                                                                                           -->
+<!-- ===================================================                                                                                          -->
+<!-- dgDataGrid1.selectedItem.UNAME is o/p from dg1 into i/p to datgrid 2                                                                         -->
+
+	<mx:WebService  id           = "wsWebService2"    
+		       	    wsdl         = "{wsdl_prefix + 'ZCMS_USER_CHECK_CASUAL'}"
+                    useProxy     = "false">
+	  <mx:operation name         = "ZCMS_USER_CHECK_CASUAL"     	
+		  	        resultFormat = "e4x"
+		  	        result       = "debug(event)"
+				    concurrency  = "last">
+				    <mx:request xmlns="">
+				    	<USER_NAME_FROM>
+				    	{dgListOfUserIDs.selectedItem.UNAME}
+				    	</USER_NAME_FROM>
+				    </mx:request>				    
+	  </mx:operation>
+	</mx:WebService>
+
+<!-- =====================================================================================================================================  -->
+<!-- Function module in SAP R/3 : ZCMS_USER_GET_EVERY_CASUAL                                                                                -->
+<!-- =====================================================================================================================================  -->
+<!-- result       = "serverResponse(event)" -->
+
+	<mx:WebService  id           = "wsWebService3"    
+		       	    wsdl         = "{wsdl_prefix + 'ZCMS_USER_GET_EVERY_CASUAL'}"		
+                    useProxy     = "false">
+	  <mx:operation name         = "ZCMS_USER_GET_EVERY_CASUAL"     	
+		  	        resultFormat = "e4x"
+				    concurrency  = "last">
+				    <mx:request xmlns="">
+				    	<IM_UNAME>
+				    	{letterFilter}
+				    	</IM_UNAME>
+				    </mx:request>					    
+	  </mx:operation>
+	</mx:WebService>
+
+<!-- =====================================================================================================================================  -->
+<!-- Function module in SAP R/3 : ZCMS_USER_CHECK_VC                                                                                        -->
+<!-- =====================================================================================================================================  -->
+<!-- result       = "serverResponse(event)" -->
+ 
+	<mx:WebService  id           = "wsWebService4"    
+		       	    wsdl         = "{wsdl_prefix + 'ZCMS_USER_CHECK_VC'}"		
+                    useProxy     = "false">
+	  <mx:operation name         = "ZCMS_USER_CHECK_VC"     	
+		  	        resultFormat = "e4x"
+		  	        result       = "debug(event)"
+				    concurrency  = "last">
+				    <mx:request xmlns="">
+				    	<IM_USER>
+				    	{dgListOfUserIDs.selectedItem.UNAME}
+				    	</IM_USER>
+				    </mx:request>				    
+	  </mx:operation>
+	</mx:WebService>
+
+  
+
+<!-- VIEW ==>  ===============================================================================================================================  -->
+<!-- user input / output                                                                                                                        -->
+<!-- VIEW ==>  ===============================================================================================================================  -->
+
+	<mx:Panel x="20" y="10" width="1137" height="641" layout="absolute" title="Casual User ID - Quick Overview">
+
+		<mx:DataGrid id           = "dgDataGrid2" 
+  			         dataProvider = "{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_T_ERROR_MESSAGES.item}" 
+  			         y="107" height="189" x="266" width="841">
+			<mx:columns>
+				<mx:DataGridColumn headerText = "Error" 
+					               dataField  = "MESSAGE"/>
+			</mx:columns>
+		</mx:DataGrid>
+		
+<!--		<mx:TextArea x="584" y="60" width="53" height="35"
+			text = "{wsWebService2.ZCMS_USER_CHECK_CASUAL.lastResult}"  visible="false"/>
+-->
+<!--	
+	<mx:TextArea x="685" y="0" width="186" height="31"
+        text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult}"/> 
+-->
+                     
+<!-- doubleClickEnabled = "true" -->
+                     			
+		<mx:DataGrid id = "dgListOfUserIDs" 
+			         dataProvider = "{wsWebService3.ZCMS_USER_GET_EVERY_CASUAL.lastResult.EX_T_CASUAL_USER_NAMES.item}" 
+		        	 x="10" y="107" 
+			         height="467"
+
+                     width="229" 
+                     change="debug(event);getUserIDDetails();" itemClick="getUserIDDetails();">
+			<mx:columns>
+				<mx:DataGridColumn headerText="User name" dataField="UNAME"/>
+			</mx:columns>
+		</mx:DataGrid>
+		
+		<mx:TextArea x="192" y="81" width="47" height="26" borderStyle="none">
+			<mx:text>{wsWebService3.ZCMS_USER_GET_EVERY_CASUAL.lastResult.EX_COUNT_OF_CASUAL_USERS}</mx:text>
+		</mx:TextArea>
+		
+		<mx:Text x="151" y="81" text="Total" fontWeight="bold"/>
+		
+		<mx:Text x="266" y="79" text="ERRORS FOR SELECTED CASUAL USER ID" fontWeight="bold" width="672" color="#0000FF" fontSize="12"/>
+		<mx:TextArea x="807" y="380" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_CMS_USER_CHECK_LOGON.UFLAT}" width="290.5"/>
+		<mx:TextArea x="807" y="415" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_UTYPTEXT&#xa;}" width="290.5"/>
+		<mx:TextArea x="807" y="546" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_LAST_CHANGED&#xa;}" width="290.5"/>
+		<mx:Text x="699" y="547" text="Last changed"/>
+		<mx:Text x="10" y="79" text="ALL CASUALS" fontWeight="bold" color="#0000FF" fontSize="12"/>
+		<mx:Text x="699" y="381" text="Lock indicator"/>
+		<mx:Text x="699" y="416" text="License type"/>
+		<mx:Text x="699" y="451" text="Role(s)"/>
+		<mx:DataGrid x="807" y="450" height="88" width="290.5" id="dgSecurityQuestions0" verticalScrollPolicy="off">
+			<mx:dataProvider>{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_ROLES.item}</mx:dataProvider>
+			<mx:columns>
+				<mx:DataGridColumn headerText="Roles" dataField="AGR_NAME"/>
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:Text x="699" y="319" text="USER ID" fontWeight="bold" color="#0000FF" fontSize="12"/>
+		<mx:Text x="266" y="319" text="EMPLOYEE" fontWeight="bold" color="#0000FF" width="100" fontSize="12"/>
+		<mx:TextArea x="807" y="345" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_CMS_USER_ADDRESS.SMTPADR}" width="290.5"/>
+		<mx:Text x="699" y="346" text="Email Address"/>
+		<mx:DataGrid x="415" y="487" height="88" width="249.5" id="dgSecurityQuestions" verticalScrollPolicy="off">
+			<mx:dataProvider>{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_PA0105.item}</mx:dataProvider>
+			<mx:columns>
+				<mx:DataGridColumn headerText="Subtype" dataField="USRTY"/>
+				<mx:DataGridColumn headerText="Answer"   dataField="USRID"/>
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:Text x="266" y="479"  text="Security Questions"     fontWeight="bold"/>
+		<mx:Text x="266" y="505"  text="Mother's maiden name"     fontWeight="normal"/>
+		<mx:Text x="266" y="531"  text="First school"     fontWeight="normal"/>
+		<mx:Text x="266" y="556"  text="Place of birth"     fontWeight="normal"/>
+		<mx:TextArea x="374" y="347" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_PA0000.PERNR}" width="290.5"/>
+		<mx:Text x="266" y="348" text="Number" fontWeight="bold"/>
+		<mx:TextArea x="415" y="452" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_BEGDA_IT0105A}" width="111"/>
+		<mx:TextArea x="553.5" y="452" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_ENDDA_IT0105A}" width="111"/>
+		<mx:Text x="266" y="453" text="User valid in HR"/>
+		<mx:Text x="374" y="453" text="From"/>
+		<mx:Text x="526.5" y="453" text="To"/>
+		<mx:TextArea x="374" y="417" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_PTEXT2}" width="290.5"/>
+		<mx:Text x="266" y="418" text="Group"/>
+		<mx:TextArea x="374" y="382" height="27" text="{wsWebService4.ZCMS_USER_CHECK_VC.lastResult.EX_ENAME}" width="290.5"/>
+		<mx:Text x="267" y="383" text="Name"/>
+		<mx:VRule x="680" y="304" width="11" height="287"/>
+
+		<mx:Button x="10"  y="10" label="A" click="getCasuals(cA);"/>
+		<mx:Button x="58"  y="10" label="B" click="getCasuals(cB);"/>
+		<mx:Button x="106" y="10" label="C" click="getCasuals(cC);"/>		
+		<mx:Button x="154" y="10" label="D" click="getCasuals(cD);"/>
+		<mx:Button x="199" y="10" label="E" click="getCasuals(cE);"/>
+		<mx:Button x="247" y="10" label="F" click="getCasuals(cF);"/>
+		<mx:Button x="295" y="10" label="G" click="getCasuals(cG);"/>
+		<mx:Button x="343" y="10" label="H" click="getCasuals(cH);"/>
+		<mx:Button x="391" y="10" label="I" click="getCasuals(cI);"/>
+		<mx:Button x="439" y="10" label="J" click="getCasuals(cJ);"/>
+		<mx:Button x="486" y="10" label="K" click="getCasuals(cK);"/>
+		<mx:Button x="534" y="10" label="L" click="getCasuals(cL);"/>
+		<mx:Button x="582" y="10" label="M" click="getCasuals(cM);"/>
+
+		<mx:Button x="10"  y="40" label="N" click="getCasuals(cN);"/>
+		<mx:Button x="58"  y="40" label="O" click="getCasuals(cO);"/>
+		<mx:Button x="106" y="40" label="P" click="getCasuals(cP);"/>
+		<mx:Button x="154" y="40" label="Q" click="getCasuals(cQ);"/>
+		<mx:Button x="199" y="40" label="R" click="getCasuals(cR);"/>
+		<mx:Button x="247" y="40" label="S" click="getCasuals(cS);"/>
+		<mx:Button x="295" y="40" label="T" click="getCasuals(cT);"/>
+		<mx:Button x="343" y="40" label="U" click="getCasuals(cU);"/>
+		<mx:Button x="391" y="40" label="V" click="getCasuals(cV);"/>
+		<mx:Button x="439" y="40" label="W" click="getCasuals(cW);"/>
+		<mx:Button x="486" y="40" label="X" click="getCasuals(cX);"/>
+		<mx:Button x="534" y="40" label="Y" click="getCasuals(cY);"/>
+		<mx:Button x="582" y="40" label="Z" click="getCasuals(cZ);"/>		
+		<mx:Button x="630" y="27" label="ALL" click="getCasuals(null);"/>
+		
+		
+	</mx:Panel>
+	
+</mx:Application>

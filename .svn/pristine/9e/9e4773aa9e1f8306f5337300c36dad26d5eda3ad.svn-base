@@ -1,0 +1,13 @@
+sap.ui.define([
+  "nuk/sap/timesheet/controller/BaseController"
+  ],
+  function (Controller) {
+    "use strict";
+    return Controller.extend("nuk.sap.timesheet.controller.Timesheets", {
+
+      onInit: function() {
+      }
+
+    });
+  }
+);

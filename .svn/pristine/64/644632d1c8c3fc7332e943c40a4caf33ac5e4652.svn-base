@@ -1,0 +1,38 @@
+{
+  "projects": [
+    { "project_id": "project-1",
+      "name": "Project 1",
+      "description": "Build of ABC - Phase 1",
+      "start_date": "2015-06-01",
+      "end_date": "2015-06-30",
+      "budget": "55000",
+      "budget_remaining": "30000",
+      "project_manager_name": "A. N. ProjectManager",
+      "project_manager_email": "project.manager1@news.co.uk",
+      "cost_assignment": {
+        "type": "capex",
+        "id": "634646",
+        "description": "CapEx 634646 (Budget AB1881881)"
+      },
+      "resources":  [{
+        "id": "700000001",
+        "name": "John Smith",
+        "start": "2015-06-01",
+        "end": "2015-06-20",
+        "email": "john.smith@news.co.uk",
+        "purchase_orders": [ "4500000001", "4500000002" ]
+      },{
+        "id": "651239",
+        "name": "Peter Wilson",
+        "start": "2015-06-01",
+        "end": "2015-07-31",
+        "email": "peter.wilson@news.co.uk"
+      }
+
+      ]
+
+    }
+  ]
+
+
+}

@@ -1,0 +1,49 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>DateField1.mxml</title>
+<link rel="stylesheet" type="text/css" href="../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="mxmlCdata">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="mxmlComponent">&lt;mx:DateField</span> xmlns:mx=&quot;<span class="mxmlString">http://www.adobe.com/2006/mxml</span>&quot; change=&quot;UpdateSAPDateField<span class="asBracket">()</span>&quot;<span class="mxmlComponent">&gt;</span>
+
+<span class="mxmlTag">&lt;mx:Script&gt;</span>
+    <span class="asOperator">&lt;!</span><span class="asBracket">[</span>CDATA<span class="asBracket">[</span>
+
+        <span class="asBracket">[</span><span class="asMetadata">Bindable</span><span class="asBracket">]</span>
+        <span class="asReserved">public</span> <span class="asVar">var</span> SAPDateField<span class="asOperator">:</span>String;
+        
+        <span class="asReserved">public</span> <span class="asFunction">function</span> UpdateSAPDateField<span class="asBracket">()</span><span class="asOperator">:</span><span class="asReserved">void</span><span class="asBracket">{</span>
+            <span class="asReserved">if</span><span class="asBracket">(</span><span class="asReserved">this</span>.selectedDate <span class="asOperator">!=</span> <span class="asReserved">null</span><span class="asBracket">){</span>
+                <span class="asVar">var</span> iMonth<span class="asOperator">:</span>Number;
+                <span class="asVar">var</span> sMonth<span class="asOperator">:</span>String;
+                <span class="asVar">var</span> sYear<span class="asOperator">:</span>String;
+                <span class="asVar">var</span> iDay<span class="asOperator">:</span>Number;
+                <span class="asVar">var</span> sDay<span class="asOperator">:</span>String;        
+                        
+                sYear  <span class="asOperator">=</span> <span class="asReserved">this</span>.selectedDate.fullYear.toString<span class="asBracket">()</span>;
+                iMonth <span class="asOperator">=</span> <span class="asReserved">this</span>.selectedDate.month <span class="asOperator">+</span> 1;
+                iDay   <span class="asOperator">=</span> <span class="asReserved">this</span>.selectedDate.date;
+                
+                <span class="asReserved">if</span><span class="asBracket">(</span>iMonth <span class="asOperator">&lt;</span> 10<span class="asBracket">){</span>
+                    sMonth <span class="asOperator">=</span> <span class="asString">&apos;0&apos;</span> <span class="asOperator">+</span> iMonth.toString<span class="asBracket">()</span>
+                <span class="asBracket">}</span><span class="asReserved">else</span><span class="asBracket">{</span>
+                    sMonth <span class="asOperator">=</span> iMonth.toString<span class="asBracket">()</span>
+                <span class="asBracket">}</span>
+        
+                <span class="asReserved">if</span><span class="asBracket">(</span>iDay <span class="asOperator">&lt;</span> 10<span class="asBracket">){</span>
+                    sDay <span class="asOperator">=</span> <span class="asString">&apos;0&apos;</span> <span class="asOperator">+</span> iDay.toString<span class="asBracket">()</span>
+                <span class="asBracket">}</span><span class="asReserved">else</span><span class="asBracket">{</span>
+                    sDay <span class="asOperator">=</span> iDay.toString<span class="asBracket">()</span>
+                <span class="asBracket">}</span>    
+                
+                SAPDateField <span class="asOperator">=</span>  sYear <span class="asOperator">+</span> sMonth <span class="asOperator">+</span> sDay;
+            <span class="asBracket">}</span>        
+        <span class="asBracket">}</span>
+    <span class="asBracket">]]</span><span class="asOperator">&gt;</span>
+<span class="mxmlTag">&lt;/mx:Script&gt;</span>
+<span class="mxmlComponent">&lt;/mx:DateField&gt;</span></pre></body>
+</html>

@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8"?>	
+<mx:Application    xmlns:mx="http://www.adobe.com/2006/mxml" 
+					backgroundColor="#D4D4D4"
+					layout="vertical" paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0"
+				    horizontalGap="0" verticalGap="0"
+			    	initialize="init();"
+					creationComplete="creationComplete();"
+					xmlns:ns1="*"
+					creationPolicy="all"
+					xmlns:HR="HR.Components.*" 
+					xmlns:VDG="VDG.*" xmlns:containers="com.arc90.flexlib.containers.*" xmlns:ns2="visualComponents.*" 
+					viewSourceURL="srcview/index.html"  xmlns:ns3="visualComponents.GridComponents.*" xmlns:ns4="CMS.Components.*">  
+					
+	 
+								
+					
+	<mx:Style source="ECS.css"/>
+	<mx:Canvas id="outerCanvas" width="100%" height="100%" verticalScrollPolicy="off" horizontalScrollPolicy="off" >
+	
+	 <!-- width="71%" height="119" maxHeight="119" includeInLayout="true"-->
+        <mx:TabNavigator x="10" y="10"  fillColors="[#D4D4D4, #D4D4D4]" id="tabSelection" 
+        	             creationPolicy="all" change="handleTabSelect()" enabled="true" includeInLayout="true">
+			 
+			<!-- width="1405" maxWidth="1413" height="79"    --> 
+			<mx:Canvas label="Selection Criteria"  backgroundColor="#F2F2F2"  id="tabStrip" focusEnabled="false" >
+			
+				<HR:DateField1 x="108" y="8" width="117" id="dfPaymentFrom" enabled="true" editable="true" formatString="DD.MM.YYYY"/>
+				<HR:DateField1 x="260" y="8" width="117" id="dfPaymentTo" enabled="true" editable="true" formatString="DD.MM.YYYY"/>				
+				<mx:Label x="8" y="10" 	text="Request Dates" 	fontWeight="bold" toolTip="This is the date the request was made" />
+				<mx:Label x="234.5" y="10" 	text="to" 			fontWeight="bold"/>
+     			
+				<!--			<mx:Label x="8" y="44" id="lblcos" text="Cost Centre" fontWeight="bold"/> 
+				<mx:ComboBox x="108" y="42"
+					id           = "comboKostlKostl"					
+				    labelField   = "label" 
+				    dataProvider="{costCentres}"
+					change       = "setCombo2()"
+					enabled      = "{bEnableButtons}">
+				</mx:ComboBox>  -->
+	
+	 
+				
+				
+				<!--			<mx:Label x="410" y="45" id="lblReq" text="Requestor" fontWeight="bold"/>   -->
+				
+					 		
+				<mx:Label x="8" y="44" id="lblReq" text="Requestor" fontWeight="bold"/>
+		 	
+			              <!--				<mx:ComboBox x="508" y="42"   -->
+		 	              
+			              <mx:ComboBox x="108" y="42"
+			              id           = "comboRequestorRequestor"					
+			              labelField   = "label" 
+			              dataProvider = "{requestors}"
+			              change       = "setCombo()"
+			              enabled      = "{bEnableButtons}">
+			              </mx:ComboBox>
+				
+				<HR:Button1 x="799" y="42" label="Refresh" click="doRefresh('');" id="buttonRefresh" enabled="true"/>
+			 			<ns1:HelpIcon id="help" x="923" width="100" height="56"  backgroundImage="@Embed('HR/images/help_bg2.gif')"/>
+				<mx:Image source="@Embed('HR/images/Logo_bgr.gif')" id="image1" x="983" y="0"/>
+				
+				
+				
+				<mx:Grid id="myGrid" x="571" y="10" visible="true"  borderColor="#000000" borderThickness="1">
+				<mx:GridRow id="row1" height="25" verticalAlign="bottom" visible="true">
+				
+				<mx:GridItem verticalAlign="middle" horizontalAlign="center" visible="true">
+			    	<mx:Text x="404" y="44" width="63" height="32" text="Page" fontWeight="bold" visible="true" fontSize="14"/>
+                </mx:GridItem>
+                <mx:GridItem verticalAlign="middle" horizontalAlign="center">
+                	<mx:Text width="56" height="32" text="{lowout}"  fontWeight="bold" fontSize="14"/>
+                </mx:GridItem>
+                 <mx:GridItem verticalAlign="middle" horizontalAlign="center">
+                    <mx:Text x="483" y="44" width="30" height="18" text="Of" fontWeight="bold" visible="false"/>		
+                </mx:GridItem>
+                 <mx:GridItem verticalAlign="middle" horizontalAlign="center">
+                    <mx:Text x="509" y="44" width="30" height="18" text="{highout}" fontWeight="bold" visible="false"/>
+                </mx:GridItem>
+                </mx:GridRow>
+                </mx:Grid>
+                
+				<mx:GridItem verticalAlign="middle" horizontalAlign="center">
+				</mx:GridItem>
+				<mx:GridItem verticalAlign="middle" horizontalAlign="center">
+				</mx:GridItem>
+				<HR:Button1 x="632" y="42" label="Next Page &gt;" id="next" width="120" click="getnext()"/>
+				<HR:Button1 x="492" y="42" label="&lt; Previous Page" id="previous"  width="120" click="getprevious()"/>
+				
+				
+				
+			</mx:Canvas>
+			 
+		</mx:TabNavigator>
+		 
+		
+		<!-- width="1420" height="632" maxHeight="632"  twidth="{cp1.width}"-->
+		<mx:Canvas y="137" id="innerCanvas"   x="10" verticalScrollPolicy="off" horizontalScrollPolicy="off" >
+			       
+			<!-- These buttons are only shown when we run the flex app locally.
+			   If we run in Portal or a BSP they won't be displayed -->
+			<HR:Button1 y="0" click="doReject();" label="Reject" id="buttonReject" left="856"/>
+			<HR:Button1 x="927" y="0" click="doApprove();" label="Approve" id="buttonApprove"/>
+			<!--			<HR:Button1 x="1005" y="0" click="getROYItems();" label="Get Items" id="GetItems"/>  -->
+			
+			<mx:VBox verticalAlign="top" x="0" y="30">
+			</mx:VBox>
+			
+			<!--  width="1420"  maxHeight="525" -->
+			<containers:CollapsiblePanel id="cp1"  title="Syndication Royalties Approvals" x="1" y="30" 
+				    horizontalScrollPolicy="auto" verticalScrollPolicy="auto" paddingBottom="10" paddingRight="10">
+				    
+				    <!-- width="100%" -->
+					<mx:VBox verticalGap="0" id="repeateContainer" paddingBottom="10" paddingRight="10" 
+					         verticalScrollPolicy="auto" horizontalScrollPolicy="auto"> 
+					         
+						<mx:Repeater id="rpROYPayments" 
+							         dataProvider="{wsGetItemsToApprove.Z_CAS_ROY_GET_ITEMS.lastResult.HEADERS.item}"
+							         recycleChildren="true" >
+							         
+							<ns2:TableOutput ext_data="{rpROYPayments.currentItem}"
+								            ext_index="{rpROYPayments.currentIndex}"
+							   	            allItems="{wsGetItemsToApprove.Z_CAS_ROY_GET_ITEMS.lastResult.ITEMS.item}"								                						            
+								            formatXML="{fieldFormatting.ROYPayments}"				          
+								            userSort="doSort(event, rpROYPayments.dataProvider);" 
+								            horizontalScrollPolicy="auto" verticalScrollPolicy="auto" >
+								            
+							    	  
+							</ns2:TableOutput>						
+						</mx:Repeater>
+					</mx:VBox>
+			</containers:CollapsiblePanel>
+		</mx:Canvas>
+	</mx:Canvas>
+	<mx:SetStyle name="backgroundColor" value="#D4D4D4"/>
+    
+	<mx:Script source="scripts/Processing.as"/> 
+	<mx:Script source="scripts/TabHandling.as"/>
+	<mx:Script source="scripts/Utilities.as"/>
+	
+    <mx:XML id="fieldFormatting" source="/output_xml/fieldFormatting.xml"/> 
+
+    <mx:Metadata>
+        [Event(name="expandAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="collapseAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>        
+    <mx:Metadata>
+        [Event(name="selectAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    <mx:Metadata>
+        [Event(name="selectAll", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+	
+	<mx:Script>
+        <![CDATA[
+            import mx.events.ResizeEvent;
+            import mx.rpc.events.ResultEvent;
+            import mx.controls.dataGridClasses.DataGridColumn;
+            import mx.managers.CursorManager;
+        	import mx.controls.ToolTip;
+        	import mx.controls.TextInput;
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import mx.rpc.events.ResultEvent;
+            import flash.events.MouseEvent;
+            import mx.events.CloseEvent;
+            import flash.external.ExternalInterface;
+            import flash.system.Security;
+            import mx.collections.ICollectionView;
+            import mx.events.DynamicEvent;
+            import com.arc90.flexlib.containers.CollapsiblePanel;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import HR.generalClasses.*;			
+			import com.adobe.viewsource.ViewSource;
+            import mx.managers.PopUpManager;
+            import dave_classes.*;
+           
+            
+
+		    public const c_test_server:String = "http://vectci.ds.newsint:8000";
+			public const c_live_server:String = "http://vecpci.ds.newsint:8000";
+			public const c_dev_server:String  = "http://vecdci.ds.newsint:8000";
+			public const c_sap_client:String = "sap-client=007&";
+			public const c_wsdl_sicf_prefix:String = "/sap/bc/soap/wsdl11?"; 
+			public var tablewidth:Number;
+		 		
+		   
+		 
+			[Bindable]	
+			public var lowval:int; 
+			[Bindable]	
+		    public var highval:int;
+		    [Bindable]
+		    public var lowout:int;
+		    [Bindable]
+		    public var highout:int;
+	 
+		    
+		    
+		    [Bindable]
+            public var notesA:ArrayCollection = new ArrayCollection();
+      
+            public var addNoteScreen:Notes;
+		    
+			[Bindable]
+			public var wsdl_prefix:String;
+			           				
+			// CAS workflow tasks
+            [Bindable]
+            protected var workflow_tasks:XMLList;
+
+            // Table of contracts
+            [Bindable]
+            public var tableReturned:XMLList;  // items returned from SAP
+            [Bindable]
+            public var table:XMLList;          // item in the current tab
+            
+            // Table of selected item  (used in processing)
+            [Bindable]
+            public var table_selected:Array;
+            [Bindable]
+            public var table_selected_XMLList:XMLList;
+                        
+			// requestor combo box
+			[Bindable]
+			private var requestors:Array;				
+			[Bindable]
+			public var SelectedRequestor:String;
+			public var passedRequestor:String;
+
+			// cost centre combo box
+			[Bindable]
+			private var costCentres:Array;				
+			[Bindable]
+			public var SelectedKostl:String;
+			public var passedKostl:String;
+
+			[Bindable]
+			public var bEnableButtons:Boolean = true;
+			[Bindable]
+			public var xmlalldata: XML;
+
+			[Bindable]
+			public var xmlmessages: XML;
+
+			// help url 
+			[Bindable]
+			public var helpURL:String;
+			
+			//  values for hold/unhold
+			[Bindable]
+			public var holdWIID:String;
+			[Bindable]
+			public var holdReason:String;
+			[Bindable]
+			public var holdDate:String;
+			
+			// value for PORTAL url
+			[Bindable]
+			public var portalURL:String;
+			
+			// Array of result messages
+			private var resultMessages:Array;
+			private var errorMessages:Array;
+			
+			public var t_wsdl:String;
+			
+			public function getnext():void {
+			    // Clear data
+			    // add 1 to lowval	
+ 			    if (lowout < highout)	    
+			      {  			   	   
+			   		 lowout = lowout + 1;			   	    
+			      }    
+			  
+			    
+				table = new XMLList;
+				table_selected_XMLList = new XMLList;
+				table_selected = new Array;
+				// Refresh display
+				currentState = '';
+				// collapse lines
+				var event:DynamicEvent = new DynamicEvent("collapseAll", true);		
+				this.dispatchEvent(event);
+
+				// Get Royalty payment items
+				getROYItems();
+				// Rerfresh messages
+				resultMessages = new Array();
+                errorMessages = new Array();	
+			} 
+			
+			public function getprevious():void {
+		     	// Clear data
+		     	// subtract 1 from lowval
+		     	  if (lowout > 1)		    
+			      { 			      	
+			          lowout = lowout - 1;			          
+			       }  
+			   
+			           
+				table = new XMLList;
+				table_selected_XMLList = new XMLList;
+				table_selected = new Array;
+				// Refresh display
+				currentState = '';
+				// collapse lines
+				var event:DynamicEvent = new DynamicEvent("collapseAll", true);		
+				this.dispatchEvent(event);
+
+				// Get Royalty payment items
+				getROYItems();
+				// Rerfresh messages
+				resultMessages = new Array();
+                errorMessages = new Array();		
+			}
+				
+			public function init():void {
+				// Called at the "init" event of the application
+				// We need to tell the web services where to get their WSDls from.
+			    var srcUrl:String = Application.application.parameters.srcUrl;
+                ViewSource.addMenuItem(this, srcUrl);
+                
+                addNoteScreen = new Notes();
+                addNoteScreen.addEventListener("SaveNote", saveNote);
+								
+				if (Security.sandboxType == Security.REMOTE)  // Remote remotely in a BSP
+	    			wsdl_prefix = c_wsdl_sicf_prefix + "services=";
+				else  // Running locally
+			 	   wsdl_prefix = c_dev_server       // Which SAP server should we connect to?
+			              	    + c_wsdl_sicf_prefix
+			             	    + c_sap_client       // Which SAP client should we connect to?
+			            	    + "services=" ;   	
+  				this.addEventListener("expandAll", onExpandAll);
+				this.addEventListener("collapseAll", onCollapseAll);
+  				this.addEventListener("selectAll", onSelectAll);
+				this.addEventListener("deselectAll", onDeselectAll);	
+			   
+	
+	    	}
+	        
+/* 	        public function addNote():void {
+                   PopUpManager.addPopUp(addNoteScreen, this, true);
+                   PopUpManager.centerPopUp(addNoteScreen);                      
+                   addNoteScreen.NotesText.text = "";      
+              }*/
+	      
+	        public function saveNote(e:Event):void 
+	        {
+                  var notes:Note = new Note();
+                  notes.NotesText = addNoteScreen.NotesText.text;                      
+                  notesA.addItem(notes);
+                  PopUpManager.removePopUp(addNoteScreen);
+             }
+	        
+	 
+			public function setCombo():void {
+				comboRequestorRequestor.setFocus();
+		
+				if(comboRequestorRequestor.selectedItem != null){
+					SelectedRequestor = comboRequestorRequestor.selectedItem.data;		 			
+				}else{
+					SelectedRequestor = passedRequestor;			
+				}				
+			}
+     
+ 
+<!--			public function setCombo2():void {			
+				comboKostlKostl.setFocus();
+		
+				if(comboKostlKostl.selectedItem != null){
+					SelectedKostl = comboKostlKostl.selectedItem.data;						
+				}else{
+					SelectedKostl = passedKostl;			
+				}				
+			}  -->
+			
+			
+			public function creationComplete():void {
+				// Called at the "creationComplete" event of the application
+				// Set everything up visually and go get data.				
+				registerPortalFunctions();
+				SetDefaultDates();
+				getROYItems();
+				init();
+				resizeIt();
+				this.addEventListener(ResizeEvent.RESIZE, resize);
+				// Hide approval & rejection button unless running locally
+				if (Security.sandboxType == Security.REMOTE)
+				{
+					buttonReject.visible = false;
+					buttonApprove.visible = false;
+				}
+			}
+			
+		   public function resizeIt():void{
+                if(innerCanvas.width > outerCanvas.width){
+                	innerCanvas.width  = outerCanvas.width;                           
+                    cp1.width          = outerCanvas.width;
+                    tabSelection.width = outerCanvas.width;
+                    tabStrip.width     = outerCanvas.width;
+                    tablewidth         = outerCanvas.width;
+                }
+  				 else{
+                //if the sum of all columns widths is less than the width of the canvas
+                //then max the width to prevent deadspace                   
+                    innerCanvas.width = 1165;
+                    innerCanvas.height = 632;   
+                     
+                    cp1.width = innerCanvas.width + 3;  
+                    cp1.maxHeight = 525;
+                    
+                    tabSelection.width = innerCanvas.width;  
+                    tabSelection.height=119;
+                    
+                    tabStrip.width = innerCanvas.width;
+                    tabStrip.height = 79;
+                    
+                    tablewidth = innerCanvas.width; 
+                                    
+                }
+                           
+            }
+			      
+			public function resize(event:ResizeEvent):void{
+                outerCanvas.invalidateSize();  //causes canvas to be remeasured just before resizeIt()
+                callLater(resizeIt);  //this will do the resize after we get actual size of canvas
+            }      
+			          
+            public function getROYItems():void {
+	            // Gets the Royalty payment items that this user can approve
+    	        // This function is run when the application is first opened	 
+    	        //t_wsdl=wsdl_prefix + 'Z_CAS_ROY_GET_ITEMS' ;  
+//    	        var Timeout:int = 0;
+
+            	wsGetItemsToApprove.Z_CAS_ROY_GET_ITEMS.send();
+ 
+	          	// clear the output messages
+    		   	resultMessages = new Array();
+             	errorMessages = new Array();
+             	
+            }
+            
+            private function registerPortalFunctions():void {
+				if (ExternalInterface.available) {
+					ExternalInterface.addCallback("Approve", doApprove);
+					ExternalInterface.addCallback("Reject",  doReject);
+					ExternalInterface.addCallback("Refresh", doRefresh);
+					Security.allowDomain("*");
+				}				
+			}
+			
+			public function doRefresh(skip:String):void
+			{
+				// Clear data
+				table = new XMLList;
+				table_selected_XMLList = new XMLList;
+				table_selected = new Array;
+				// Refresh display
+				currentState = '';
+				// collapse lines
+				var event:DynamicEvent = new DynamicEvent("collapseAll", true);		
+				this.dispatchEvent(event);
+                // clear the page counters
+                if (skip != 'X') {
+                  lowout  = 0;
+                  highout = 0;
+                }
+
+				// Get Royalty payment items
+				getROYItems();
+				// Rerfresh messages
+				resultMessages = new Array();
+                errorMessages = new Array();
+			}
+            
+            public function showResults(event:ResultEvent):void {
+            	// This is the result of the webservice called by getROYItems();
+            	// Show the items that a user can approve          	
+            	var result:XML = new XML(event.result[0]);
+            	var tablelength:int;
+               
+				// create pannels
+				// set the panel title including number of items and set to panel to collapsed/expanded
+				set_pannel_title(XMLList(result.HEADERS.item), "Syndication Royalties Approvals", cp1);
+				xmlalldata = new XML(wsGetItemsToApprove.Z_CAS_ROY_GET_ITEMS.lastResult);
+				portalURL  = XML(result.PORTAL);
+				helpURL = XML(result.HELP_URL);
+
+		        PopulateRequestor();
+				SelectRequestor();
+		        PopulateKostl();	
+		        PopulatePage();	       
+<!--    		SelectKostl();					-->
+            }
+            
+			protected function set_pannel_title(tableReturned:XMLList, title:String, cpPanel:CollapsiblePanel):void {
+				// sets tilte and collapsed/expanded status of panel
+            	var tablelength:int;
+            	var item:String;
+            	
+				// get the number of items in the table
+				tablelength = tableReturned.length();
+				//if no items, set the title to say no items and collapse the panel
+             	if (tablelength == 0) {
+            		cpPanel.title = title + " - no items";
+            		cpPanel.collapsed = true;
+            	} 
+            	else
+            	{
+            		if (tablelength == 1) {
+            			item = " item";
+            		}
+            		else {
+            			item = " items";	
+            		}
+            		cpPanel.title = title + " - " + tablelength + item;
+            		cpPanel.collapsed = false;
+            	}
+			}
+			
+            public function webServiceFault(event:Event,service:String,wsdl:String):void {
+            	var alert_text:String = 'Error with web service ' + service + wsdl;
+            	//Alert.show(event.toString());
+            	Alert.show(alert_text);
+            }      
+            	
+			protected function doSort(event:DynamicEvent, dataProvider:Object):void
+			{
+				var f:ICollectionView;
+				var l_field:String = event.field; 
+								
+				if (dataProvider is ICollectionView)
+				{
+					var sort:Sort = new Sort();
+					var sortField:SortField = new SortField(l_field);
+					if (event.sortOrder == 1)
+					{
+						sortField.descending = false;
+					}
+					else
+					{
+						sortField.descending = true;
+					}
+					//sortField.descending = !(event.sortAscending);					
+					sort.fields = new Array();
+					sort.fields.push(sortField);
+					// Now sort by workflow id to make sure we have a definite sort order
+					sortField = new SortField("WIID");
+					sortField.descending = true;
+					sort.fields.push(sortField);
+					
+					(dataProvider as ICollectionView).sort = sort;
+					(dataProvider as ICollectionView).refresh();
+				}
+			}
+        ]]>
+        
+	</mx:Script>
+              
+              
+                       
+	<mx:WebService id="wsGetItemsToApprove"        	 
+ 		wsdl="{wsdl_prefix + 'Z_CAS_ROY_GET_ITEMS'}"	
+ 		useProxy="false" 
+    	result="showResults(event)"
+  		fault="webServiceFault(event,'wsGetItemsToApprove',wsdl_prefix + 'Z_CAS_ROY_GET_ITEMS')"    	
+       	showBusyCursor="true" >     
+       	<mx:operation name="Z_CAS_ROY_GET_ITEMS"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request xmlns="">
+				<UNAME></UNAME>
+				<ACT_OTYPE></ACT_OTYPE>
+				<ORG_REQUESTOR>{SelectedRequestor}</ORG_REQUESTOR>
+				<KOSTL>{SelectedKostl}</KOSTL>
+				<INLOWVAL>{lowval}</INLOWVAL>
+				<INHIGHVAL>{highval}</INHIGHVAL>
+				<PAGELOWVAL>{lowout}</PAGELOWVAL>
+				<PAGEHIGHVAL>{highout}</PAGEHIGHVAL>
+				<NO_OF_PAYMENTS></NO_OF_PAYMENTS>
+				<DATE_FROM>{DateToSAPFormat(dfPaymentFrom.text)}</DATE_FROM>
+				<DATE_TO>{DateToSAPFormat(dfPaymentTo.text)}</DATE_TO>	
+				<PORTAL></PORTAL>
+				<HELP_URL></HELP_URL>	
+				<HEADERS></HEADERS>
+				<ITEMS></ITEMS>
+				<REQUESTOR></REQUESTOR>
+				<COST_CENTRES></COST_CENTRES>
+				<ROYALTY_HISTORY></ROYALTY_HISTORY>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+     
+	<mx:WebService id="wsDoApprove"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_ROY_APPROVE'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doApprove','')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_ROY_APPROVE"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    	 	<ITEMS/>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+	
+	<mx:WebService id="wsDoReject"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_ROY_REJECT'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doReject','')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_ROY_REJECT"  
+	    	 resultFormat="e4x" concurrency="last">
+	    	 <mx:request>
+	    	 	<ITEMS/>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>	
+
+	<mx:WebService id="wsDoHold"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_ROY_HOLD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doHold','')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_ROY_HOLD"  
+	    	 resultFormat="e4x" concurrency="last">
+	   	     <mx:request>
+				<WIID>{holdWIID}</WIID>
+	    	 	<REASON>{holdReason}</REASON>
+	    	 	<ENDDA>{DateToSAPFormat(holdDate)}</ENDDA>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+    
+	<mx:WebService id="wsDoUnHold"
+ 		wsdl="{wsdl_prefix + 'Z_CAS_ROY_UNHOLD'}"
+     	useProxy="false" 
+    	result="processingReturned(event)"
+  		fault="webServiceFault(event,'doUnHold','')"    	
+       	showBusyCursor="true"> 
+       	<mx:operation name="Z_CAS_ROY_UNHOLD"  
+	    	 resultFormat="e4x" concurrency="last">
+	   	     <mx:request>
+				<WIID>{holdWIID}</WIID>
+	    	 	<REASON></REASON>
+	    	 	<ENDDA></ENDDA>
+	    	 	<RE_T_MESSAGES/>
+	    	 </mx:request>
+		</mx:operation> 
+	</mx:WebService>
+		
+   
+   
+ <!-- <mx:Script>
+    <![CDATA[
+      [Bindable]
+      public var myArray:Array=[1,2,3];
+    ]]>
+  </mx:Script>
+
+  <mx:ArrayCollection id="myAC" source="{myArray}"/>
+  
+  <mx:Repeater id="myrep" dataProvider="{myAC}"> 
+
+     <mx:Label id="Label1" text="{wsGetItemsToApprove.Z_CAS_ROY_GET_ITEMS.lastResult.ITEMS.item} #{myrep.currentItem}" />
+  </mx:Repeater>   -->
+    
+		
+	
+	<mx:WipeRight id="textEffect" duration="150"/> 
+</mx:Application>

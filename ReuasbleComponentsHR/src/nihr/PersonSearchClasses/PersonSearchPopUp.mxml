@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml"
+	      layout="absolute"
+	      width="310" height="180"
+	      title="Casual search"
+	      borderColor="#d3c5f3"
+	      themeColor="#80ffff"
+	      backgroundColor="#d5eae7"
+	      defaultButton="{btnSearch}"
+	      creationComplete="tiFirstName.setFocus();"
+	      >
+<mx:Metadata>
+	[Event(PersonSearchRequest)]
+</mx:Metadata>
+
+	<mx:Form x="10" y="10" width="269" height="86" borderStyle="inset" backgroundColor="#f2f2f2">
+		<mx:FormItem label="First Name">
+			<mx:TextInput id="tiFirstName" width="153" enter="doSearch()"/>
+		</mx:FormItem>
+		<mx:FormItem label="Last Name">
+			<mx:TextInput id="tiLastName" width="153" enter="doSearch()"/>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:Button x="74.5" y="109"
+		 label="Search"
+		 height="21"
+		 click="doSearch()" id="btnSearch"/>
+	<mx:Button x="147" y="108" height="21" label="Cancel" id="btnCancel" click="close()"/>
+		 
+	<mx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+		
+			protected function doSearch():void
+			{
+				// Dispatch the event
+				var event:PersonSearchEvent;
+				event = new PersonSearchEvent(PersonSearchEvent.PERSON_SEARCH_REQUEST, false, true, tiFirstName.text, tiLastName.text);
+				this.dispatchEvent(event);
+				
+				// Close the popup				
+				close()
+				
+			}
+			
+			protected function close():void
+			{
+				PopUpManager.removePopUp(this);
+				this.visible = false;
+			}
+				
+			
+		]]>
+	</mx:Script>	 
+	
+	
+</mx:Panel>

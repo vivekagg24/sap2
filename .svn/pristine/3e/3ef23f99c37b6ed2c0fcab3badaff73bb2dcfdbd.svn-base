@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:CheckBox xmlns:mx="http://www.adobe.com/2006/mxml" >
+<mx:Metadata>
+	[Event(name="dataChange",type="mx.events.FlexEvent")]
+</mx:Metadata>
+
+<mx:Script>
+	<![CDATA[
+		import mx.skins.halo.CheckBoxIcon;
+		import mx.events.FlexEvent;
+		import mx.controls.DataGrid;
+		import mx.controls.dataGridClasses.DataGridColumn;
+		import mx.controls.dataGridClasses.DataGridListData;
+		import mx.events.DataGridEvent;
+		import mx.controls.listClasses.BaseListData;
+		
+	// This component is designed specifcally to work in a data grid.
+	// If we were working in a list, we could just make all our decisions
+	// based upon what is supplied by "set data"
+	
+	// This is a "drop-in" component. This means that we can control which data column in the dataprovider
+	// it corresponds to by setting the "datafield" parameter in the DataGridColumn
+	
+		public function get text():String {
+			// Need this function to return the "text" variable 
+			
+			var _text:String = "";
+		 
+			switch (super.selected) {
+				case true:
+					_text = 'true';
+					break;
+				case false:
+					_text = 'false';
+					break;
+			}
+			return _text;
+			
+		}
+		
+		
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			// Check to see if we are an editable checkbox or just display
+			var ld:DataGridListData = this.listData as DataGridListData ;
+			var dg:DataGrid;
+			var col:DataGridColumn;
+			
+			if (ld) dg  = ld.owner as DataGrid;
+			if (dg) col = dg.columns[ld.columnIndex];
+			
+			if (col && col.editable == true) 
+			{
+				super.enabled = true;
+			}
+			else
+			{
+				super.enabled = false;
+			}
+			
+			
+			// Make call to super to display update
+			super.updateDisplayList(unscaledWidth, unscaledHeight);			
+		
+			// Now allign the checkbox
+			var checkBoxIcon:CheckBoxIcon = null;			
+			
+			for (var j:uint = 0; j < this.numChildren; j++)
+			{
+				var o:Object = this.getChildAt(j);
+				if (o is CheckBoxIcon)
+					checkBoxIcon = o as CheckBoxIcon;
+			}	
+			
+			// Make sure we are nicely alligned
+			if (checkBoxIcon) 
+			{			
+				// Amount of space that should be on either side of the box
+				var offset:uint = (this.width - checkBoxIcon.width) / 2; 
+				checkBoxIcon.x += offset;
+			}
+
+			
+			
+			
+		}
+		
+		override protected function clickHandler(event:MouseEvent):void
+		{
+			super.clickHandler(event);
+			
+			// Now tell any listeners that the checkbox has been ticked
+			var _event:FlexEvent = new FlexEvent(FlexEvent.DATA_CHANGE,true,true);
+			this.dispatchEvent(_event);
+			
+			// Datagrid listener
+			var ld:DataGridListData = this.listData as DataGridListData ;
+			var dg:DataGrid;
+			
+			if (ld)
+			{
+				dg  = ld.owner as DataGrid;
+				
+				
+				var _event2:DataGridEvent;
+				_event2 = new DataGridEvent(DataGridEvent.ITEM_EDIT_END,true,false,ld.columnIndex,ld.dataField,ld.rowIndex,"",this);
+				this.dispatchEvent(_event2);
+			} 
+
+			
+			
+			
+		}
+	
+		override public function set data(value:Object):void {
+			super.data = value;
+			// We don't care about the value passed by "set data".
+			// the value variable holds all the data for this row. We only
+			// want the data specified in the dataField property of the datagrid column	
+			
+			var ld:DataGridListData = this.listData as DataGridListData ;
+
+		    
+  		if (ld && ld.label && (ld.label == true || ld.label =='true' || ld.label == 'X' ) )
+			{
+				super.selected = true;
+			}
+		else
+			{
+		 		super.selected = false;	
+		    } 
+
+			// Now tell any listeners that the checkbox has been ticked
+			var _event:FlexEvent = new FlexEvent(FlexEvent.DATA_CHANGE,true,true);		    
+				dispatchEvent(new FlexEvent(FlexEvent.DATA_CHANGE));
+		    
+		}  
+		
+		[Bindable("dataChange")]
+		override public function get data():Object
+		{
+			var _data:Object = super.data;
+			return _data;
+		}
+		
+		[Bindable("dataChange")]
+		override public function get listData():BaseListData
+		{
+			return super.listData;
+    	}
+		
+	]]>
+</mx:Script>
+	
+	
+</mx:CheckBox>
